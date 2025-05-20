@@ -1,4 +1,4 @@
-package it.unicas.products.action;
+package it.unicas.activities.action;
 
 import com.opensymphony.xwork2.ActionSupport;
 

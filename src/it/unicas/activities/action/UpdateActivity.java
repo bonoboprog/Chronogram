@@ -1,9 +1,9 @@
-package it.unicas.products.action;
+package it.unicas.activities.action;
 
 import com.opensymphony.xwork2.ActionSupport;
 
-import it.unicas.products.dao.ActivityManagementDAO;
-import it.unicas.products.pojo.Activity;
+import it.unicas.activities.dao.ActivityManagementDAO;
+import it.unicas.activities.pojo.Activity;
 
 public class UpdateActivityData extends ActionSupport {
 

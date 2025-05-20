@@ -1,4 +1,4 @@
-package it.unicas.products.pojo;
+package it.unicas.activities.pojo;
 
 // Importing classes from JavaFX for property bindings.
 import javafx.beans.property.IntegerProperty;

@@ -1,11 +1,12 @@
-package it.unicas.products.action;
+package it.unicas.activities.action;
+
 
 import org.apache.struts2.ServletActionContext;
 
 import com.opensymphony.xwork2.ActionSupport;
 
-import it.unicas.products.dao.UserAuthDAO;
-import it.unicas.products.pojo.UserAuth;
+import it.unicas.activities.dao.UserAuthDAO;
+import it.unicas.activities.pojo.UserAuth;
 
 public class LoginActivity extends ActionSupport {
     private String email;
