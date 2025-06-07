@@ -1,8 +1,27 @@
-# DPN_APP
+<p align="center">
+  <img src="docs/Logo.png" alt="Chronogram Title" width="400"/>
+</p>
 
-https://docs.google.com/presentation/d/14NgOd5NSt-bIzUknydG7A0ilcgBkQL68LGOZmH8EEhI/edit?slide=id.g35803e53045_1_16#slide=id.g35803e53045_1_16
 
-# ✍️ Diary_App
+<p align="center" style="margin-top: 40px;">
+    <img src="https://img.shields.io/github/stars/bonoboprog/Chronogram?style=plastic&color=FF2E2E&labelColor=2d0052" alt="GitHub stars">         <!-- Rosso -->
+    <img src="https://img.shields.io/github/contributors/bonoboprog/Chronogram?style=plastic&color=FF7F00&labelColor=2d0052" alt="GitHub contributors"> <!-- Arancione -->
+    <img src="https://img.shields.io/github/repo-size/bonoboprog/Chronogram?style=plastic&color=FFFF33&labelColor=2d0052" alt="GitHub repo size">  <!-- Giallo -->
+    <img src="https://img.shields.io/github/license/bonoboprog/Chronogram?style=plastic&color=33FF33&labelColor=2d0052" alt="GitHub License">     <!-- Verde -->
+    <img src="https://img.shields.io/badge/API%20Status-stable-33CCFF?style=plastic&labelColor=2d0052" alt="API Status">                          <!-- Azzurro -->
+    <img src="https://img.shields.io/badge/Platform-Android-6666FF?style=plastic&labelColor=2d0052" alt="Platform">                               <!-- Blu -->
+    <img src="https://img.shields.io/badge/Version-1.0.0-CC66FF?style=plastic&labelColor=2d0052" alt="Version">                                   <!-- Viola -->
+</p>
+
+
+
+
+
+
+
+
+[📊 View Chronogram Presentation](https://docs.google.com/presentation/d/14NgOd5NSt-bIzUknydG7A0ilcgBkQL68LGOZmH8EEhI/edit?slide=id.g35803e53045_1_16)
+
 
 The goal of this project is to develop an Android application that allows users to log their daily activities. The app will feature a main page for real-time activity tracking and a calendar section where users can review previously recorded activities. The design supports both real-time and retrospective logging, enabling users to choose the frequency of prompts based on their daily routines. This flexibility makes the app suitable for personal use as well as for researchers and organizations involved in time-use studies.
 
