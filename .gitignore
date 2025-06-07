@@ -1,0 +1,30 @@
+# Maven & IDE
+target/
+*.iml
+.idea/
+.vscode/
+*.log
+*.tmp
+*.bak
+*.swp
+
+# Env
+*.env
+*.env.*
+prod/.env.prod
+
+# Artifacts
+chronogram.war
+dump.sql
+
+# OS/system files
+.DS_Store
+Thumbs.db
+
+# Old files
+Dockerfile.old
+
+# Ensure schema.sql is kept
+!docker/init/schema.sql
+
+docker/logs/

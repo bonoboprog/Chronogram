@@ -1,0 +1,49 @@
+services:
+  mysql:
+    container_name: chronogram-mysql
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./init/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+  tomcat:
+    build: .
+    container_name: docker-tomcat 
+    restart: unless-stopped
+    ports:
+      - "8080:8080"     # HTTP web app
+      - "8000:8000"     # Debug remoto
+    depends_on:
+      - mysql
+    environment:
+      DB_NAME: ${MYSQL_DATABASE}
+      DB_USER: ${MYSQL_USER}
+      DB_PASS: ${MYSQL_PASSWORD}
+      DB_HOST: chronogram-mysql
+      DEBUG_MODE: ${DEBUG_MODE:-false}
+      LLM_API_KEY: ${LLM_API_KEY}
+    volumes:
+      - ./logs:/usr/local/tomcat/logs  
+
+  nginx:
+    image: nginx:latest
+    container_name: chronogram-nginx
+    restart: unless-stopped
+    ports:
+      - "443:443"
+      - "80:80"
+    depends_on:
+      - tomcat
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+
+volumes:
+  mysql-data:

@@ -1,0 +1,27 @@
+services:
+  mysql:
+    image: mysql:8.0
+    restart: always
+    env_file:
+      - .env.prod
+    ports:
+      - "3306:3306"
+    volumes:
+      - prod-mysql-data:/var/lib/mysql
+
+  tomcat:
+    image: chronogram-backend:latest
+    build:
+      context: ../docker
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+    environment:
+      DB_HOST: mysql
+      DB_USER: ${MYSQL_USER}
+      DB_PASS: ${MYSQL_PASSWORD}
+      DB_NAME: ${MYSQL_DATABASE}
+
+volumes:
+  prod-mysql-data:

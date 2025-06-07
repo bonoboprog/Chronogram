@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
+        "http://struts.apache.org/dtds/struts-2.5.dtd">
+
+<struts>
+
+    <!-- 🔧 Configuration  del pacchetto principale -->
+    <package name="default" namespace="/" extends="json-default">
+
+        <!-- 🌐 Azione per gestire richieste LLM -->
+        <action name="llmPrompt" class="it.unicas.action.LLMAction">
+            <result type="json"/>
+        </action>
+
+        <!-- 🔁 Altre action future possono essere aggiunte qui -->
+        <!--
+        <action name="anotherAction" class="it.unicas.action.AnotherAction">
+            <result type="json"/>
+        </action>
+        -->
+    </package>
+
+
+</struts>

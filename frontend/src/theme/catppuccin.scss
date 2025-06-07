@@ -1,0 +1,260 @@
+@charset "UTF-8";
+
+/* ╭──────────────────────────╮
+   │ 1.  MOCHA – Dark Variant │
+   ╰──────────────────────────╯ */
+:root[data-theme=mocha] {
+  --rosewater: #f5e0dc;
+  --flamingo: #f2cdcd;
+  --pink: #f5c2e7;
+  --mauve: #cba6f7;
+  --red: #f38ba8;
+  --maroon: #eba0ac;
+  --peach: #fab387;
+  --yellow: #f9e2af;
+  --green: #a6e3a1;
+  --teal: #94e2d5;
+  --sky: #89dceb;
+  --sapphire: #74c7ec;
+  --blue: #89b4fa;
+  --lavender: #b4befe;
+  --text: #cdd6f4;
+  --subtext1: #bac2de;
+  --subtext0: #a6adc8;
+  --overlay2: #9399b2;
+  --overlay1: #7f849c;
+  --overlay0: #6c7086;
+  --surface2: #585b70;
+  --surface1: #45475a;
+  --surface0: #313244;
+  --base: #1e1e2e;
+  --mantle: #181825;
+  --crust: #11111b;
+
+  --ion-color-primary: var(--mauve);
+  --ion-color-secondary: var(--peach);
+  --ion-color-tertiary: var(--sky);
+  --ion-color-success: var(--green);
+  --ion-color-warning: var(--yellow);
+  --ion-color-danger: var(--red);
+  --ion-color-light: var(--rosewater);
+  --ion-color-medium: var(--overlay0);
+  --ion-color-dark: var(--crust);
+  --ion-background-color: var(--base);
+  --ion-text-color: var(--text);
+
+  --gradient-peach-mauve: linear-gradient(120deg, var(--peach), var(--mauve));
+  --gradient-pink-mauve: linear-gradient(120deg, var(--pink), var(--mauve));
+  --gradient-teal-green: linear-gradient(120deg, var(--teal), var(--green));
+  --gradient-blue-sky: linear-gradient(120deg, var(--blue), var(--sky));
+  --gradient-hero: linear-gradient(120deg,
+          color-mix(in srgb, var(--base), var(--peach) 5%),
+          color-mix(in srgb, var(--base), var(--mauve) 10%)
+  );
+}
+
+/* ╭──────────────────────────╮
+   │ 2.  LATTE – Light Variant│
+   ╰──────────────────────────╯ */
+:root[data-theme=latte] {
+  --rosewater: #dc8a78;
+  --flamingo: #dd7878;
+  --pink: #ea76cb;
+  --mauve: #8839ef;
+  --red: #d20f39;
+  --maroon: #e64553;
+  --peach: #fe640b;
+  --yellow: #df8e1d;
+  --green: #40a02b;
+  --teal: #179299;
+  --sky: #04a5e5;
+  --sapphire: #209fb5;
+  --blue: #1e66f5;
+  --lavender: #7287fd;
+  --text: #4c4f69;
+  --subtext1: #5c5f77;
+  --subtext0: #6c6f85;
+  --overlay2: #7c7f93;
+  --overlay1: #8c8fa1;
+  --overlay0: #9ca0b0;
+  --surface2: #acb0be;
+  --surface1: #bcc0cc;
+  --surface0: #ccd0da;
+  --base: #eff1f5;
+  --mantle: #e6e9ef;
+  --crust: #dce0e8;
+
+  --ion-color-primary: var(--mauve);
+  --ion-color-secondary: var(--peach);
+  --ion-color-tertiary: var(--sky);
+  --ion-color-success: var(--green);
+  --ion-color-warning: var(--yellow);
+  --ion-color-danger: var(--red);
+  --ion-color-light: var(--rosewater);
+  --ion-color-medium: var(--overlay0);
+  --ion-color-dark: var(--crust);
+  --ion-background-color: var(--base);
+  --ion-text-color: var(--text);
+
+  --gradient-peach-mauve: linear-gradient(120deg, var(--peach), var(--mauve));
+  --gradient-pink-mauve: linear-gradient(120deg, var(--pink), var(--mauve));
+  --gradient-teal-green: linear-gradient(120deg, var(--teal), var(--green));
+  --gradient-blue-sky: linear-gradient(120deg, var(--blue), var(--sky));
+  --gradient-hero: linear-gradient(120deg,
+          color-mix(in srgb, var(--base), var(--peach) 5%),
+          color-mix(in srgb, var(--base), var(--mauve) 10%)
+  );
+}
+
+/* ╭───────────────────────────────────╮
+   │ 3. GLASSMORPHISM INPUT (ROBUST)     │
+   ╰───────────────────────────────────╯ */
+
+ion-item.glass-input {
+  --background: transparent;
+  --border-width: 0;
+  --inner-border-width: 0;
+  --highlight-height: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  margin-bottom: 1rem;
+}
+
+ion-item.glass-input::part(native) {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding-inline-start: 16px;
+  padding-inline-end: 16px;
+}
+
+/* 🔥 REGOLE AGGIORNATE PER L'ICONA E L'INPUT 🔥 */
+.glass-input ion-icon.input-icon {
+  color: var(--peach);
+  font-size: 22px;
+  margin-right: 12px; /* Aggiunge spazio tra icona e testo */
+}
+
+ion-item.glass-input ion-input {
+  --background: transparent;
+  --color: var(--ion-text-color);
+}
+
+/* ╭──────────────────────────────╮
+   │ 4. GLASSMORPHIC BUTTON STYLE │
+   ╰──────────────────────────────╯ */
+ion-button {
+  --border-radius: 9999px;
+  font-weight: 600;
+  text-transform: none;
+}
+
+ion-button.mauve-gradient {
+  --background: var(--gradient-pink-mauve);
+  --color: var(--crust);
+}
+
+ion-button.peach-gradient {
+  --background: var(--gradient-peach-mauve);
+  --color: var(--crust);
+}
+
+ion-button.gradient-outline {
+  --background: transparent;
+  --color: var(--peach);
+  backdrop-filter: blur(4px);
+}
+
+ion-button.gradient-outline:hover {
+  --background: var(--gradient-peach-mauve);
+  --color: var(--crust);
+}
+
+.pill-button::part(native) {
+  border-radius: 9999px !important;
+  backdrop-filter: blur(6px);
+}
+
+.pill-button.gradient-outline::part(native) {
+  border: 1.5px solid var(--peach);
+}
+
+.pill-button.gradient-outline:hover::part(native) {
+  border-color: transparent;
+}
+
+
+
+/* ╭──────────────────────────────╮
+   │ 5. TEXT UTILITIES            │
+   ╰──────────────────────────────╯ */
+.gradient-text {
+  background: var(--gradient-peach-mauve);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-section {
+  background: var(--gradient-hero);
+  color: var(--text);
+  padding: 4rem 2rem;
+  border-radius: 1.5rem;
+}
+
+/* ╭──────────────────────────────╮
+   │ 6. BIRTHDAY MODAL STYLES     │
+   ╰──────────────────────────────╯ */
+
+.birthday-modal {
+  --background: var(--surface0);
+  --ion-text-color: var(--text);
+  --color: var(--text);
+  --ion-color-step-50: var(--surface0);
+  --ion-color-step-150: var(--surface1);
+  --ion-color-step-250: var(--surface2);
+  --height: 100%;
+  --width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+ion-modal.birthday-modal::part(content) {
+  background: var(--surface0);
+  color: var(--text);
+  border-radius: 1rem;
+  width: 90vw;
+  height: 90vh; /* 👈 nuovo */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+ion-datetime {
+  width: 100%;
+  height: 100%; /* 👈 aggiornato */
+  --background: var(--surface0);
+  --ion-text-color: var(--text);
+  --color: var(--text);
+}
+
+/* =================================================================== */
+/* STILI PER ION-SELECT (ACTION SHEET)                                 */
+/* =================================================================== */
+
+.catppuccin-select-overlay .action-sheet-group {
+  /* Imposta lo sfondo corretto per il gruppo di bottoni */
+  background: var(--surface1);
+}
+
+.catppuccin-select-overlay .action-sheet-button {
+  /* Imposta il colore del testo per le opzioni normali */
+  color: var(--text);
+}
+
+.catppuccin-select-overlay .action-sheet-button.action-sheet-selected {
+  /* Evidenzia l'opzione selezionata con il colore primario del tema */
+  color: var(--mauve);
+  font-weight: 600;
+}
