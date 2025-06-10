@@ -10,7 +10,10 @@
 
         <!-- 🌐 Azione per gestire richieste LLM -->
         <action name="llmPrompt" class="it.unicas.action.LLMAction">
-            <result type="json"/>
+            <interceptor-ref name="json" />
+            <result type="json">
+                <param name="root">data</param>
+            </result>
         </action>
 
         <!-- 🔁 Altre action future possono essere aggiunte qui -->
