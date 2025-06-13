@@ -18,7 +18,7 @@ else
   echo "⚠️  .env file not found in the current directory"
 fi
 
-# Set the DEBUG_MODE
+# Set the mode
 if [[ "$MODE" == "debug" ]]; then
   echo "♻️ Switching to DEBUG mode…"
   DEBUG_MODE=true
@@ -27,11 +27,22 @@ else
   DEBUG_MODE=false
 fi
 
-# Compose file
+# Stop and remove only the Tomcat container
+docker container stop docker-tomcat
+docker container rm docker-tomcat
+
+# Restart Tomcat without rebuilding the image
 COMPOSE_FILE="-f docker/docker-compose.yml"
+DEBUG_MODE=$DEBUG_MODE docker compose $COMPOSE_FILE up -d --no-deps tomcat || {
+  echo "❌ Failed to start Tomcat"
+  exit 1
+}
 
-# Restart Tomcat with new DEBUG_MODE
-echo "🔁 Restarting Tomcat with DEBUG_MODE=$DEBUG_MODE ..."
-DEBUG_MODE=$DEBUG_MODE docker compose $COMPOSE_FILE restart tomcat
+# Run the refresh script (compile + deploy WAR)
+echo "🔄 Running refresh_tomcat.sh..."
+scripts/backend-scripts/refresh_tomcat.sh || {
+  echo "❌ Failed to refresh Tomcat with the updated WAR"
+  exit 1
+}
 
-echo "✅ Tomcat restarted in mode: $MODE"
+echo "✅ Tomcat started in mode: $MODE"
