@@ -37,7 +37,7 @@ pnpm-lock.yaml        text eol=lf -diff -merge
 *.gradle              text eol=lf diff=java
 *.gradle.kts          text eol=lf diff=kotlin
 *.pro                 text eol=lf
-gradlew               text eol=lf       # *nix wrapper
+gradlew               text eol=lf
 *.properties          text eol=lf
 
 ###############################################################################
