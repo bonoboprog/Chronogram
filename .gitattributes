@@ -1,2 +1,69 @@
-# .gitattributes
+# ===========================================
+# 🎯 Line endings: forziamo LF (Linux-style)
+# ===========================================
+* text=auto eol=lf
+
+# ===========================================
+# 🚀 Frontend: Ionic + Vue
+# ===========================================
+*.vue text eol=lf
+*.ts text eol=lf
+*.js text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.scss text eol=lf
+*.json text eol=lf
+
+# ===========================================
+# ☕ Backend: Java + JSP + XML (Tomcat)
+# ===========================================
+*.java text eol=lf
+*.jsp text eol=lf
+*.xml text eol=lf
+*.properties text eol=lf
+
+# ===========================================
+# 🐳 Docker stack: MySQL + Nginx + Tomcat
+# ===========================================
+*.env text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.sql text eol=lf
+*.dockerignore text eol=lf
+Dockerfile text eol=lf
+docker-compose.yml text eol=lf
+
+# ===========================================
+# 🧪 Script shell e configurazione
+# ===========================================
 *.sh text eol=lf
+*.bash text eol=lf
+*.conf text eol=lf
+
+# ===========================================
+# 📄 Documentazione
+# ===========================================
+*.md text eol=lf
+*.txt text eol=lf
+LICENSE text eol=lf
+README text eol=lf
+.gitignore text eol=lf
+
+# ===========================================
+# 🖼️ Binari: NON toccare gli EOL
+# ===========================================
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.tar binary
+*.mp4 binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
