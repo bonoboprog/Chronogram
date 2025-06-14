@@ -15,6 +15,15 @@
 *.json text eol=lf
 
 # ===========================================
+# 📱 Capacitor / Android (Gradle)
+# ===========================================
+*.gradle text eol=lf
+*.pro text eol=lf
+gradlew text eol=lf
+gradlew.bat text eol=lf
+*.properties text eol=lf
+
+# ===========================================
 # ☕ Backend: Java + JSP + XML (Tomcat)
 # ===========================================
 *.java text eol=lf
