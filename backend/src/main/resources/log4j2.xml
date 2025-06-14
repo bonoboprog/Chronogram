@@ -1,34 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="WARN">
+<Configuration status="WARN" monitorInterval="60">
 
-    <!-- ========== APPENDERS ========== -->
     <Appenders>
 
-        <!-- Console -->
+        <!-- Log su console -->
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout
-                    pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
         </Console>
 
-        <!-- File con rotazione e retention -->
+        <!-- Log su file con rotazione giornaliera e per dimensione -->
         <RollingFile
-                name="RollingFile"
-                fileName="${catalina.base}/logs/chronogram.log"
-                filePattern="${catalina.base}/logs/chronogram-%d{yyyy-MM-dd}-%i.log">
+          name="FileAppender"
+          fileName="${sys:catalina.base}/logs/chronogram.log"
+          filePattern="${sys:catalina.base}/logs/chronogram-%d{yyyy-MM-dd}-%i.log.gz">
 
-            <PatternLayout
-                    pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
 
             <!-- Rotazione per data e dimensione -->
             <Policies>
-                <TimeBasedTriggeringPolicy/>
+                <TimeBasedTriggeringPolicy />
                 <SizeBasedTriggeringPolicy size="10 MB"/>
             </Policies>
 
             <!-- Rollover max 10 file + auto-delete > 7 days -->
             <DefaultRolloverStrategy max="10" fileIndex="min">
-                <Delete basePath="${catalina.base}/logs" maxDepth="1">
-                    <IfFileName glob="chronogram-*.log"/>
+                <Delete basePath="${sys:catalina.base}/logs" maxDepth="1">
+                    <IfFileName glob="chronogram-*.log.gz"/>
                     <IfLastModified age="7d"/>
                 </Delete>
             </DefaultRolloverStrategy>
@@ -42,13 +39,13 @@
         <!-- Logger di progetto -->
         <Logger name="it.unicas" level="debug" additivity="false">
             <AppenderRef ref="Console"/>
-            <AppenderRef ref="RollingFile"/>
+            <AppenderRef ref="FileAppender"/>
         </Logger>
 
-        <!-- Root (INFO) -->
+        <!-- Root logger (INFO) -->
         <Root level="info">
             <AppenderRef ref="Console"/>
-            <AppenderRef ref="RollingFile"/>
+            <AppenderRef ref="FileAppender"/>
         </Root>
 
     </Loggers>
