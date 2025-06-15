@@ -112,12 +112,13 @@ const openBirthdayModal = () => {
 
 const formattedBirthday = computed(() => {
   if (!selectedBirthday.value) return '';
-  // Format the date to "dd-MM-yyyy" as expected by the backend [1]
-  const date = new Date(selectedBirthday.value);
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-  const year = date.getFullYear();
-  return `<span class="math-inline">\{day\}\-</span>{month}-${year}`;
+
+  // Extract ISO date parts directly (YYYY-MM-DD format)
+  const datePart = selectedBirthday.value.split('T')[0];
+  const [year, month, day] = datePart.split('-');
+
+  // Return in dd-MM-yyyy format
+  return `${day}-${month}-${year}`;
 });
 
 const goBackToLogin = () => {
