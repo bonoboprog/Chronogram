@@ -2,7 +2,6 @@
   <ion-page>
     <ion-content :fullscreen="true" class="ion-padding">
       <div class="registration-container">
-
         <div class="registration-header">
           <ion-icon :icon="personAddOutline" class="header-icon"></ion-icon>
           <h1>Registration</h1>
@@ -12,23 +11,23 @@
           <ion-list lines="none">
 
             <ion-item class="glass-input">
-              <ion-input label="Name" label-placement="floating" autocomplete="given-name" type="text"></ion-input>
+              <ion-input label="Name" label-placement="floating" autocomplete="given-name" type="text" v-model="name"></ion-input>
             </ion-item>
             <ion-item class="glass-input">
-              <ion-input label="Surname" label-placement="floating" autocomplete="family-name" type="text"></ion-input>
+              <ion-input label="Surname" label-placement="floating" autocomplete="family-name" type="text" v-model="surname"></ion-input>
             </ion-item>
             <ion-item class="glass-input">
-              <ion-input label="Phone" label-placement="floating" autocomplete="tel" type="tel"></ion-input>
+              <ion-input label="Phone" label-placement="floating" autocomplete="tel" type="tel" v-model="phone"></ion-input>
             </ion-item>
             <ion-item class="glass-input">
-              <ion-input label="Email" label-placement="floating" autocomplete="email" type="email"></ion-input>
+              <ion-input label="Email" label-placement="floating" autocomplete="email" type="email" v-model="email"></ion-input>
             </ion-item>
             <ion-item class="glass-input">
-              <ion-input label="Password" label-placement="floating" type="password"></ion-input>
+              <ion-input label="Password" label-placement="floating" type="password" v-model="password"></ion-input>
             </ion-item>
             <ion-item
                 class="glass-input"
-                :class="{ 'item-has-value': !!selectedBirthday }"
+                :class="{ 'item-has-value':!!selectedBirthday }"
                 @click="openBirthdayModal"
                 :detail="false"
                 button
@@ -43,6 +42,7 @@
                   label-placement="floating"
                   interface="popover"
                   :interface-options="{ cssClass: 'ion-dark catppuccin-select-overlay' }"
+                  v-model="gender"
               >
                 <ion-select-option value="male">Male</ion-select-option>
                 <ion-select-option value="female">Female</ion-select-option>
@@ -71,7 +71,7 @@
             id="birthday-datetime"
             presentation="date"
             v-model="selectedBirthday"
-            @ionChange="birthdayModal?.dismiss()"
+            @ionChange="birthdayModal.value?.$el.dismiss()"
             class="ion-dark"
             :interface-options="{
               cssClass: 'catppuccin-datetime-overlay'
@@ -92,10 +92,19 @@ import {
 } from '@ionic/vue';
 import { useRouter } from 'vue-router';
 import { personAddOutline } from 'ionicons/icons';
+import axios from 'axios'; // Import axios
 
 const router = useRouter();
 const birthdayModal = ref<InstanceType<typeof IonModal>>();
 const selectedBirthday = ref<string>();
+
+// Define reactive variables for form inputs
+const name = ref('');
+const surname = ref('');
+const phone = ref('');
+const email = ref('');
+const password = ref('');
+const gender = ref('');
 
 const openBirthdayModal = () => {
   birthdayModal.value?.$el.present();
@@ -103,19 +112,50 @@ const openBirthdayModal = () => {
 
 const formattedBirthday = computed(() => {
   if (!selectedBirthday.value) return '';
-  return new Date(selectedBirthday.value).toLocaleDateString('it-IT', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  });
+  // Format the date to "dd-MM-yyyy" as expected by the backend [1]
+  const date = new Date(selectedBirthday.value);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+  const year = date.getFullYear();
+  return `<span class="math-inline">\{day\}\-</span>{month}-${year}`;
 });
 
 const goBackToLogin = () => {
   router.back();
 };
 
-const handleRegister = () => {
-  console.log('Tentativo di registrazione...');
+const handleRegister = async () => {
+  console.log('Attempting registration...');
+  // Construct the payload to send to the backend
+  const payload = {
+    name: name.value,
+    surname: surname.value,
+    phone: phone.value,
+    email: email.value,
+    password: password.value,
+    birthday: formattedBirthday.value, // Send the formatted string
+    gender: gender.value
+  };
+
+  console.log('Sending payload:', payload);
+
+  try {
+    const API = import.meta.env.VITE_API_BASE_URL; // Ensure this is correctly configured
+    const response = await axios.post(`${API}/register`, payload, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    console.log('Backend response:', response.data);
+    if (response.data.success) {
+      alert(response.data.message);
+      router.push({ name: 'Login' }); // Redirect to login on success
+    } else {
+      alert(`Registration failed: ${response.data.message}`);
+    }
+  } catch (error) {
+    console.error('Error during registration:', error);
+    alert('An error occurred during registration. Please try again.');
+  }
 };
 </script>
 

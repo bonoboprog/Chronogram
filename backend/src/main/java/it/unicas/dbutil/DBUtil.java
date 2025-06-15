@@ -17,9 +17,10 @@ public class DBUtil {
     static {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
+            logger.info("MySQL JDBC Driver loaded successfully.");
         } catch (ClassNotFoundException e) {
             logger.fatal("MySQL JDBC driver not found in classpath", e);
-            throw new RuntimeException(e);
+            throw new RuntimeException("Cannot load JDBC driver", e);
         }
     }
 

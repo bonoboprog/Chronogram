@@ -22,6 +22,17 @@
             <result type="json"/>
         </action>
         -->
+
+        <action name="register" class="it.unicas.action.RegistrationAction">
+            <interceptor-ref name="json" /> <result type="json">
+            <param name="root">success,message</param> </result>
+        </action>
+
+        <action name="login" class="it.unicas.action.LoginAction">
+            <interceptor-ref name="json" /> <result type="json">
+            <param name="root">success,message,username</param> </result>
+        </action>
+
     </package>
 
 

@@ -1,0 +1,154 @@
+package it.unicas.action;
+
+import com.opensymphony.xwork2.ActionSupport;
+import it.unicas.dao.UserDAO;
+import it.unicas.dao.UserAuthDAO;
+import it.unicas.dto.UserDTO;
+import it.unicas.dto.UserAuthDTO;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.mindrot.jbcrypt.BCrypt; // For password hashing
+
+import java.sql.Date; // For birthday
+import java.text.SimpleDateFormat; // Add this import at the top
+import java.sql.Timestamp; // For last_login
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+public class RegistrationAction extends ActionSupport {
+
+    private static final Logger logger = LogManager.getLogger(RegistrationAction.class);
+
+    // Properties to bind form data from frontend
+    private String name;
+    private String surname; // Assuming this maps to 'username' or part of it
+    private String phone; // Assuming this maps to 'notes' or 'address' or a new field
+    private String email;
+    private String password;
+    private String birthday; // Frontend sends as String, will convert to java.sql.Date
+    private String gender;
+    // Note: weekly_income fields are excluded as per user request
+
+    // Response properties for frontend
+    private boolean success;
+    private String message;
+
+    // Getters and Setters for form properties (required by Struts2)
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getSurname() { return surname; }
+    public void setSurname(String surname) { this.surname = surname; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+
+    public String getBirthday() { return birthday; }
+    public void setBirthday(String birthday) { this.birthday = birthday; }
+
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
+
+    // Getters for response properties
+    public boolean isSuccess() { return success; }
+    public String getMessage() { return message; }
+
+    @Override
+    public String execute() {
+        logger.info("Registration attempt for email: {}", email);
+
+        // 1. Server-Side Validation (Basic)
+        if (email == null || email.trim().isEmpty() ||
+                password == null || password.trim().isEmpty() ||
+                name == null || name.trim().isEmpty() ||
+                surname == null || surname.trim().isEmpty()) {
+            this.success = false;
+            this.message = "All required fields must be filled.";
+            logger.warn("Validation failed: Missing required fields for registration.");
+            return SUCCESS; // Struts2 convention for JSON result
+        }
+
+        // 2. Secure Password Hashing with BCrypt
+        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+        logger.debug("Password hashed successfully.");
+
+        // 3. Prepare UserDTO and UserAuthDTO
+        UserDTO userDTO = new UserDTO();
+        userDTO.setUsername(name + " " + surname); // Simple concatenation for username
+        userDTO.setEmail(email);
+        userDTO.setGender(gender);
+        userDTO.setAddress(phone); // Using phone for address field, or create new field in DB
+        userDTO.setNotes(""); // Default empty notes
+
+// Convert frontend birthday string (dd-MM-yyyy) to java.sql.Date
+        Date sqlBirthday = null;
+        if (birthday != null && !birthday.trim().isEmpty()) {
+            try {
+                SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
+                formatter.setLenient(false); // Strict parsing
+                java.util.Date utilDate = formatter.parse(birthday);
+                sqlBirthday = new Date(utilDate.getTime());
+                logger.debug("Birthday converted to SQL Date: {}", sqlBirthday);
+            } catch (Exception e) {
+                logger.error("Invalid birthday format received: {}", birthday, e);
+                this.success = false;
+                this.message = "Invalid birthday format. Please use dd-MM-yyyy.";
+                return SUCCESS;
+            }
+        }
+        userDTO.setBirthday(sqlBirthday);
+
+        UserAuthDTO userAuthDTO = new UserAuthDTO();
+        userAuthDTO.setEmail(email);
+        userAuthDTO.setPasswordHash(hashedPassword);
+        userAuthDTO.setUsername(name + " " + surname); // Mirror username from UserDTO
+
+        // Set created_at and last_login
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        userAuthDTO.setCreatedAt(now.format(formatter));
+        userAuthDTO.setLastLogin(null); // Set to null on registration, updated on first login
+
+        // 4. Database Interaction via DAOs
+        UserDAO userDAO = new UserDAO();
+        UserAuthDAO userAuthDAO = new UserAuthDAO();
+
+        // Check for duplicate email/username before insertion
+        if (userAuthDAO.getUserAuthByEmail(email)!= null) {
+            this.success = false;
+            this.message = "Email already registered.";
+            logger.warn("Registration failed: Email {} already exists.", email);
+            return SUCCESS;
+        }
+
+        int userId = userDAO.insertUser(userDTO);
+
+        if (userId!= -1) {
+            userAuthDTO.setUserId(userId); // Link UserAuth to User
+            boolean authSuccess = userAuthDAO.insertUserAuth(userAuthDTO);
+
+            if (authSuccess) {
+                this.success = true;
+                this.message = "Registration successful!";
+                logger.info("User registered successfully with ID: {}", userId);
+            } else {
+                this.success = false;
+                this.message = "Registration failed: Could not create authentication record.";
+                logger.error("Failed to create UserAuth record for user ID: {}", userId);
+                // Potentially roll back user insertion here if transaction management was implemented
+            }
+        } else {
+            this.success = false;
+            this.message = "Registration failed: Could not create user profile.";
+            logger.error("Failed to insert UserDTO for email: {}", email);
+        }
+
+        return SUCCESS; // Struts2 convention for JSON result
+    }
+}
