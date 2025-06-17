@@ -10,10 +10,9 @@ import org.apache.logging.log4j.Logger;
 import org.mindrot.jbcrypt.BCrypt; // For password hashing
 
 import java.sql.Date; // For birthday
-import java.text.SimpleDateFormat; // Add this import at the top
-import java.sql.Timestamp; // For last_login
+import java.text.SimpleDateFormat;
+import java.sql.Timestamp; // For Timestamp
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 public class RegistrationAction extends ActionSupport {
 
@@ -21,8 +20,8 @@ public class RegistrationAction extends ActionSupport {
 
     // Properties to bind form data from frontend
     private String name;
-    private String surname; // Assuming this maps to 'username' or part of it
-    private String phone; // Assuming this maps to 'notes' or 'address' or a new field
+    private String surname;
+    private String phone;
     private String email;
     private String password;
     private String birthday; // Frontend sends as String, will convert to java.sql.Date
@@ -78,17 +77,21 @@ public class RegistrationAction extends ActionSupport {
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
         logger.debug("Password hashed successfully.");
 
+        // Get current timestamp for created_at and updated_at
+        LocalDateTime now = LocalDateTime.now();
+        Timestamp currentTimestamp = Timestamp.valueOf(now);
+
         // 3. Prepare UserDTO and UserAuthDTO
         UserDTO userDTO = new UserDTO();
-        userDTO.setUsername(name + " " + surname); // Simple concatenation for username
-        userDTO.setEmail(email);
         userDTO.setGender(gender);
         userDTO.setAddress(phone); // Using phone for address field, or create new field in DB
         userDTO.setNotes(""); // Default empty notes
+        userDTO.setCreatedAt(currentTimestamp); // Set new field
+        userDTO.setUpdatedAt(currentTimestamp); // Set new field
 
-// Convert frontend birthday string (dd-MM-yyyy) to java.sql.Date
+        // Convert frontend birthday string (dd-MM-yyyy) to java.sql.Date
         Date sqlBirthday = null;
-        if (birthday != null && !birthday.trim().isEmpty()) {
+        if (birthday!= null &&!birthday.trim().isEmpty()) {
             try {
                 SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
                 formatter.setLenient(false); // Strict parsing
@@ -106,14 +109,16 @@ public class RegistrationAction extends ActionSupport {
 
         UserAuthDTO userAuthDTO = new UserAuthDTO();
         userAuthDTO.setEmail(email);
-        userAuthDTO.setPasswordHash(hashedPassword);
+        userAuthDTO.setPasswordHash(hashedPassword); // Corrected method call
         userAuthDTO.setUsername(name + " " + surname); // Mirror username from UserDTO
 
-        // Set created_at and last_login
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        userAuthDTO.setCreatedAt(now.format(formatter));
+        // Set created_at, updated_at, last_login, is_active, failed_login_attempts, locked_until
+        userAuthDTO.setCreatedAt(currentTimestamp);
+        userAuthDTO.setUpdatedAt(currentTimestamp); // Set updated_at to current time on creation
         userAuthDTO.setLastLogin(null); // Set to null on registration, updated on first login
+        userAuthDTO.setIsActive(1); // Default to active
+        userAuthDTO.setFailedLoginAttempts(0); // Default to zero failed attempts
+        userAuthDTO.setLockedUntil(null); // Default to not locked
 
         // 4. Database Interaction via DAOs
         UserDAO userDAO = new UserDAO();
@@ -128,11 +133,9 @@ public class RegistrationAction extends ActionSupport {
         }
 
         int userId = userDAO.insertUser(userDTO);
-
         if (userId!= -1) {
             userAuthDTO.setUserId(userId); // Link UserAuth to User
             boolean authSuccess = userAuthDAO.insertUserAuth(userAuthDTO);
-
             if (authSuccess) {
                 this.success = true;
                 this.message = "Registration successful!";

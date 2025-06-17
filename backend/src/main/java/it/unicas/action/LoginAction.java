@@ -7,18 +7,26 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.mindrot.jbcrypt.BCrypt; // For password verification
 
+import java.sql.Timestamp; // For Timestamp
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit; // For adding time to lockout
+
 public class LoginAction extends ActionSupport {
 
     private static final Logger logger = LogManager.getLogger(LoginAction.class);
 
     // Properties to bind form data from frontend
-    private String email; // Can be username or email depending on frontend implementation
+    private String email;
     private String password;
 
     // Response properties for frontend
     private boolean success;
     private String message;
-    private String username; // To return to frontend upon successful login
+    private String username;
+
+    // Constants for lockout policy
+    private static final int MAX_FAILED_ATTEMPTS = 3;
+    private static final int LOCKOUT_DURATION_MINUTES = 15;
 
     // Getters and Setters for form properties
     public String getEmail() { return email; }
@@ -56,9 +64,25 @@ public class LoginAction extends ActionSupport {
             return SUCCESS;
         }
 
-        String storedPasswordHash = userAuth.getPasswordHash();
+        // 3. Check Account Status (is_active, locked_until)
+        if (userAuth.getIsActive() == 0) {
+            this.success = false;
+            this.message = "Account is inactive. Please contact support.";
+            logger.warn("Login failed: Account for {} is inactive.", email);
+            return SUCCESS;
+        }
 
-        // 3. Password Verification with BCrypt
+        Timestamp lockedUntil = userAuth.getLockedUntil();
+        if (lockedUntil!= null && lockedUntil.after(Timestamp.valueOf(LocalDateTime.now()))) {
+            this.success = false;
+            this.message = "Account is locked. Please try again later.";
+            logger.warn("Login failed: Account for {} is locked until {}.", email, lockedUntil);
+            return SUCCESS;
+        }
+
+        String storedPasswordHash = userAuth.getPasswordHash(); // Corrected method call
+
+        // 4. Password Verification with BCrypt
         if (BCrypt.checkpw(password, storedPasswordHash)) {
             // Password matches
             this.success = true;
@@ -66,13 +90,25 @@ public class LoginAction extends ActionSupport {
             this.username = userAuth.getUsername(); // Set username for frontend
             logger.info("User {} logged in successfully.", email);
 
-            // 4. Update Last Login
-            userAuthDAO.updateLastLogin(email);
+            // 5. Update Last Login and Reset Failed Attempts
+            userAuthDAO.updateLastLogin(email); // This method will now reset failed_login_attempts and locked_until
         } else {
             // Password does not match
             this.success = false;
             this.message = "Invalid credentials."; // Generic message for security
             logger.warn("Login failed: Incorrect password for email/username: {}", email);
+
+            // 6. Handle Failed Login Attempts
+            int currentFailedAttempts = userAuth.getFailedLoginAttempts() + 1;
+            Timestamp newLockedUntil = null;
+
+            if (currentFailedAttempts >= MAX_FAILED_ATTEMPTS) {
+                newLockedUntil = Timestamp.valueOf(LocalDateTime.now().plus(LOCKOUT_DURATION_MINUTES, ChronoUnit.MINUTES));
+                this.message = "Too many failed login attempts. Account locked. Please try again later.";
+                logger.warn("Account for {} locked due to {} failed attempts.", email, currentFailedAttempts);
+            }
+
+            userAuthDAO.updateLoginAttemptsAndLockout(email, currentFailedAttempts, newLockedUntil);
         }
 
         return SUCCESS;

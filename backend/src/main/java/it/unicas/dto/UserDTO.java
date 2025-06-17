@@ -1,26 +1,26 @@
 package it.unicas.dto;
 
-import java.sql.Date; // Use java.sql.Date for database DATE types
+import java.sql.Date;
+import java.sql.Timestamp; // Import for new Timestamp fields
 
 public class UserDTO {
     private int userId;
-    private String username;
-    private String email;
-    private String weeklyIncome; // Assuming VARCHAR(45) as per DB
-    private String weeklyIncomeOther; // Assuming VARCHAR(45) as per DB
-    private String weeklyHomeCost; // Assuming VARCHAR(45) as per DB
-    private String notes; // Assuming VARCHAR(45) as per DB
-    private String gender; // Assuming VARCHAR(45) as per DB
-    private Date birthday; // Use java.sql.Date for DATE
-    private String address; // Assuming VARCHAR(100) as per DB
+    private String weeklyIncome;
+    private String weeklyIncomeOther;
+    private String weeklyHomeCost;
+    private String notes;
+    private String gender;
+    private Date birthday;
+    private String address;
+    private Timestamp createdAt; // New field
+    private Timestamp updatedAt; // New field
 
     // Constructor
     public UserDTO() {
     }
 
     public UserDTO(int userId, String weeklyIncome, String weeklyIncomeOther, String weeklyHomeCost,
-                   String notes, String gender, Date birthday, String address, String username,
-                   String email) {
+                   String notes, String gender, Date birthday, String address, Timestamp createdAt, Timestamp updatedAt) { // Updated constructor
         this.userId = userId;
         this.weeklyIncome = weeklyIncome;
         this.weeklyIncomeOther = weeklyIncomeOther;
@@ -29,8 +29,8 @@ public class UserDTO {
         this.gender = gender;
         this.birthday = birthday;
         this.address = address;
-        this.username = username;
-        this.email = email;
+        this.createdAt = createdAt; // Set new field
+        this.updatedAt = updatedAt; // Set new field
     }
 
     // Getters and Setters
@@ -98,29 +98,26 @@ public class UserDTO {
         this.address = address;
     }
 
-    public String getUsername() {
-        return username;
+    public Timestamp getCreatedAt() { // New getter
+        return createdAt;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setCreatedAt(Timestamp createdAt) { // New setter
+        this.createdAt = createdAt;
     }
 
-    public String getEmail() {
-        return email;
+    public Timestamp getUpdatedAt() { // New getter
+        return updatedAt;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setUpdatedAt(Timestamp updatedAt) { // New setter
+        this.updatedAt = updatedAt;
     }
-
 
     @Override
     public String toString() {
         return "User{" +
                 "userId=" + userId +
-                ", username='" + username + '\'' +
-                ", email='" + email + '\'' +
                 ", weeklyIncome='" + weeklyIncome + '\'' +
                 ", weeklyIncomeOther='" + weeklyIncomeOther + '\'' +
                 ", weeklyHomeCost='" + weeklyHomeCost + '\'' +
@@ -128,6 +125,8 @@ public class UserDTO {
                 ", gender='" + gender + '\'' +
                 ", birthday=" + birthday +
                 ", address='" + address + '\'' +
+                ", createdAt=" + createdAt + // New field
+                ", updatedAt=" + updatedAt + // New field
                 '}';
     }
 }

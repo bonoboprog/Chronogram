@@ -3,34 +3,43 @@ package it.unicas.dto;
 import java.sql.Timestamp;
 
 public class UserAuthDTO {
-    private int user_id;
+    private int userId;
     private String email;
-    private String password_hash;
-    private String created_at;
-    private Timestamp last_login;
+    private String passwordHash; // Renamed from passwd_hash
+    private Timestamp createdAt; // Changed from String to Timestamp
+    private Timestamp updatedAt; // New field
+    private Timestamp lastLogin;
     private String username;
+    private int isActive; // New field (TINYINT(1))
+    private int failedLoginAttempts; // New field
+    private Timestamp lockedUntil; // New field
 
     // Constructors
     public UserAuthDTO() {
     }
 
-    public UserAuthDTO(int user_id, String email, String password_hash, String created_at,
-                       Timestamp last_login, String username) {
-        this.user_id = user_id;
+    public UserAuthDTO(int userId, String email, String passwordHash, Timestamp createdAt,
+                       Timestamp updatedAt, Timestamp lastLogin, String username,
+                       int isActive, int failedLoginAttempts, Timestamp lockedUntil) {
+        this.userId = userId;
         this.email = email;
-        this.password_hash = password_hash;
-        this.created_at = created_at;
-        this.last_login = last_login;
+        this.passwordHash = passwordHash;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.lastLogin = lastLogin;
         this.username = username;
+        this.isActive = isActive;
+        this.failedLoginAttempts = failedLoginAttempts;
+        this.lockedUntil = lockedUntil;
     }
 
     // Getters and Setters
     public int getUserId() {
-        return user_id;
+        return userId;
     }
 
-    public void setUserId(int user_id) {
-        this.user_id = user_id;
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
     public String getEmail() {
@@ -41,28 +50,36 @@ public class UserAuthDTO {
         this.email = email;
     }
 
-    public String getPasswordHash() {
-        return password_hash;
+    public String getPasswordHash() { // Renamed getter
+        return passwordHash;
     }
 
-    public void setPasswordHash(String password_hash) {
-        this.password_hash = password_hash;
+    public void setPasswordHash(String passwordHash) { // Renamed setter
+        this.passwordHash = passwordHash;
     }
 
-    public String getCreatedAt() {
-        return created_at;
+    public Timestamp getCreatedAt() { // Changed return type
+        return createdAt;
     }
 
-    public void setCreatedAt(String created_at) {
-        this.created_at = created_at;
+    public void setCreatedAt(Timestamp createdAt) { // Changed parameter type
+        this.createdAt = createdAt;
+    }
+
+    public Timestamp getUpdatedAt() { // New getter
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Timestamp updatedAt) { // New setter
+        this.updatedAt = updatedAt;
     }
 
     public Timestamp getLastLogin() {
-        return last_login;
+        return lastLogin;
     }
 
-    public void setLastLogin(Timestamp last_login) {
-        this.last_login = last_login;
+    public void setLastLogin(Timestamp lastLogin) {
+        this.lastLogin = lastLogin;
     }
 
     public String getUsername() {
@@ -73,15 +90,43 @@ public class UserAuthDTO {
         this.username = username;
     }
 
+    public int getIsActive() { // New getter
+        return isActive;
+    }
+
+    public void setIsActive(int isActive) { // New setter
+        this.isActive = isActive;
+    }
+
+    public int getFailedLoginAttempts() { // New getter
+        return failedLoginAttempts;
+    }
+
+    public void setFailedLoginAttempts(int failedLoginAttempts) { // New setter
+        this.failedLoginAttempts = failedLoginAttempts;
+    }
+
+    public Timestamp getLockedUntil() { // New getter
+        return lockedUntil;
+    }
+
+    public void setLockedUntil(Timestamp lockedUntil) { // New setter
+        this.lockedUntil = lockedUntil;
+    }
+
     @Override
     public String toString() {
         return "UserAuthDTO{" +
-                "user_id=" + user_id +
+                "userId=" + userId +
                 ", email='" + email + '\'' +
-                ", password_hash='[PROTECTED]'" +
-                ", created_at='" + created_at + '\'' +
-                ", last_login=" + last_login +
+                ", passwordHash=''" + // Updated field name
+                ", createdAt=" + createdAt + // Updated field name
+                ", updatedAt=" + updatedAt + // New field
+                ", lastLogin=" + lastLogin +
                 ", username='" + username + '\'' +
+                ", isActive=" + isActive + // New field
+                ", failedLoginAttempts=" + failedLoginAttempts + // New field
+                ", lockedUntil=" + lockedUntil + // New field
                 '}';
     }
 }
