@@ -33,6 +33,11 @@
             <param name="root">success,message,username</param> </result>
         </action>
 
+        <action name="userExists" class="it.unicas.action.UsernameExistsAction">
+            <interceptor-ref name="json" />
+            <result type="json"/>
+        </action>
+
     </package>
 
 
