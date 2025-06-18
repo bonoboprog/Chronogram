@@ -1,2 +1,119 @@
-# .gitattributes
-*.sh text eol=lf
+###############################################################################
+# 🌐 GLOBAL DEFAULT (auto-detect)
+#   • Treat every file Git considers “text” as text
+#   • Convert CRLF → LF on commit; keep LF on checkout
+#   • Anything Git thinks is binary is left untouched
+###############################################################################
+* text=auto eol=lf
+
+###############################################################################
+#   WINDOWS-ONLY BATCH FILES
+#   • Batch scripts must remain CRLF for cmd.exe
+###############################################################################
+*.bat                 text eol=crlf
+
+###############################################################################
+# 🚀 FRONT-END – IONIC + VUE
+###############################################################################
+*.css                 text eol=lf
+*.htm                 text eol=lf
+*.html                text eol=lf
+*.js                  text eol=lf
+*.json                text eol=lf
+*.mjs                 text eol=lf
+*.ts                  text eol=lf
+*.vue                 text eol=lf diff=vue
+*.scss                text eol=lf
+*.sass                text eol=lf
+
+# Lock-files: keep noise out of diffs, disallow merge conflicts
+package-lock.json     text eol=lf -diff -merge
+yarn.lock             text eol=lf -diff -merge
+pnpm-lock.yaml        text eol=lf -diff -merge
+
+###############################################################################
+# 📱 ANDROID / CAPACITOR / GRADLE
+###############################################################################
+*.gradle              text eol=lf diff=java
+*.gradle.kts          text eol=lf diff=kotlin
+*.pro                 text eol=lf
+gradlew               text eol=lf
+*.properties          text eol=lf
+
+###############################################################################
+# ☕ BACK-END – JAVA / JSP / XML
+###############################################################################
+*.java                text eol=lf diff=java
+*.jsp                 text eol=lf
+*.jspf                text eol=lf
+*.jspx                text eol=lf
+*.kt                  text eol=lf diff=kotlin
+*.xml                 text eol=lf
+*.properties          text eol=lf
+*.sql                 text eol=lf
+
+###############################################################################
+# 🐳 DEV-OPS / DOCKER / CONFIG
+###############################################################################
+Dockerfile            text eol=lf
+docker-compose.yml    text eol=lf
+*.env                 text eol=lf
+*.conf                text eol=lf
+*.dockerignore        text eol=lf
+*.yaml                text eol=lf
+*.yml                 text eol=lf
+
+###############################################################################
+# 🧪 SHELL & CLI SCRIPTS
+###############################################################################
+*.sh                  text eol=lf
+*.bash                text eol=lf
+*.cmd                 text eol=crlf
+
+###############################################################################
+# 📄 DOCUMENTATION & META
+###############################################################################
+.gitattributes        text eol=lf
+.gitignore            text eol=lf
+LICENSE               text eol=lf
+README*               text eol=lf
+*.md                  text eol=lf
+*.txt                 text eol=lf
+
+###############################################################################
+# 🖼️ BINARY / MEDIA / ARCHIVE – NEVER TOUCH LINE ENDINGS
+###############################################################################
+# ====== Images ======
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.ico  binary
+# ====== Fonts ======
+*.eot  binary
+*.ttf  binary
+*.woff binary
+*.woff2 binary
+# ====== Video ======
+*.mp4  binary
+# ====== Archives / Jars / Libs ======
+*.jar  binary
+*.war  binary
+*.ear  binary
+*.class binary
+*.dll  binary
+*.so   binary
+*.zip  binary
+*.gz   binary
+*.tar  binary
+*.7z   binary
+*.jks  binary
+
+###############################################################################
+# 🔒 CATCH-ALL SAFETY NET
+#   Archive formats that sneak into a repo from time to time
+###############################################################################
+*.bz2  binary
+*.xz   binary
+*.iso  binary
