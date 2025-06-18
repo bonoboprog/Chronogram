@@ -1,197 +1,93 @@
 package it.unicas.dao;
 
 import it.unicas.dbutil.DBUtil;
-import it.unicas.dto.UserAuthDTO;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import it.unicas.dto.UserDTO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import java.time.LocalDateTime;
 
-public class UserAuthDAO {
+import java.sql.*;
 
-    private static final Logger logger = LogManager.getLogger(UserAuthDAO.class);
+public class UserDAO {
 
-    public int insertUserAuth(UserAuthDTO userAuth) {
-        String SQL = "INSERT INTO user_auth(email, password_hash, created_at, updated_at, last_login, username, is_active, failed_login_attempts, locked_until) " +
-                "VALUES(?,?,?,?,?,?,?,?,?)";
-        int generatedUserId = -1;
+    private static final Logger logger = LogManager.getLogger(UserDAO.class);
+
+    public int insertUser(UserDTO user, Connection conn) throws SQLException {
+        final String SQL = "INSERT INTO user(user_auth_user_id, weekly_income, weekly_income_other, weekly_home_cost, notes, gender, birthday, address, created_at, updated_at) " +
+                "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(SQL)) {
+            pstmt.setInt(1, user.getUserId());
+            pstmt.setString(2, user.getWeeklyIncome());
+            pstmt.setString(3, user.getWeeklyIncomeOther());
+            pstmt.setString(4, user.getWeeklyHomeCost());
+            pstmt.setString(5, user.getNotes());
+            pstmt.setString(6, user.getGender());
+            pstmt.setDate(7, user.getBirthday() != null ? new java.sql.Date(user.getBirthday().getTime()) : null);
+            pstmt.setString(8, user.getAddress());
+            pstmt.setTimestamp(9, user.getCreatedAt());
+            pstmt.setTimestamp(10, user.getUpdatedAt());
+
+            int affectedRows = pstmt.executeUpdate();
+            if (affectedRows > 0) {
+                logger.info("User inserted with user_id (from auth): {}", user.getUserId());
+                return user.getUserId();
+            } else {
+                logger.warn("No rows affected when inserting User.");
+            }
+        }
+
+        return -1;
+    }
+
+    public UserDTO getUserByUserId(int userId) {
+        final String SQL = "SELECT user_auth_user_id, weekly_income, weekly_income_other, weekly_home_cost, notes, gender, birthday, address, created_at, updated_at FROM user WHERE user_auth_user_id = ?";
+        UserDTO user = null;
 
         try (Connection conn = DBUtil.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SQL, PreparedStatement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement pstmt = conn.prepareStatement(SQL)) {
 
-            pstmt.setString(1, userAuth.getEmail());
-            pstmt.setString(2, userAuth.getPasswordHash());
-            pstmt.setTimestamp(3, userAuth.getCreatedAt());
-            pstmt.setTimestamp(4, userAuth.getUpdatedAt());
-            pstmt.setTimestamp(5, userAuth.getLastLogin());
-            pstmt.setString(6, userAuth.getUsername());
-            pstmt.setInt(7, userAuth.getIsActive());
-            pstmt.setInt(8, userAuth.getFailedLoginAttempts());
-            pstmt.setTimestamp(9, userAuth.getLockedUntil());
-
-            int affectedRows = pstmt.executeUpdate();
-
-            if (affectedRows > 0) {
-                try (ResultSet rs = pstmt.getGeneratedKeys()) {
-                    if (rs.next()) {
-                        generatedUserId = rs.getInt(1);
-                        userAuth.setUserId(generatedUserId); // Set it into DTO for later use
-                        logger.info("Inserted UserAuth with generated user_id: {}", generatedUserId);
-                    }
+            pstmt.setInt(1, userId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    user = new UserDTO();
+                    user.setUserId(rs.getInt("user_auth_user_id"));
+                    user.setWeeklyIncome(rs.getString("weekly_income"));
+                    user.setWeeklyIncomeOther(rs.getString("weekly_income_other"));
+                    user.setWeeklyHomeCost(rs.getString("weekly_home_cost"));
+                    user.setNotes(rs.getString("notes"));
+                    user.setGender(rs.getString("gender"));
+                    user.setBirthday(rs.getDate("birthday"));
+                    user.setAddress(rs.getString("address"));
+                    user.setCreatedAt(rs.getTimestamp("created_at"));
+                    user.setUpdatedAt(rs.getTimestamp("updated_at"));
                 }
-            } else {
-                logger.warn("No rows affected inserting UserAuth for email: {}", userAuth.getEmail());
             }
-
         } catch (SQLException e) {
-            logger.error("Error inserting UserAuth for email: " + userAuth.getEmail(), e);
+            logger.error("Error retrieving user by ID: {}", userId, e);
         }
 
-        return generatedUserId;
+        return user;
     }
 
 
 
-    public String getPasswordHashByEmail(String email) {
-        // Corrected column name in SQL query
-        String SQL = "SELECT password_hash FROM user_auth WHERE email =?";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-        String passwordHash = null;
-        try {
-            conn = DBUtil.getConnection();
-            pstmt = conn.prepareStatement(SQL);
-            pstmt.setString(1, email);
-            rs = pstmt.executeQuery();
 
-            if (rs.next()) {
-                passwordHash = rs.getString("password_hash"); // Corrected column name
-                logger.debug("Retrieved password hash for email: {}", email);
-            } else {
-                logger.warn("No user found with email: {}", email);
+    public boolean usernameExists(String username) {
+        final String SQL = "SELECT 1 FROM user_auth WHERE LOWER(username) = LOWER(?) LIMIT 1";
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(SQL)) {
+
+            ps.setString(1, username);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next(); // true se trovato
             }
+
         } catch (SQLException e) {
-            logger.error("Error retrieving password hash for email: " + email, e);
-        } finally {
-            DBUtil.closeConnection(conn);
-            try {
-                if (rs!= null) rs.close();
-                if (pstmt!= null) pstmt.close();
-            } catch (SQLException ex) {
-                logger.error("Error closing resources in getPasswordHashByEmail", ex);
-            }
+            logger.error("Error checking if username exists: {}", username, e);
+            return true; // prudenziale: in caso di errore, assumi già esistente
         }
-        return passwordHash;
     }
 
-    public UserAuthDTO getUserAuthByEmail(String email) {
-        // Updated SQL to select new fields and corrected password_hash
-        String SQL = "SELECT user_id, email, password_hash, created_at, updated_at, last_login, username, is_active, failed_login_attempts, locked_until " +
-                "FROM user_auth WHERE email =?";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-        UserAuthDTO userAuth = null;
-        try {
-            conn = DBUtil.getConnection();
-            pstmt = conn.prepareStatement(SQL);
-            pstmt.setString(1, email);
-            rs = pstmt.executeQuery();
 
-            if (rs.next()) {
-                userAuth = new UserAuthDTO(
-                        rs.getInt("user_id"),
-                        rs.getString("email"),
-                        rs.getString("password_hash"), // Corrected column name
-                        rs.getTimestamp("created_at"), // Changed to getTimestamp
-                        rs.getTimestamp("updated_at"), // New field
-                        rs.getTimestamp("last_login"),
-                        rs.getString("username"),
-                        rs.getInt("is_active"), // New field
-                        rs.getInt("failed_login_attempts"), // New field
-                        rs.getTimestamp("locked_until") // New field
-                );
-                logger.debug("Retrieved UserAuth for email: {}", email);
-            }
-        } catch (SQLException e) {
-            logger.error("Error retrieving UserAuth for email: " + email, e);
-        } finally {
-            DBUtil.closeConnection(conn);
-            try {
-                if (rs!= null) rs.close();
-                if (pstmt!= null) pstmt.close();
-            } catch (SQLException ex) {
-                logger.error("Error closing resources in getUserAuthByEmail", ex);
-            }
-        }
-        return userAuth;
-    }
-
-    public boolean updateLastLogin(String email) {
-        // Updated SQL to also set updated_at, reset failed_login_attempts and locked_until
-        String SQL = "UPDATE user_auth SET last_login =?, updated_at =?, failed_login_attempts = 0, locked_until = NULL WHERE email =?";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        boolean success = false;
-        try {
-            conn = DBUtil.getConnection();
-            pstmt = conn.prepareStatement(SQL);
-            Timestamp now = new Timestamp(System.currentTimeMillis());
-            pstmt.setTimestamp(1, now); // Set last_login
-            pstmt.setTimestamp(2, now); // Set updated_at to current time
-            pstmt.setString(3, email);
-
-            int affectedRows = pstmt.executeUpdate();
-            if (affectedRows > 0) {
-                success = true;
-                logger.info("Updated last_login, updated_at, and reset login attempts for email: {}", email);
-            }
-        } catch (SQLException e) {
-            logger.error("Error updating last_login for email: " + email, e);
-        } finally {
-            DBUtil.closeConnection(conn);
-            try {
-                if (pstmt!= null) pstmt.close();
-            } catch (SQLException ex) {
-                logger.error("Error closing PreparedStatement in updateLastLogin", ex);
-            }
-        }
-        return success;
-    }
-
-    public boolean updateLoginAttemptsAndLockout(String email, int failedAttempts, Timestamp lockedUntil) {
-        String SQL = "UPDATE user_auth SET failed_login_attempts =?, locked_until =?, updated_at =? WHERE email =?";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        boolean success = false;
-        try {
-            conn = DBUtil.getConnection();
-            pstmt = conn.prepareStatement(SQL);
-            pstmt.setInt(1, failedAttempts);
-            pstmt.setTimestamp(2, lockedUntil);
-            pstmt.setTimestamp(3, new Timestamp(System.currentTimeMillis())); // Update updated_at
-            pstmt.setString(4, email);
-
-            int affectedRows = pstmt.executeUpdate();
-            if (affectedRows > 0) {
-                success = true;
-                logger.info("Updated login attempts and lockout status for email: {}", email);
-            }
-        } catch (SQLException e) {
-            logger.error("Error updating login attempts for email: " + email, e);
-        } finally {
-            DBUtil.closeConnection(conn);
-            try {
-                if (pstmt!= null) pstmt.close();
-            } catch (SQLException ex) {
-                logger.error("Error closing PreparedStatement in updateLoginAttemptsAndLockout", ex);
-            }
-        }
-        return success;
-    }
 }
