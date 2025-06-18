@@ -127,6 +127,12 @@ const goBackToLogin = () => {
 
 const handleRegister = async () => {
   console.log('Attempting registration...');
+
+
+
+
+
+
   // Construct the payload to send to the backend
   const payload = {
     name: name.value,

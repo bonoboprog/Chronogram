@@ -15,48 +15,46 @@ public class UserAuthDAO {
 
     private static final Logger logger = LogManager.getLogger(UserAuthDAO.class);
 
-    public boolean insertUserAuth(UserAuthDTO userAuth) {
-        // Updated SQL to include new fields and corrected password_hash
-        String SQL = "INSERT INTO user_auth(user_id, email, password_hash, created_at, updated_at, last_login, username, is_active, failed_login_attempts, locked_until) " +
-                "VALUES(?,?,?,?,?,?,?,?,?,?)";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        boolean success = false;
-        try {
-            conn = DBUtil.getConnection();
-            pstmt = conn.prepareStatement(SQL);
+    public int insertUserAuth(UserAuthDTO userAuth) {
+        String SQL = "INSERT INTO user_auth(email, password_hash, created_at, updated_at, last_login, username, is_active, failed_login_attempts, locked_until) " +
+                "VALUES(?,?,?,?,?,?,?,?,?)";
+        int generatedUserId = -1;
 
-            // Set parameters for the new fields and corrected types
-            pstmt.setInt(1, userAuth.getUserId());
-            pstmt.setString(2, userAuth.getEmail());
-            pstmt.setString(3, userAuth.getPasswordHash()); // Corrected method call
-            pstmt.setTimestamp(4, userAuth.getCreatedAt()); // Changed to setTimestamp
-            pstmt.setTimestamp(5, userAuth.getUpdatedAt()); // New field
-            pstmt.setTimestamp(6, userAuth.getLastLogin());
-            pstmt.setString(7, userAuth.getUsername());
-            pstmt.setInt(8, userAuth.getIsActive()); // New field
-            pstmt.setInt(9, userAuth.getFailedLoginAttempts()); // New field
-            pstmt.setTimestamp(10, userAuth.getLockedUntil()); // New field
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(SQL, PreparedStatement.RETURN_GENERATED_KEYS)) {
+
+            pstmt.setString(1, userAuth.getEmail());
+            pstmt.setString(2, userAuth.getPasswordHash());
+            pstmt.setTimestamp(3, userAuth.getCreatedAt());
+            pstmt.setTimestamp(4, userAuth.getUpdatedAt());
+            pstmt.setTimestamp(5, userAuth.getLastLogin());
+            pstmt.setString(6, userAuth.getUsername());
+            pstmt.setInt(7, userAuth.getIsActive());
+            pstmt.setInt(8, userAuth.getFailedLoginAttempts());
+            pstmt.setTimestamp(9, userAuth.getLockedUntil());
 
             int affectedRows = pstmt.executeUpdate();
+
             if (affectedRows > 0) {
-                success = true;
-                logger.info("UserAuth record inserted for email: {}", userAuth.getEmail());
+                try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        generatedUserId = rs.getInt(1);
+                        userAuth.setUserId(generatedUserId); // Set it into DTO for later use
+                        logger.info("Inserted UserAuth with generated user_id: {}", generatedUserId);
+                    }
+                }
             } else {
-                logger.warn("No rows affected when inserting UserAuth for email: {}", userAuth.getEmail());
+                logger.warn("No rows affected inserting UserAuth for email: {}", userAuth.getEmail());
             }
+
         } catch (SQLException e) {
             logger.error("Error inserting UserAuth for email: " + userAuth.getEmail(), e);
-        } finally {
-            DBUtil.closeConnection(conn);
-            try {
-                if (pstmt!= null) pstmt.close();
-            } catch (SQLException ex) {
-                logger.error("Error closing PreparedStatement in insertUserAuth", ex);
-            }
         }
-        return success;
+
+        return generatedUserId;
     }
+
+
 
     public String getPasswordHashByEmail(String email) {
         // Corrected column name in SQL query

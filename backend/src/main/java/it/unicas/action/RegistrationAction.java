@@ -125,33 +125,37 @@ public class RegistrationAction extends ActionSupport {
         UserAuthDAO userAuthDAO = new UserAuthDAO();
 
         // Check for duplicate email/username before insertion
-        if (userAuthDAO.getUserAuthByEmail(email)!= null) {
+        if (userAuthDAO.getUserAuthByEmail(email) != null) {
             this.success = false;
             this.message = "Email already registered.";
             logger.warn("Registration failed: Email {} already exists.", email);
             return SUCCESS;
         }
 
-        int userId = userDAO.insertUser(userDTO);
-        if (userId!= -1) {
-            userAuthDTO.setUserId(userId); // Link UserAuth to User
-            boolean authSuccess = userAuthDAO.insertUserAuth(userAuthDTO);
-            if (authSuccess) {
+        // Step 1: Insert into user_auth and retrieve generated user_id
+        int userId = userAuthDAO.insertUserAuth(userAuthDTO);
+        if (userId != -1) {
+            userDTO.setUserId(userId); // Set FK
+            int insertedUserId = userDAO.insertUser(userDTO);
+
+            if (insertedUserId != -1) {
                 this.success = true;
                 this.message = "Registration successful!";
-                logger.info("User registered successfully with ID: {}", userId);
+                logger.info("User registered successfully with ID: {}", insertedUserId);
             } else {
                 this.success = false;
-                this.message = "Registration failed: Could not create authentication record.";
-                logger.error("Failed to create UserAuth record for user ID: {}", userId);
-                // Potentially roll back user insertion here if transaction management was implemented
+                this.message = "Registration failed: Could not create user profile.";
+                logger.error("UserAuth created but failed to insert UserDTO for user_id: {}", userId);
+                // Optional: rollback auth insert if you implement transaction management
             }
+
         } else {
             this.success = false;
-            this.message = "Registration failed: Could not create user profile.";
-            logger.error("Failed to insert UserDTO for email: {}", email);
+            this.message = "Registration failed: Could not create authentication record.";
+            logger.error("Failed to create UserAuth record for email: {}", email);
         }
 
-        return SUCCESS; // Struts2 convention for JSON result
+        return SUCCESS;
+
     }
 }
