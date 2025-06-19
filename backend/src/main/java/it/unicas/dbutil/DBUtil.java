@@ -12,7 +12,7 @@ public class DBUtil {
     private static final Logger logger = LogManager.getLogger(DBUtil.class);
 
     private static final String JDBC_URL_TEMPLATE =
-            "jdbc:mysql://%s:3306/%s?useSSL=false&serverTimezone=UTC";
+            "jdbc:mysql://%s:3306/%s?useSSL=false&serverTimezone=Europe/Rome";
 
     static {
         try {
