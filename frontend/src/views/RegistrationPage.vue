@@ -1,101 +1,107 @@
 <template>
   <ion-page>
     <ion-content :fullscreen="true" class="ion-padding">
-      <!-- Glassmorphism wrapper -->
       <div class="registration-container">
         <div class="registration-header">
           <ion-icon :icon="personAddOutline" class="header-icon" />
-          <h1>Registration</h1>
+          <h1 class="title-peach">Registration</h1>
         </div>
 
         <div class="form-wrapper">
           <ion-list lines="none">
             <!-- NAME -->
             <ion-item :class="errorClass('name')" class="glass-input">
+              <ion-icon slot="start" :icon="personOutline" class="input-icon" />
               <ion-input
-                v-model="form.name"
-                label="Name"
-                label-placement="floating"
-                type="text"
-                :aria-label="'Name'"
-                autocomplete="given-name"
+                  v-model="form.name"
+                  label="Name"
+                  label-placement="floating"
+                  type="text"
+                  :aria-label="'Name'"
+                  autocomplete="given-name"
               />
             </ion-item>
 
             <!-- SURNAME -->
             <ion-item :class="errorClass('surname')" class="glass-input">
+              <ion-icon slot="start" :icon="personOutline" class="input-icon" />
               <ion-input
-                v-model="form.surname"
-                label="Surname"
-                label-placement="floating"
-                type="text"
-                :aria-label="'Surname'"
-                autocomplete="family-name"
+                  v-model="form.surname"
+                  label="Surname"
+                  label-placement="floating"
+                  type="text"
+                  :aria-label="'Surname'"
+                  autocomplete="family-name"
               />
             </ion-item>
 
             <!-- PHONE -->
             <ion-item class="glass-input">
+              <ion-icon slot="start" :icon="callOutline" class="input-icon" />
               <ion-input
-                v-model="form.phone"
-                label="Phone"
-                label-placement="floating"
-                type="tel"
-                :aria-label="'Phone'"
-                autocomplete="tel"
+                  v-model="form.phone"
+                  label="Phone"
+                  label-placement="floating"
+                  type="tel"
+                  :aria-label="'Phone'"
+                  autocomplete="tel"
               />
             </ion-item>
 
             <!-- EMAIL -->
             <ion-item :class="errorClass('email')" class="glass-input">
+              <ion-icon slot="start" :icon="mailOutline" class="input-icon" />
               <ion-input
-                v-model="form.email"
-                label="Email"
-                label-placement="floating"
-                type="email"
-                :aria-label="'Email'"
-                autocomplete="username"
+                  v-model="form.email"
+                  label="Email"
+                  label-placement="floating"
+                  type="email"
+                  :aria-label="'Email'"
+                  autocomplete="username"
               />
             </ion-item>
 
             <!-- PASSWORD -->
             <ion-item :class="errorClass('password')" class="glass-input password-item">
+              <ion-icon slot="start" :icon="keyOutline" class="input-icon" />
               <ion-input
-                v-model="form.password"
-                :type="showPassword ? 'text' : 'password'"
-                label="Password"
-                label-placement="floating"
-                :aria-label="'Password'"
-                autocomplete="new-password"
+                  v-model="form.password"
+                  :type="showPassword ? 'text' : 'password'"
+                  label="Password"
+                  label-placement="floating"
+                  :aria-label="'Password'"
+                  autocomplete="new-password"
               />
               <ion-icon
-                slot="end"
-                :icon="showPassword ? eyeOffOutline : eyeOutline"
-                @click="showPassword = !showPassword"
-                class="toggle-eye"
+                  slot="end"
+                  :icon="showPassword ? eyeOffOutline : eyeOutline"
+                  @click="showPassword = !showPassword"
+                  class="toggle-eye"
               />
             </ion-item>
 
             <!-- BIRTHDAY -->
             <ion-item
-              class="glass-input"
-              :class="{ 'item-has-value': !!form.birthday }"
-              @click="openBirthdayModal"
-              :detail="false"
-              button
+                class="glass-input"
+                :class="{ 'item-has-value': !!form.birthday }"
+                @click="openBirthdayModal"
+                :detail="false"
+                button
             >
+              <ion-icon slot="start" :icon="calendarOutline" class="input-icon" />
               <ion-label position="floating">Birthday</ion-label>
               <div class="custom-input-value">{{ formattedBirthday }}</div>
             </ion-item>
 
             <!-- GENDER -->
             <ion-item class="glass-input">
+              <ion-icon slot="start" :icon="transgenderOutline" class="input-icon" />
               <ion-select
-                v-model="form.gender"
-                label="Gender"
-                label-placement="floating"
-                interface="popover"
-                :interface-options="{ cssClass: 'ion-dark catppuccin-select-overlay' }"
+                  v-model="form.gender"
+                  label="Gender"
+                  label-placement="floating"
+                  interface="popover"
+                  :interface-options="{ cssClass: 'ion-dark catppuccin-select-overlay' }"
               >
                 <ion-select-option value="male">Male</ion-select-option>
                 <ion-select-option value="female">Female</ion-select-option>
@@ -105,7 +111,7 @@
             </ion-item>
           </ion-list>
 
-          <!-- BUTTONS -->
+          <!-- BUTTONS (invariati) -->
           <ion-grid class="ion-margin-top">
             <ion-row class="ion-justify-content-around">
               <ion-col size="5">
@@ -113,10 +119,10 @@
               </ion-col>
               <ion-col size="5">
                 <ion-button
-                  expand="block"
-                  :disabled="isLoading || hasErrors"
-                  class="pill-button gradient-outline"
-                  @click="handleRegister"
+                    expand="block"
+                    :disabled="isLoading || hasErrors"
+                    class="pill-button gradient-outline"
+                    @click="handleRegister"
                 >
                   Register
                 </ion-button>
@@ -126,25 +132,22 @@
         </div>
       </div>
 
-      <!-- BIRTHDAY MODAL -->
+      <!-- BIRTHDAY MODAL, LOADING E TOAST (invariati) -->
       <ion-modal ref="birthdayModal" :keep-contents-mounted="true">
         <ion-datetime
-          presentation="date"
-          v-model="dateIso"
-          @ionChange="onBirthdaySelected"
-          class="ion-dark"
-          :interface-options="{ cssClass: 'catppuccin-datetime-overlay' }"
+            presentation="date"
+            v-model="dateIso"
+            @ionChange="onBirthdaySelected"
+            class="ion-dark"
+            :interface-options="{ cssClass: 'catppuccin-datetime-overlay' }"
         />
       </ion-modal>
-
-      <!-- LOADING -->
       <ion-loading :is-open="isLoading" message="Registering..." />
-
-      <!-- TOAST -->
       <ion-toast :is-open="toast.open" :message="toast.message" :color="toast.color" :duration="2500" @didDismiss="toast.open=false" />
     </ion-content>
   </ion-page>
 </template>
+
 
 <script setup lang="ts">
 import { reactive, ref, computed } from 'vue';
@@ -154,7 +157,11 @@ import {
   IonLabel, IonDatetime, IonModal, IonLoading, IonToast
 } from '@ionic/vue';
 import { useRouter } from 'vue-router';
-import { personAddOutline, eyeOutline, eyeOffOutline } from 'ionicons/icons';
+import {
+  personAddOutline, eyeOutline, eyeOffOutline,
+  callOutline, mailOutline, personOutline,
+  keyOutline, calendarOutline, transgenderOutline
+} from 'ionicons/icons';
 import dayjs from 'dayjs';
 import { api } from '@/composables/useApi';
 
@@ -268,4 +275,17 @@ ion-item.ion-invalid {
   padding: 8px 0;
   min-height: calc(1em + 16px);
 }
+
+/* Titolo "Registration" in peach */
+.title-peach {
+  color: var(--peach);
+}
+
+/* Icone all’interno degli input */
+ion-icon.input-icon {
+  color: var(--peach);
+  font-size: 1.2rem;
+  margin-right: 8px;
+}
+
 </style>
