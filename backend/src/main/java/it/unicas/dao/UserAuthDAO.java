@@ -76,4 +76,26 @@ public class UserAuthDAO {
 
         return null;
     }
+
+
+    public boolean usernameExists(String username) {
+        final String SQL = "SELECT 1 FROM user_auth WHERE LOWER(username) = LOWER(?) LIMIT 1";
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(SQL)) {Add commentMore actions
+
+            ps.setString(1, username);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next(); // true se trovato
+            }
+
+        } catch (SQLException e) {
+            logger.error("Error checking if username exists: {}", username, e);
+            return true; // prudenziale: in caso di errore, assumi già esistente
+        }
+    }
+
+
+
+    
 }
