@@ -255,10 +255,23 @@ async function handleRegister() {
   max-width: 450px;
   width: 100%;
 }
+
+/* Altezza e padding coerenti con login */
 ion-item.glass-input {
-  --inner-padding-top: 8px;
-  --inner-padding-bottom: 8px;
+  --inner-padding-top: 4px;
+  --inner-padding-bottom: 4px;
+  --min-height: 48px;
+  font-size: 0.95rem;
 }
+
+/* Altezza coerente anche per input/select interni */
+ion-input,
+ion-select {
+  font-size: 0.95rem;
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
 ion-item.ion-invalid {
   --highlight-color-focused: var(--ion-color-danger);
   --background: rgba(var(--ion-color-danger-rgb), 0.1);
@@ -297,5 +310,6 @@ ion-icon.toggle-eye {
 ion-select::part(icon) {
   color: var(--peach);
 }
+
 
 </style>
