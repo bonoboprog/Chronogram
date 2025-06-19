@@ -13,7 +13,7 @@ public class UserAuthDAO {
 
     public int insertUserAuth(UserAuthDTO userAuth, Connection conn) throws SQLException {
         final String SQL = "INSERT INTO user_auth(email, password_hash, created_at, updated_at, last_login, username, is_active, failed_login_attempts, locked_until) " +
-                           "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement pstmt = conn.prepareStatement(SQL, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, userAuth.getEmail());
@@ -39,47 +39,87 @@ public class UserAuthDAO {
             } else {
                 logger.warn("No rows affected when inserting UserAuth for email: {}", userAuth.getEmail());
             }
+
         } catch (SQLException e) {
             logger.error("Error inserting UserAuth for email: {}", userAuth.getEmail(), e);
-            throw e; // propagate to allow rollback
+            throw e; // propagate to calling transaction
         }
 
         return -1;
     }
 
-    public UserAuthDTO getUserAuthByEmail(String email) {
+    public UserAuthDTO getUserAuthByEmail(String email, Connection conn) throws SQLException {
         final String SQL = "SELECT user_id, email, password_hash, created_at, updated_at, last_login, username, is_active, failed_login_attempts, locked_until " +
-                           "FROM user_auth WHERE LOWER(email) = LOWER(?)";
+                "FROM user_auth WHERE LOWER(email) = LOWER(?)";
 
-        try (Connection conn = it.unicas.dbutil.DBUtil.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(SQL)) {
-
+        try (PreparedStatement pstmt = conn.prepareStatement(SQL)) {
             pstmt.setString(1, email);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     return new UserAuthDTO(
-                        rs.getInt("user_id"),
-                        rs.getString("email"),
-                        rs.getString("password_hash"),
-                        rs.getTimestamp("created_at"),
-                        rs.getTimestamp("updated_at"),
-                        rs.getTimestamp("last_login"),
-                        rs.getString("username"),
-                        rs.getInt("is_active"),
-                        rs.getInt("failed_login_attempts"),
-                        rs.getTimestamp("locked_until")
+                            rs.getInt("user_id"),
+                            rs.getString("email"),
+                            rs.getString("password_hash"),
+                            rs.getTimestamp("created_at"),
+                            rs.getTimestamp("updated_at"),
+                            rs.getTimestamp("last_login"),
+                            rs.getString("username"),
+                            rs.getInt("is_active"),
+                            rs.getInt("failed_login_attempts"),
+                            rs.getTimestamp("locked_until")
                     );
                 }
             }
         } catch (SQLException e) {
             logger.error("Error retrieving UserAuth for email: {}", email, e);
+            throw e;
         }
 
         return null;
     }
 
+    public boolean updateLastLogin(String email, Connection conn) throws SQLException {
+        final String SQL = "UPDATE user_auth SET last_login = ?, updated_at = ?, failed_login_attempts = 0, locked_until = NULL WHERE LOWER(email) = LOWER(?)";
 
-    public boolean usernameExists(String username) {
+        Timestamp now = Timestamp.valueOf(java.time.LocalDateTime.now());
+
+        try (PreparedStatement pstmt = conn.prepareStatement(SQL)) {
+            pstmt.setTimestamp(1, now);
+            pstmt.setTimestamp(2, now);
+            pstmt.setString(3, email);
+
+            int affectedRows = pstmt.executeUpdate();
+            return affectedRows > 0;
+
+        } catch (SQLException e) {
+            logger.error("Error updating last_login for email: {}", email, e);
+            throw e;
+        }
+    }
+
+    public boolean updateLoginAttemptsAndLockout(String email, int failedAttempts, Timestamp lockedUntil, Connection conn) throws SQLException {
+        final String SQL = "UPDATE user_auth SET failed_login_attempts = ?, locked_until = ?, updated_at = ? WHERE LOWER(email) = LOWER(?)";
+
+        Timestamp now = Timestamp.valueOf(java.time.LocalDateTime.now());
+
+        try (PreparedStatement pstmt = conn.prepareStatement(SQL)) {
+            pstmt.setInt(1, failedAttempts);
+            pstmt.setTimestamp(2, lockedUntil);
+            pstmt.setTimestamp(3, now);
+            pstmt.setString(4, email);
+
+            int affectedRows = pstmt.executeUpdate();
+            return affectedRows > 0;
+
+        } catch (SQLException e) {
+            logger.error("Error updating login attempts for email: {}", email, e);
+            throw e;
+        }
+    }
+
+
+
+        public boolean usernameExists(String username) {
         final String SQL = "SELECT 1 FROM user_auth WHERE LOWER(username) = LOWER(?) LIMIT 1";
 
         try (Connection conn = DBUtil.getConnection();
@@ -93,8 +133,4 @@ public class UserAuthDAO {
             return true; // fallback prudente: se errore, assume già preso
         }
     }
-
-
-
-    
 }
