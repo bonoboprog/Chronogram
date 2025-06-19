@@ -8,7 +8,7 @@ import it.unicas.dto.UserDTO;
 import it.unicas.dto.UserAuthDTO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.sql.*;
 import java.text.SimpleDateFormat;
@@ -56,7 +56,8 @@ public class RegistrationAction extends ActionSupport {
 
         UserAuthDTO authDTO = new UserAuthDTO();
         authDTO.setEmail(email);
-        authDTO.setPasswordHash(BCrypt.hashpw(password, BCrypt.gensalt()));
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        authDTO.setPasswordHash(encoder.encode(password));
         authDTO.setUsername(name + " " + surname);
         authDTO.setCreatedAt(now);
         authDTO.setUpdatedAt(now);
