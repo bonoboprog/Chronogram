@@ -1,48 +1,101 @@
 <template>
   <ion-page>
     <ion-content :fullscreen="true" class="ion-padding">
+      <!-- Glassmorphism wrapper -->
       <div class="registration-container">
-
         <div class="registration-header">
-          <ion-icon :icon="personAddOutline" class="header-icon"></ion-icon>
+          <ion-icon :icon="personAddOutline" class="header-icon" />
           <h1>Registration</h1>
         </div>
 
         <div class="form-wrapper">
           <ion-list lines="none">
+            <!-- NAME -->
+            <ion-item :class="errorClass('name')" class="glass-input">
+              <ion-input
+                v-model="form.name"
+                label="Name"
+                label-placement="floating"
+                type="text"
+                :aria-label="'Name'"
+                autocomplete="given-name"
+              />
+            </ion-item>
 
-            <ion-item class="glass-input">
-              <ion-input label="Name" label-placement="floating" autocomplete="given-name" type="text"></ion-input>
+            <!-- SURNAME -->
+            <ion-item :class="errorClass('surname')" class="glass-input">
+              <ion-input
+                v-model="form.surname"
+                label="Surname"
+                label-placement="floating"
+                type="text"
+                :aria-label="'Surname'"
+                autocomplete="family-name"
+              />
             </ion-item>
+
+            <!-- PHONE -->
             <ion-item class="glass-input">
-              <ion-input label="Surname" label-placement="floating" autocomplete="family-name" type="text"></ion-input>
+              <ion-input
+                v-model="form.phone"
+                label="Phone"
+                label-placement="floating"
+                type="tel"
+                :aria-label="'Phone'"
+                autocomplete="tel"
+              />
             </ion-item>
-            <ion-item class="glass-input">
-              <ion-input label="Phone" label-placement="floating" autocomplete="tel" type="tel"></ion-input>
+
+            <!-- EMAIL -->
+            <ion-item :class="errorClass('email')" class="glass-input">
+              <ion-input
+                v-model="form.email"
+                label="Email"
+                label-placement="floating"
+                type="email"
+                :aria-label="'Email'"
+                autocomplete="username"
+              />
             </ion-item>
-            <ion-item class="glass-input">
-              <ion-input label="Email" label-placement="floating" autocomplete="email" type="email"></ion-input>
+
+            <!-- PASSWORD -->
+            <ion-item :class="errorClass('password')" class="glass-input password-item">
+              <ion-input
+                v-model="form.password"
+                :type="showPassword ? 'text' : 'password'"
+                label="Password"
+                label-placement="floating"
+                :aria-label="'Password'"
+                autocomplete="new-password"
+              />
+              <ion-icon
+                slot="end"
+                :icon="showPassword ? eyeOffOutline : eyeOutline"
+                @click="showPassword = !showPassword"
+                class="toggle-eye"
+              />
             </ion-item>
-            <ion-item class="glass-input">
-              <ion-input label="Password" label-placement="floating" type="password"></ion-input>
-            </ion-item>
+
+            <!-- BIRTHDAY -->
             <ion-item
-                class="glass-input"
-                :class="{ 'item-has-value': !!selectedBirthday }"
-                @click="openBirthdayModal"
-                :detail="false"
-                button
+              class="glass-input"
+              :class="{ 'item-has-value': !!form.birthday }"
+              @click="openBirthdayModal"
+              :detail="false"
+              button
             >
               <ion-label position="floating">Birthday</ion-label>
               <div class="custom-input-value">{{ formattedBirthday }}</div>
             </ion-item>
 
+            <!-- GENDER -->
             <ion-item class="glass-input">
               <ion-select
-                  label="Gender"
-                  label-placement="floating"
-                  interface="popover"
-                  :interface-options="{ cssClass: 'ion-dark catppuccin-select-overlay' }"
+                v-model="form.gender"
+                label="Gender"
+                label-placement="floating"
+                interface="popover"
+                :interface-options="{ cssClass: 'ion-dark catppuccin-select-overlay' }"
               >
                 <ion-select-option value="male">Male</ion-select-option>
                 <ion-select-option value="female">Female</ion-select-option>
@@ -50,83 +103,137 @@
                 <ion-select-option value="not_specified">Prefer not to say</ion-select-option>
               </ion-select>
             </ion-item>
-
           </ion-list>
 
+          <!-- BUTTONS -->
           <ion-grid class="ion-margin-top">
             <ion-row class="ion-justify-content-around">
               <ion-col size="5">
-                <ion-button @click="goBackToLogin" expand="block" class="pill-button gradient-outline">Cancel</ion-button>
+                <ion-button expand="block" class="pill-button gradient-outline" @click="router.back()">Cancel</ion-button>
               </ion-col>
               <ion-col size="5">
-                <ion-button @click="handleRegister" expand="block" class="pill-button gradient-outline">Register</ion-button>
+                <ion-button
+                  expand="block"
+                  :disabled="isLoading || hasErrors"
+                  class="pill-button gradient-outline"
+                  @click="handleRegister"
+                >
+                  Register
+                </ion-button>
               </ion-col>
             </ion-row>
           </ion-grid>
         </div>
       </div>
 
+      <!-- BIRTHDAY MODAL -->
       <ion-modal ref="birthdayModal" :keep-contents-mounted="true">
         <ion-datetime
-            id="birthday-datetime"
-            presentation="date"
-            v-model="selectedBirthday"
-            @ionChange="birthdayModal?.dismiss()"
-            class="ion-dark"
-            :interface-options="{
-              cssClass: 'catppuccin-datetime-overlay'
-            }"
-        ></ion-datetime>
+          presentation="date"
+          v-model="dateIso"
+          @ionChange="onBirthdaySelected"
+          class="ion-dark"
+          :interface-options="{ cssClass: 'catppuccin-datetime-overlay' }"
+        />
       </ion-modal>
 
+      <!-- LOADING -->
+      <ion-loading :is-open="isLoading" message="Registering..." />
+
+      <!-- TOAST -->
+      <ion-toast :is-open="toast.open" :message="toast.message" :color="toast.color" :duration="2500" @didDismiss="toast.open=false" />
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { reactive, ref, computed } from 'vue';
 import {
   IonPage, IonContent, IonList, IonItem, IonInput, IonIcon,
   IonButton, IonGrid, IonRow, IonCol, IonSelect, IonSelectOption,
-  IonLabel, IonDatetime, IonModal
+  IonLabel, IonDatetime, IonModal, IonLoading, IonToast
 } from '@ionic/vue';
 import { useRouter } from 'vue-router';
-import { personAddOutline } from 'ionicons/icons';
+import { personAddOutline, eyeOutline, eyeOffOutline } from 'ionicons/icons';
+import dayjs from 'dayjs';
+import { api } from '@/composables/useApi';
 
-const router = useRouter();
+/* ---------- state ---------- */
+const router        = useRouter();
 const birthdayModal = ref<InstanceType<typeof IonModal>>();
-const selectedBirthday = ref<string>();
+const isLoading     = ref(false);
+const showPassword  = ref(false);
+const dateIso       = ref<string>();
 
-const openBirthdayModal = () => {
-  birthdayModal.value?.$el.present();
-};
-
-const formattedBirthday = computed(() => {
-  if (!selectedBirthday.value) return '';
-  return new Date(selectedBirthday.value).toLocaleDateString('it-IT', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  });
+const form = reactive({
+  name: '', surname: '', phone: '', email: '', password: '',
+  birthday: '', gender: '',
 });
 
-const goBackToLogin = () => {
-  router.back();
+const toast = reactive({ open: false, message: '', color: 'danger' as const });
+
+/* ---------- computed ---------- */
+const formattedBirthday = computed(() => form.birthday);
+const hasErrors = computed(() =>
+    !form.name.trim()       ||
+    !form.surname.trim()    ||
+    !isValidEmail(form.email) ||
+    !isStrongPassword(form.password)
+);
+
+/* ---------- helpers ---------- */
+const isValidEmail    = (e:string) => /^[\w-.]+@([\w-]+\.)+[\w-]{2,}$/.test(e);
+const isStrongPassword= (p:string) => /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(p);
+const errorClass = (f:keyof typeof form)=>({
+  'ion-invalid':
+      (f==='email'    && form.email    && !isValidEmail(form.email))   ||
+      (f==='password' && form.password && !isStrongPassword(form.password)) ||
+      (!(form[f] as string).trim() && (f==='name'||f==='surname'))
+});
+
+const openBirthdayModal = () => birthdayModal.value?.$el.present();
+const onBirthdaySelected = () => {
+  if (dateIso.value) form.birthday = dayjs(dateIso.value).format('DD-MM-YYYY');
+  birthdayModal.value?.$el.dismiss();
+};
+const showToast = (msg:string,col:'success'|'danger')=>{
+  toast.message=msg; toast.color=col; toast.open=true;
 };
 
-const handleRegister = () => {
-  console.log('Tentativo di registrazione...');
-};
+/* ---------- registration ---------- */
+async function handleRegister() {
+  if (hasErrors.value) {
+    showToast('Please correct the highlighted fields.', 'danger');
+    return;
+  }
+
+  isLoading.value = true;
+  try {
+    const { data } = await api.post('/register', { ...form });
+    // 👉 data ora è direttamente { success, message }
+
+    if (!data?.success) {
+      throw new Error(data?.message ?? 'Unknown error');
+    }
+
+    showToast(data.message || 'Registered successfully!', 'success');
+    await router.push({ name: 'Login' });           // <— redirect
+  } catch (err: any) {
+    showToast(err.message || 'Unexpected error', 'danger');
+  } finally {
+    isLoading.value = false;
+  }
+}
+
 </script>
 
+
 <style scoped>
-/* I tuoi stili scoped rimangono invariati */
 .registration-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 2rem;
-  padding-bottom: 2rem;
+  padding: 2rem 0;
 }
 .registration-header {
   text-align: center;
@@ -137,10 +244,6 @@ const handleRegister = () => {
   color: var(--mauve);
   margin-bottom: 0.5rem;
 }
-h1 {
-  font-weight: 600;
-  font-size: 1.8rem;
-}
 .form-wrapper {
   max-width: 450px;
   width: 100%;
@@ -149,16 +252,20 @@ ion-item.glass-input {
   --inner-padding-top: 8px;
   --inner-padding-bottom: 8px;
 }
-ion-select::part(text) {
-  color: var(--ion-text-color);
+ion-item.ion-invalid {
+  --highlight-color-focused: var(--ion-color-danger);
+  --background: rgba(var(--ion-color-danger-rgb), 0.1);
+}
+.password-item ion-icon.toggle-eye {
+  cursor: pointer;
+  font-size: 1.2rem;
 }
 .custom-input-value {
   width: 100%;
   text-align: start;
   font-size: inherit;
   color: var(--ion-text-color);
-  padding-top: 8px;
-  padding-bottom: 8px;
+  padding: 8px 0;
   min-height: calc(1em + 16px);
 }
 </style>

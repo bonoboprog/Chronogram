@@ -16,6 +16,7 @@
                   placeholder="Insert your username"
                   type="email"
                   autocomplete="username"
+                  v-model="email"
               ></ion-input>
             </ion-item>
 
@@ -27,6 +28,7 @@
                   type="password"
                   placeholder="Insert your password"
                   autocomplete="current-password"
+                  v-model="password"
               ></ion-input>
             </ion-item>
           </ion-list>
@@ -52,39 +54,60 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'; // Import ref
 import {
   IonPage, IonContent, IonList, IonItem, IonInput, IonIcon,
   IonButton, IonGrid, IonRow, IonCol,
 } from '@ionic/vue';
 import { personOutline, keyOutline } from 'ionicons/icons';
-// 🔥 STEP 1: Importa useRouter per la navigazione
 import { useRouter } from 'vue-router';
+import axios from 'axios'; // Import axios
 
-// 🔥 STEP 2: Ottieni l'istanza del router
 const router = useRouter();
 
-// 🔥 STEP 3: Definisci le funzioni che verranno chiamate al click dei bottoni
+// Define reactive variables for form inputs
+const email = ref('');
+const password = ref('');
 
 const goToRegistration = () => {
-  // Usa il nome 'Register' che abbiamo definito nel file router/index.ts
   router.push({ name: 'Register' });
 };
 
-const handleLogin = () => {
-  // Qui andrà la tua logica di autenticazione
-  console.log('Tentativo di login...');
-  // Esempio di navigazione DOPO un login riuscito:
-  // router.push({ name: 'Home' });
+const handleLogin = async () => {
+  console.log('Attempting login...');
+  const payload = {
+    email: email.value,
+    password: password.value
+  };
+
+  console.log('Sending login payload:', payload);
+
+  try {
+    const API = import.meta.env.VITE_API_BASE_URL; // Ensure this is correctly configured
+    const response = await axios.post(`${API}/login`, payload, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    console.log('Backend login response:', response.data);
+    if (response.data.success) {
+      alert(`Login successful! Welcome, ${response.data.username}`);
+      router.push({ name: 'Home' }); // Redirect to home on success
+    } else {
+      alert(`Login failed: ${response.data.message}`);
+    }
+  } catch (error) {
+    console.error('Error during login:', error);
+    alert('An error occurred during login. Please try again.');
+  }
 };
 
 const handleForgotPassword = () => {
-  // Qui andrà la logica per la pagina di recupero password
-  console.log('Recupero password cliccato...');
-  // Potresti navigare a una pagina /forgot-password
+  console.log('Forgot password clicked...');
 };
 </script>
 
 <style scoped>
+
 /* Il tuo stile rimane invariato */
 .login-container {
   display: flex;

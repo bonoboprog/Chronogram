@@ -12,14 +12,15 @@ public class DBUtil {
     private static final Logger logger = LogManager.getLogger(DBUtil.class);
 
     private static final String JDBC_URL_TEMPLATE =
-            "jdbc:mysql://%s:3306/%s?useSSL=false&serverTimezone=UTC";
+            "jdbc:mysql://%s:3306/%s?useSSL=false&serverTimezone=Europe/Rome";
 
     static {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
+            logger.info("MySQL JDBC Driver loaded successfully.");
         } catch (ClassNotFoundException e) {
             logger.fatal("MySQL JDBC driver not found in classpath", e);
-            throw new RuntimeException(e);
+            throw new RuntimeException("Cannot load JDBC driver", e);
         }
     }
 

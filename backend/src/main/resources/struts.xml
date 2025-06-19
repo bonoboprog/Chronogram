@@ -1,28 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE struts PUBLIC
-        "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
-        "http://struts.apache.org/dtds/struts-2.5.dtd">
+  "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
+  "http://struts.apache.org/dtds/struts-2.5.dtd">
 
 <struts>
+  <package name="default" namespace="/" extends="json-default">
 
-    <!-- 🔧 Configuration  del pacchetto principale -->
-    <package name="default" namespace="/" extends="json-default">
+    <!-- 🌐 LLM Prompt -->
+    <action name="llmPrompt" class="it.unicas.action.LLMAction">
+      <interceptor-ref name="json" />
+      <result type="json">
+        <param name="root">data</param>
+      </result>
+    </action>
 
-        <!-- 🌐 Azione per gestire richieste LLM -->
-        <action name="llmPrompt" class="it.unicas.action.LLMAction">
-            <interceptor-ref name="json" />
-            <result type="json">
-                <param name="root">data</param>
-            </result>
-        </action>
+    <!-- 🧾 Registration: returns wrapped response DTO -->
+    <action name="register" class="it.unicas.action.RegistrationAction">
+      <interceptor-ref name="json" />
+      <result type="json">
+        <param name="root">registrationResponse</param>
+      </result>
+    </action>
 
-        <!-- 🔁 Altre action future possono essere aggiunte qui -->
-        <!--
-        <action name="anotherAction" class="it.unicas.action.AnotherAction">
-            <result type="json"/>
-        </action>
-        -->
-    </package>
+    <!-- 🔐 Login -->
+    <action name="login" class="it.unicas.action.LoginAction">
+      <interceptor-ref name="json" />
+      <result type="json">
+        <param name="root">success,message,username</param>
+      </result>
+    </action>
 
+    <!-- 👤 Username check -->
+    <action name="userExists" class="it.unicas.action.UsernameExistsAction">
+      <interceptor-ref name="json" />
+      <result type="json"/>
+    </action>
 
+  </package>
 </struts>
