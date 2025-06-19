@@ -15,143 +15,137 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 
 /**
- * RegistrationAction now performs user_auth and user inserts in a single transaction.
- * If any step fails, the whole operation is rolled back, ensuring database consistency.
+ * Handles user registration in a single DB transaction.
+ * Exposes a minimal JSON response (success + message) through RegistrationResponse.
  */
 public class RegistrationAction extends ActionSupport {
 
     private static final Logger logger = LogManager.getLogger(RegistrationAction.class);
 
-    // Form-bound properties
+    /* --------- form-bound fields (set by Struts JSON interceptor) --------- */
     private String name;
     private String surname;
     private String phone;
     private String email;
     private String password;
-    private String birthday; // Expected format: dd-MM-yyyy
+    private String birthday;   // dd-MM-yyyy
     private String gender;
 
-    // Response to frontend
-    private boolean success;
-    private String message;
+    /* --------- response wrapper exposed to the frontend --------- */
+    private RegistrationResponse registrationResponse;
+    public RegistrationResponse getRegistrationResponse() {
+        return registrationResponse;
+    }
 
-    // === Getters & Setters ===
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public String getSurname() { return surname; }
-    public void setSurname(String surname) { this.surname = surname; }
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
-    public String getBirthday() { return birthday; }
-    public void setBirthday(String birthday) { this.birthday = birthday; }
-    public String getGender() { return gender; }
-    public void setGender(String gender) { this.gender = gender; }
-    public boolean isSuccess() { return success; }
-    public String getMessage() { return message; }
-
+    /* --------- execute --------- */
     @Override
     public String execute() {
-        logger.info("Registration attempt for email: {}", email);
+        logger.info("Registration attempt for {}", email);
 
-        // 1. Basic validation
+        /* 1. basic validation */
         if (isBlank(email) || isBlank(password) || isBlank(name) || isBlank(surname)) {
-            fail("All required fields must be filled.");
-            logger.warn("Validation failed: missing required fields");
+            setFailure("All required fields must be filled.");
             return SUCCESS;
         }
 
         UserAuthDAO authDAO = new UserAuthDAO();
-        UserDAO userDAO = new UserDAO();
+        UserDAO      userDAO = new UserDAO();
 
-        // 2. Prepare DTOs
-        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+        /* 2. DTO preparation */
         Timestamp now = Timestamp.valueOf(LocalDateTime.now());
 
         UserAuthDTO authDTO = new UserAuthDTO();
         authDTO.setEmail(email);
-        authDTO.setPasswordHash(hashedPassword);
+        authDTO.setPasswordHash(BCrypt.hashpw(password, BCrypt.gensalt()));
         authDTO.setUsername(name + " " + surname);
         authDTO.setCreatedAt(now);
         authDTO.setUpdatedAt(now);
-        authDTO.setLastLogin(null);
         authDTO.setIsActive(1);
-        authDTO.setFailedLoginAttempts(0);
-        authDTO.setLockedUntil(null);
 
         UserDTO userDTO = new UserDTO();
         userDTO.setGender(gender);
-        userDTO.setAddress(phone); // Reuse phone as address
-        userDTO.setNotes("");
+        userDTO.setAddress(phone);          // (placeholder)
         userDTO.setBirthday(parseBirthday(birthday));
         userDTO.setCreatedAt(now);
         userDTO.setUpdatedAt(now);
 
-        // 3. Transactional execution
+        /* 3. transactional block */
         try (Connection conn = DBUtil.getConnection()) {
             conn.setAutoCommit(false);
 
-            // 🔎 Email uniqueness check inside the transaction
+            // uniqueness check inside the Tx
             if (authDAO.getUserAuthByEmail(email, conn) != null) {
-                fail("Email already registered.");
-                logger.warn("Registration failed: email {} already exists", email);
+                setFailure("Email already registered.");
                 return SUCCESS;
             }
 
             int userId = authDAO.insertUserAuth(authDTO, conn);
             if (userId == -1) {
                 conn.rollback();
-                fail("Registration failed: could not create authentication record.");
+                setFailure("Could not create authentication record.");
                 return SUCCESS;
             }
 
             userDTO.setUserId(userId);
-            int uid = userDAO.insertUser(userDTO, conn);
-            if (uid == -1) {
+            if (userDAO.insertUser(userDTO, conn) == -1) {
                 conn.rollback();
-                fail("Registration failed: could not create user profile.");
-                logger.error("UserAuth inserted but UserDTO failed (user_id={})", userId);
+                setFailure("Could not create user profile.");
                 return SUCCESS;
             }
 
             conn.commit();
-            this.success = true;
-            this.message = "Registration successful!";
-            logger.info("User registered successfully (user_id={})", uid);
+            setSuccess("Registration successful!");
+            logger.info("User {} registered (user_id={})", email, userId);
 
-        } catch (SQLException e) {
-            this.success = false;
-            this.message = "Registration failed due to a system error.";
-            logger.error("Database error during registration", e);
+        } catch (SQLException ex) {
+            logger.error("DB error during registration", ex);
+            setFailure("Registration failed due to a system error.");
         }
 
         return SUCCESS;
     }
 
-    // === Helpers ===
-    private void fail(String msg) {
-        this.success = false;
-        this.message = msg;
+    /* --------- helper methods --------- */
+    private void setSuccess(String msg) {
+        registrationResponse = new RegistrationResponse(true, msg);
     }
-
-    private boolean isBlank(String s) {
-        return s == null || s.trim().isEmpty();
+    private void setFailure(String msg) {
+        registrationResponse = new RegistrationResponse(false, msg);
+        logger.warn(msg);
     }
+    private boolean isBlank(String s) { return s == null || s.trim().isEmpty(); }
 
-    private Date parseBirthday(String birthdayStr) {
-        if (isBlank(birthdayStr)) return null;
+    private Date parseBirthday(String str) {
+        if (isBlank(str)) return null;
         try {
             SimpleDateFormat fmt = new SimpleDateFormat("dd-MM-yyyy");
             fmt.setLenient(false);
-            java.util.Date utilDate = fmt.parse(birthdayStr);
-            logger.debug("Birthday parsed: {}", utilDate);
-            return new Date(utilDate.getTime());
-        } catch (Exception ex) {
-            logger.warn("Invalid birthday format: {}", birthdayStr);
+            return new Date(fmt.parse(str).getTime());
+        } catch (Exception e) {
+            logger.warn("Invalid birthday '{}'", str);
             return null;
         }
     }
+
+    /* --------- inner DTO exposed as JSON --------- */
+    public static class RegistrationResponse {
+        private final boolean success;
+        private final String  message;
+
+        public RegistrationResponse(boolean success, String message) {
+            this.success = success;
+            this.message = message;
+        }
+        public boolean isSuccess() { return success; }
+        public String getMessage() { return message; }
+    }
+
+    /* --------- setters required by Struts2  --------- */
+    public void setName(String name)         { this.name = name; }
+    public void setSurname(String surname)   { this.surname = surname; }
+    public void setPhone(String phone)       { this.phone = phone; }
+    public void setEmail(String email)       { this.email = email; }
+    public void setPassword(String password) { this.password = password; }
+    public void setBirthday(String birthday) { this.birthday = birthday; }
+    public void setGender(String gender)     { this.gender = gender; }
 }
