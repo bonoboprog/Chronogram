@@ -238,8 +238,17 @@ async function handleRegister() {
 
   isLoading.value = true;
   try {
-    const { data } = await api.post('/register', { ...form });
+    const response = await api.post('/register', { ...form });
+    console.log('🟢 Response:', response);
+
+    const data = response.data;
+
+    if (!data || typeof data !== 'object') {
+      throw new Error('Invalid server response');
+    }
+
     if (!data.success) throw new Error(data.message);
+
     showToast('Registered successfully!', 'success');
     router.push({ name: 'Login' });
   } catch (err: any) {
@@ -248,6 +257,7 @@ async function handleRegister() {
     isLoading.value = false;
   }
 }
+
 
 function showToast(message: string, color: 'danger' | 'success') {
   toast.message = message;
