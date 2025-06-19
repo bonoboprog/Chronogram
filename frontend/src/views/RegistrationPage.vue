@@ -149,87 +149,58 @@
 <script setup lang="ts">
 import { reactive, ref, computed } from 'vue';
 import {
-  IonPage,
-  IonContent,
-  IonList,
-  IonItem,
-  IonInput,
-  IonIcon,
-  IonButton,
-  IonGrid,
-  IonRow,
-  IonCol,
-  IonSelect,
-  IonSelectOption,
-  IonLabel,
-  IonDatetime,
-  IonModal,
-  IonLoading,
-  IonToast,
-  useIonToast,
+  IonPage, IonContent, IonList, IonItem, IonInput, IonIcon,
+  IonButton, IonGrid, IonRow, IonCol, IonSelect, IonSelectOption,
+  IonLabel, IonDatetime, IonModal, IonLoading, IonToast
 } from '@ionic/vue';
 import { useRouter } from 'vue-router';
 import { personAddOutline, eyeOutline, eyeOffOutline } from 'ionicons/icons';
 import dayjs from 'dayjs';
 import { api } from '@/composables/useApi';
 
-// ---------- reactive state ----------
-const router = useRouter();
+/* ---------- state ---------- */
+const router        = useRouter();
 const birthdayModal = ref<InstanceType<typeof IonModal>>();
-const isLoading = ref(false);
-const showPassword = ref(false);
-const dateIso = ref<string>(); // bound to ion-datetime (ISO string)
+const isLoading     = ref(false);
+const showPassword  = ref(false);
+const dateIso       = ref<string>();
 
-// unified form state
 const form = reactive({
-  name: '',
-  surname: '',
-  phone: '',
-  email: '',
-  password: '',
-  birthday: '', // dd-MM-yyyy
-  gender: '',
+  name: '', surname: '', phone: '', email: '', password: '',
+  birthday: '', gender: '',
 });
 
-// toast helper
 const toast = reactive({ open: false, message: '', color: 'danger' as const });
 
-// ---------- computed ----------
+/* ---------- computed ---------- */
 const formattedBirthday = computed(() => form.birthday);
-
-const hasErrors = computed(() => {
-  return (
-    !form.name.trim() ||
-    !form.surname.trim() ||
+const hasErrors = computed(() =>
+    !form.name.trim()       ||
+    !form.surname.trim()    ||
     !isValidEmail(form.email) ||
     !isStrongPassword(form.password)
-  );
+);
+
+/* ---------- helpers ---------- */
+const isValidEmail    = (e:string) => /^[\w-.]+@([\w-]+\.)+[\w-]{2,}$/.test(e);
+const isStrongPassword= (p:string) => /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(p);
+const errorClass = (f:keyof typeof form)=>({
+  'ion-invalid':
+      (f==='email'    && form.email    && !isValidEmail(form.email))   ||
+      (f==='password' && form.password && !isStrongPassword(form.password)) ||
+      (!(form[f] as string).trim() && (f==='name'||f==='surname'))
 });
 
-// ---------- methods ----------
 const openBirthdayModal = () => birthdayModal.value?.$el.present();
-
 const onBirthdaySelected = () => {
-  if (dateIso.value) {
-    form.birthday = dayjs(dateIso.value).format('DD-MM-YYYY');
-  }
+  if (dateIso.value) form.birthday = dayjs(dateIso.value).format('DD-MM-YYYY');
   birthdayModal.value?.$el.dismiss();
 };
+const showToast = (msg:string,col:'success'|'danger')=>{
+  toast.message=msg; toast.color=col; toast.open=true;
+};
 
-function errorClass(field: keyof typeof form) {
-  if (field === 'email') return { 'ion-invalid': form.email && !isValidEmail(form.email) };
-  if (field === 'password') return { 'ion-invalid': form.password && !isStrongPassword(form.password) };
-  return { 'ion-invalid': !(form[field] as string).trim() };
-}
-
-function isValidEmail(email: string) {
-  return /^[\w-.]+@([\w-]+\.)+[\w-]{2,}$/.test(email);
-}
-
-function isStrongPassword(pwd: string) {
-  return /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(pwd);
-}
-
+/* ---------- registration ---------- */
 async function handleRegister() {
   if (hasErrors.value) {
     showToast('Please correct the highlighted fields.', 'danger');
@@ -238,19 +209,15 @@ async function handleRegister() {
 
   isLoading.value = true;
   try {
-    const response = await api.post('/register', { ...form });
-    console.log('🟢 Response:', response);
+    const { data } = await api.post('/register', { ...form });
+    // 👉 data ora è direttamente { success, message }
 
-    const data = response.data;
-
-    if (!data || typeof data !== 'object') {
-      throw new Error('Invalid server response');
+    if (!data?.success) {
+      throw new Error(data?.message ?? 'Unknown error');
     }
 
-    if (!data.success) throw new Error(data.message);
-
-    showToast('Registered successfully!', 'success');
-    router.push({ name: 'Login' });
+    showToast(data.message || 'Registered successfully!', 'success');
+    await router.push({ name: 'Login' });           // <— redirect
   } catch (err: any) {
     showToast(err.message || 'Unexpected error', 'danger');
   } finally {
@@ -258,13 +225,8 @@ async function handleRegister() {
   }
 }
 
-
-function showToast(message: string, color: 'danger' | 'success') {
-  toast.message = message;
-  toast.color = color;
-  toast.open = true;
-}
 </script>
+
 
 <style scoped>
 .registration-container {
