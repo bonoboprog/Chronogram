@@ -3,6 +3,7 @@ package it.unicas.action;
 import com.opensymphony.xwork2.ActionSupport;
 import it.unicas.dao.UserDAO;
 import it.unicas.dao.UserAuthDAO;
+import it.unicas.dbutil.DBUtil;
 import it.unicas.dto.UserDTO;
 import it.unicas.dto.UserAuthDTO;
 import org.apache.logging.log4j.LogManager;
@@ -21,20 +22,20 @@ public class RegistrationAction extends ActionSupport {
 
     private static final Logger logger = LogManager.getLogger(RegistrationAction.class);
 
-    // Form‑bound properties
+    // Form-bound properties
     private String name;
     private String surname;
     private String phone;
     private String email;
     private String password;
-    private String birthday; // dd‑MM‑yyyy
+    private String birthday; // Expected format: dd-MM-yyyy
     private String gender;
 
-    // Response
+    // Response to frontend
     private boolean success;
     private String message;
 
-    // ***** Getters & Setters *****
+    // === Getters & Setters ===
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public String getSurname() { return surname; }
@@ -63,25 +64,19 @@ public class RegistrationAction extends ActionSupport {
             return SUCCESS;
         }
 
-        // 2. Duplicate email check (read‑only, separate connection is fine)
         UserAuthDAO authDAO = new UserAuthDAO();
-        if (authDAO.getUserAuthByEmail(email) != null) {
-            fail("Email already registered.");
-            logger.warn("Registration failed: email {} already exists", email);
-            return SUCCESS;
-        }
+        UserDAO userDAO = new UserDAO();
 
-        // 3. Prepare DTOs
+        // 2. Prepare DTOs
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
-        LocalDateTime now = LocalDateTime.now();
-        Timestamp tsNow = Timestamp.valueOf(now);
+        Timestamp now = Timestamp.valueOf(LocalDateTime.now());
 
         UserAuthDTO authDTO = new UserAuthDTO();
         authDTO.setEmail(email);
         authDTO.setPasswordHash(hashedPassword);
         authDTO.setUsername(name + " " + surname);
-        authDTO.setCreatedAt(tsNow);
-        authDTO.setUpdatedAt(tsNow);
+        authDTO.setCreatedAt(now);
+        authDTO.setUpdatedAt(now);
         authDTO.setLastLogin(null);
         authDTO.setIsActive(1);
         authDTO.setFailedLoginAttempts(0);
@@ -89,17 +84,22 @@ public class RegistrationAction extends ActionSupport {
 
         UserDTO userDTO = new UserDTO();
         userDTO.setGender(gender);
-        userDTO.setAddress(phone); // map phone -> address placeholder
+        userDTO.setAddress(phone); // Reuse phone as address
         userDTO.setNotes("");
-        userDTO.setCreatedAt(tsNow);
-        userDTO.setUpdatedAt(tsNow);
         userDTO.setBirthday(parseBirthday(birthday));
+        userDTO.setCreatedAt(now);
+        userDTO.setUpdatedAt(now);
 
-        UserDAO userDAO = new UserDAO();
-
-        // 4. Transactional block
+        // 3. Transactional execution
         try (Connection conn = DBUtil.getConnection()) {
             conn.setAutoCommit(false);
+
+            // 🔎 Email uniqueness check inside the transaction
+            if (authDAO.getUserAuthByEmail(email, conn) != null) {
+                fail("Email already registered.");
+                logger.warn("Registration failed: email {} already exists", email);
+                return SUCCESS;
+            }
 
             int userId = authDAO.insertUserAuth(authDTO, conn);
             if (userId == -1) {
@@ -131,7 +131,7 @@ public class RegistrationAction extends ActionSupport {
         return SUCCESS;
     }
 
-    // ===== Helper methods =====
+    // === Helpers ===
     private void fail(String msg) {
         this.success = false;
         this.message = msg;
@@ -151,7 +151,6 @@ public class RegistrationAction extends ActionSupport {
             return new Date(utilDate.getTime());
         } catch (Exception ex) {
             logger.warn("Invalid birthday format: {}", birthdayStr);
-            // We treat invalid birthday as null but you could also fail validation here.
             return null;
         }
     }
