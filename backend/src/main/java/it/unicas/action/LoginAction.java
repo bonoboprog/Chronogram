@@ -6,7 +6,7 @@ import it.unicas.dbutil.DBUtil;
 import it.unicas.dto.UserAuthDTO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.sql.Connection;
 import java.sql.Timestamp;
@@ -69,7 +69,8 @@ public class LoginAction extends ActionSupport {
                 return SUCCESS;
             }
 
-            if (BCrypt.checkpw(password, userAuth.getPasswordHash())) {
+            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+            if (encoder.matches(password, userAuth.getPasswordHash())) {
                 success = true;
                 message = "Login successful!";
                 username = userAuth.getUsername();
