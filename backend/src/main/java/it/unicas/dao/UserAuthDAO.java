@@ -1,5 +1,6 @@
 package it.unicas.dao;
 
+import it.unicas.dbutil.DBUtil;
 import it.unicas.dto.UserAuthDTO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -82,16 +83,14 @@ public class UserAuthDAO {
         final String SQL = "SELECT 1 FROM user_auth WHERE LOWER(username) = LOWER(?) LIMIT 1";
 
         try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL)) {Add commentMore actions
+            PreparedStatement ps = conn.prepareStatement(SQL)) {
 
             ps.setString(1, username);
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next(); // true se trovato
-            }
+            return ps.executeQuery().next(); // true se esiste almeno una riga
 
         } catch (SQLException e) {
-            logger.error("Error checking if username exists: {}", username, e);
-            return true; // prudenziale: in caso di errore, assumi già esistente
+            logger.error("Error checking username existence for '{}'", username, e);
+            return true; // fallback prudente: se errore, assume già preso
         }
     }
 
