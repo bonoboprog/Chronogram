@@ -288,4 +288,14 @@ ion-icon.input-icon {
   margin-right: 8px;
 }
 
+/* Icona occhio per mostrare/nascondere la password */
+ion-icon.toggle-eye {
+  color: var(--mauve);
+}
+
+/* Freccetta (icona dropdown) di ion-select in mauve */
+ion-select::part(icon) {
+  color: var(--mauve);
+}
+
 </style>
