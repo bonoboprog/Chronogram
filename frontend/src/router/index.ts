@@ -7,7 +7,7 @@ import { RouteRecordRaw } from 'vue-router';
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    redirect: '/login' // Imposta la pagina di login come predefinita
+    redirect: '/activity'// Imposta la pagina di login come predefinita
   },
   {
     path: '/login',
@@ -17,14 +17,37 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/home',
     name: 'Home',
+    component: () => import('@/views/HomePage.vue')
+  },
+  {
+    path: '/activity',
+    name: 'AddActivity',
     component: () => import('@/views/AddActivity.vue')
+  },
+  {
+    path: '/settings',
+    name: 'Settings',
+    component: () => import('@/views/SettingsPage.vue')
   },
   // --- ROTTA AGGIUNTA ---
   {
     path: '/register',
     name: 'Register', // Questo è il nome che abbiamo usato in LoginPage.vue
     component: () => import('@/views/RegistrationPage.vue')
+  },
+
+  {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: () => import('@/views/ForgotPasswordPage.vue')
+  },
+  {
+    path: '/calendar',
+    name: 'Calendar',
+    component: () => import('@/views/CalendarPage.vue')
   }
+
+
 ];
 
 const router = createRouter({

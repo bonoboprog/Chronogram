@@ -1,110 +1,118 @@
 <template>
   <ion-page>
     <ion-header>
-      <ion-toolbar color="primary">
-        <ion-title>AI Assistant 🤖</ion-title>
+      <ion-toolbar>
+        <ion-segment :value="selectedTab" @ionChange="navigateTab">
+          <ion-segment-button value="home">
+            <ion-icon :icon="homeOutline" />
+          </ion-segment-button>
+          <ion-segment-button value="calendar">
+            <ion-icon :icon="calendarOutline" />
+          </ion-segment-button>
+          <ion-segment-button value="settings">
+            <ion-icon :icon="settingsOutline" />
+          </ion-segment-button>
+        </ion-segment>
       </ion-toolbar>
     </ion-header>
 
     <ion-content class="ion-padding">
-      <ion-card>
-        <ion-card-header>
-          <ion-card-title>Ask something</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-textarea
-              v-model="prompt"
-              label="Prompt"
-              placeholder="e.g. What can I do today to be more productive?"
-              :rows="4"
-              auto-grow
-          ></ion-textarea>
+      <div class="user-info gradient-text">
+        <ion-icon :icon="personCircleOutline" class="user-icon" />
+        <h2>User name</h2>
+      </div>
 
-          <ion-button
-              expand="block"
-              class="ion-margin-top"
-              :disabled="loading || !prompt.trim()"
-              @click="sendPrompt"
-          >
-            <ion-spinner v-if="loading" name="dots" slot="start" />
-            Send
-          </ion-button>
-        </ion-card-content>
-      </ion-card>
+      <h1 class="current-date gradient-text">{{ currentDate }}</h1>
 
-      <ion-card v-if="response">
-        <ion-card-header>
-          <ion-card-subtitle>LLM Response</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <pre class="response-box">{{ response }}</pre>
-        </ion-card-content>
-      </ion-card>
+      <div class="activity-card" v-for="(activity, index) in activities" :key="index">
+        <p><strong>{{ activity.time }} - {{ activity.title }}</strong></p>
+        <div class="button-group">
+          <ion-button class="gradient-outline pill-button" size="small">Details</ion-button>
+          <ion-button class="peach-gradient pill-button" size="small">Add new activity</ion-button>
+        </div>
+      </div>
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue';
 import {
-  IonPage,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
-  IonButton,
-  IonTextarea,
-  IonCard,
-  IonCardHeader,
-  IonCardTitle,
-  IonCardContent,
-  IonCardSubtitle,
-  IonSpinner,
-} from '@ionic/vue'
+  IonPage, IonHeader, IonToolbar, IonSegment, IonSegmentButton,
+  IonContent, IonIcon, IonButton
+} from '@ionic/vue';
+import {
+  homeOutline, calendarOutline, settingsOutline, personCircleOutline
+} from 'ionicons/icons';
+import { useRouter, useRoute } from 'vue-router';
 
-import { ref } from 'vue'
-import axios from 'axios'
+const router = useRouter();
+const route = useRoute();
+const selectedTab = ref(route.name?.toString().toLowerCase() || 'home');
 
-const API = import.meta.env.VITE_API_BASE_URL
-const prompt = ref('')
-const response = ref('')
-const loading = ref(false)
+const navigateTab = (event: CustomEvent) => {
+  const tab = event.detail.value;
+  if (tab === 'home') router.push({ name: 'Home' });
+  else if (tab === 'calendar') router.push({ name: 'Calendar' });
+  else if (tab === 'settings') router.push({ name: 'Settings' });
+};
 
-const sendPrompt = async () => {
-  response.value = ''
-  loading.value = true
+const activities = [
+  { time: '8:00', title: 'Morning Activity' },
+  { time: '9:00', title: 'University' }
+];
 
-  const payload = new URLSearchParams({ prompt: prompt.value })
+const now = new Date();
+const currentDate = now.toLocaleDateString('en-GB');
 
-  console.log('[🔎 DEBUG] API URL:', `${API}/llmPrompt`)
-  console.log('[🟨 DEBUG] Prompt sent:', prompt.value)
-
-  try {
-    const res = await axios.post(`${API}/llmPrompt`, payload, {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-    })
-
-    console.log('[✅ DEBUG] Raw response:', res.data)
-
-    
-
-    response.value = res.data.llmResponse || 'No content from model'
-
-  } catch (err: any) {
-    console.error('[❌ ERROR] Axios failed:', err)
-    response.value = `Error: ${err.message}`
-  } finally {
-    loading.value = false
-  }
-}
+// ✅ Imposta il tema mocha all’avvio
+onMounted(() => {
+  document.documentElement.setAttribute('data-theme', 'mocha');
+});
 </script>
 
 <style scoped>
-.response-box {
-  background: #f6f6f6;
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  color: #333;
-  white-space: pre-wrap;
+.user-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.user-icon {
+  font-size: 2rem;
+  color: var(--ion-color-primary);
+}
+
+.current-date {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.activity-card {
+  background-color: var(--surface1);
+  border: 1px solid var(--overlay1);
+  border-radius: 16px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  color: var(--text);
+}
+
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+}
+
+ion-segment-button {
+  padding: 0.5rem;
+  border-radius: 9999px;
+  backdrop-filter: blur(6px);
+  --color-checked: var(--peach);
+  --indicator-color: transparent;
 }
 </style>
