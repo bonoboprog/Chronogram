@@ -7,7 +7,7 @@ import { RouteRecordRaw } from 'vue-router';
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    redirect: '/activity'// Imposta la pagina di login come predefinita
+    redirect: '/edit-profile'// Imposta la pagina di login come predefinita
   },
   {
     path: '/login',
@@ -45,8 +45,28 @@ const routes: Array<RouteRecordRaw> = [
     path: '/calendar',
     name: 'Calendar',
     component: () => import('@/views/CalendarPage.vue')
-  }
+  },
 
+  {
+    path: '/support',
+    name: 'Support',
+    component: () => import('@/views/SupportPage.vue')
+  },
+  {
+    path: '/change-password',
+    name: 'ChangePassword',
+    component: () => import('@/views/ChangePassword.vue')
+  },
+  {
+    path: '/edit-profile',
+    name: 'EditProfile',
+    component: () => import('@/views/EditProfile.vue')
+  },
+  {
+    path: '/notifications',
+    name: 'Notifications',
+    component: () => import('@/views/Notifications.vue')
+  }
 
 ];
 

@@ -2,10 +2,17 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
+        <!-- Navigation icons -->
         <ion-buttons slot="start">
-          <ion-button>Home</ion-button>
-          <ion-button>Calendar</ion-button>
-          <ion-button>Settings</ion-button>
+          <ion-button @click="goTo('Home')">
+            <ion-icon :icon="homeOutline" :color="selectedTab === 'Home' ? 'peach' : ''" slot="icon-only" />
+          </ion-button>
+          <ion-button @click="goTo('Calendar')">
+            <ion-icon :icon="calendarOutline" :color="selectedTab === 'Calendar' ? 'peach' : ''" slot="icon-only" />
+          </ion-button>
+          <ion-button @click="goTo('Settings')">
+            <ion-icon :icon="settingsOutline" :color="selectedTab === 'Settings' ? 'peach' : ''" slot="icon-only" />
+          </ion-button>
         </ion-buttons>
         <ion-title class="ion-text-right">{{ currentDate }}</ion-title>
       </ion-toolbar>
@@ -18,7 +25,7 @@
         </ion-toolbar>
       </ion-header>
 
-      <!-- Input Magico -->
+      <!-- AI Input Section -->
       <div class="magic-input-section">
         <ion-item-divider color="light">
           <ion-label>
@@ -29,10 +36,10 @@
 
         <ion-item>
           <ion-textarea
-              label="Descrizione con AI"
+              label="Describe with AI"
               label-placement="stacked"
               v-model="naturalInput"
-              placeholder="Es: Palestra per un'ora, è stato faticoso ma bello"
+              placeholder="e.g., Gym for an hour, it was tiring but enjoyable"
               :auto-grow="true"
               class="magic-textarea"
               :rows="2" ></ion-textarea>
@@ -43,13 +50,13 @@
           </ion-button>
 
           <ion-note slot="helper">
-            Suggerimento: Includi durata, costo e sensazioni per un'analisi più precisa.
+            Tip: Include duration, cost, and feelings for better analysis.
           </ion-note>
           <ion-note slot="error" v-if="errorMessage">{{ errorMessage }}</ion-note>
         </ion-item>
       </div>
 
-      <!-- Inserimento Manuale -->
+      <!-- Manual Input Section -->
       <div class="manual-form-section">
         <ion-item-divider color="light">
           <ion-label>Or fill details manually</ion-label>
@@ -121,14 +128,23 @@ import {
   IonItemDivider, IonNote
 } from '@ionic/vue';
 import {
-  sparkles, send, pencilOutline, checkmarkCircleOutline
+  sparkles, send, pencilOutline, checkmarkCircleOutline,
+  homeOutline, calendarOutline, settingsOutline
 } from 'ionicons/icons';
 import axios from 'axios';
+import { useRouter, useRoute } from 'vue-router';
 
-// ✅ API base
+const router = useRouter();
+const route = useRoute();
+const selectedTab = ref(route.name?.toString() || '');
+
+function goTo(name: string) {
+  selectedTab.value = name;
+  router.push({ name });
+}
+
 const API = import.meta.env.VITE_API_BASE_URL;
 
-// ✅ Interfaccia del form
 interface ActivityForm {
   name: string;
   duration: number | null;
@@ -145,7 +161,6 @@ interface ErrorResponse {
   error: string;
 }
 
-// ✅ Stato reattivo
 const activity = reactive<ActivityForm>({
   name: '',
   duration: null,
@@ -161,14 +176,11 @@ const activity = reactive<ActivityForm>({
 const naturalInput = ref('');
 const isLoading = ref(false);
 const errorMessage = ref<string | null>(null);
-const currentDate = new Intl.DateTimeFormat('it-IT').format(new Date());
+const currentDate = new Intl.DateTimeFormat('en-GB').format(new Date());
 
-/**
- * 🎯 Funzione che invia il prompt al backend e aggiorna il form
- */
+// Send input to backend and populate form fields
 async function handleMagicInput() {
   if (!naturalInput.value.trim()) return;
-
   isLoading.value = true;
   errorMessage.value = null;
 
@@ -180,45 +192,38 @@ async function handleMagicInput() {
     );
 
     const data = response.data;
-    console.log('📦 Risposta LLM:', data);
+    console.log('LLM Response:', data);
 
     if (data && typeof data === 'object') {
-      let almenoUnoAggiornato = false;
-
+      let updated = false;
       for (const [key, value] of Object.entries(data)) {
         if (key in activity && value !== undefined && value !== null) {
           (activity as any)[key] = value;
-          almenoUnoAggiornato = true;
+          updated = true;
         }
       }
-
-      if (!almenoUnoAggiornato) {
-        console.warn('⚠️ Nessun dato valido ricevuto dal backend:', data);
-        errorMessage.value = '⚠️ Nessun dato utile trovato nella risposta AI.';
+      if (!updated) {
+        console.warn('No valid data received from AI:', data);
+        errorMessage.value = 'No useful data found in AI response.';
       }
-
       naturalInput.value = '';
     } else {
-      errorMessage.value = '❌ Risposta malformata dal backend.';
+      errorMessage.value = 'Invalid response from backend.';
     }
 
   } catch (e: unknown) {
-    console.error('❌ Errore durante la chiamata LLM:', e);
-
+    console.error('Error calling LLM:', e);
     if (axios.isAxiosError<ErrorResponse>(e)) {
-      errorMessage.value = e.response?.data?.error || `Errore di rete: ${e.message}`;
+      errorMessage.value = e.response?.data?.error || `Network error: ${e.message}`;
     } else {
-      errorMessage.value = '❌ Errore sconosciuto.';
+      errorMessage.value = 'Unknown error.';
     }
-
   } finally {
     isLoading.value = false;
   }
 }
 
-/**
- * ➕ Enjoyment stepper (da -3 a +3)
- */
+// Adjust enjoyment from -3 to +3
 function adjustEnjoyment(adjustment: number) {
   const newValue = activity.enjoyment + adjustment;
   if (newValue >= -3 && newValue <= 3) {
@@ -226,18 +231,12 @@ function adjustEnjoyment(adjustment: number) {
   }
 }
 
-/**
- * 💾 Simulazione salvataggio
- */
+// Simulate save
 function saveActivity() {
-  console.log('✅ Attività salvata:', JSON.stringify(activity, null, 2));
-  alert('✅ Attività salvata! Controlla la console.');
+  console.log('Activity saved:', JSON.stringify(activity, null, 2));
+  alert('Activity saved! Check the console.');
 }
 </script>
-
-
-
-
 
 <style scoped>
 .magic-input-section {
