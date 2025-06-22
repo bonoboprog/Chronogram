@@ -2,49 +2,97 @@ package it.unicas.dto;
 
 import java.sql.Timestamp;
 
+/**
+ * Data Transfer Object che rappresenta un record della tabella `password_resets`.
+ * Aggiornato per supportare il pattern di sicurezza Selector/Verifier.
+ */
 public class PasswordResetDTO {
-    private int userId;
-    private int token_id;
-    private String token_hash;
-    private Timestamp expirationTime;
-    private Timestamp created_at;
 
+    // Campi che mappano le colonne della tabella `password_resets`
+    private int tokenId; // Corrisponde a 'token_id' o 'id' (PK)
+    private int userId;
+    private String selector;      // Nuovo campo: parte pubblica del token, indicizzata per la ricerca
+    private String verifierHash;  // Nuovo campo: hash della parte privata del token
+    private Timestamp expirationTime;
+    private Timestamp createdAt;
+
+    /**
+     * Costruttore di default.
+     */
     public PasswordResetDTO() {
     }
 
-    public PasswordResetDTO(int userId, int token_id, String token_hash, Timestamp esxpirationTime, Timestamp created_at) {
+    /**
+     * Costruttore con tutti i campi.
+     */
+    public PasswordResetDTO(int tokenId, int userId, String selector, String verifierHash, Timestamp expirationTime, Timestamp createdAt) {
+        this.tokenId = tokenId;
         this.userId = userId;
-        this.token_id = token_id;
-        this.token_hash = token_hash;
-        this.expirationTime = esxpirationTime;
-        this.created_at = created_at;
+        this.selector = selector;
+        this.verifierHash = verifierHash;
+        this.expirationTime = expirationTime;
+        this.createdAt = createdAt;
     }
 
-    public int getUserId() {return userId;}
-    public int getToken_id() {return token_id;}
-    public String getToken_hash() {return token_hash;}
-    public Timestamp getExpirationTime() {return expirationTime;}
-    public Timestamp getCreated_at() {return created_at;}
+    // --- Getters e Setters ---
 
-    public void setUserId(int userId) {this.userId = userId;}
-    public void setToken_id(int token_id) {this.token_id = token_id;}
-    public void setToken_hash(String token_hash) {this.token_hash = token_hash;}
-    public void setExpirationTime(Timestamp expirationTime) {this.expirationTime = expirationTime;}
-    public void setCreated_at(Timestamp created_at) {this.created_at = created_at;}
+    public int getTokenId() {
+        return tokenId;
+    }
+
+    public void setTokenId(int tokenId) {
+        this.tokenId = tokenId;
+    }
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
+    public String getSelector() {
+        return selector;
+    }
+
+    public void setSelector(String selector) {
+        this.selector = selector;
+    }
+
+    public String getVerifierHash() {
+        return verifierHash;
+    }
+
+    public void setVerifierHash(String verifierHash) {
+        this.verifierHash = verifierHash;
+    }
+
+    public Timestamp getExpirationTime() {
+        return expirationTime;
+    }
+
+    public void setExpirationTime(Timestamp expirationTime) {
+        this.expirationTime = expirationTime;
+    }
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
 
     @Override
     public String toString() {
         return "PasswordResetDTO{" +
-                "userId=" + userId +
-                ", token_id=" + token_id +
-                ", token_hash=" + token_hash +
+                "tokenId=" + tokenId +
+                ", userId=" + userId +
+                ", selector='" + selector + '\'' +
+                ", verifierHash='[REDACTED]'" + // Non loggare mai l'hash completo
                 ", expirationTime=" + expirationTime +
-                ", created_at=" + created_at +
-                "}";
+                ", createdAt=" + createdAt +
+                '}';
     }
-
-
-
-
 }
-
