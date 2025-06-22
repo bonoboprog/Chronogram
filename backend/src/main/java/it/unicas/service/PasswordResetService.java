@@ -1,15 +1,13 @@
 package it.unicas.service;
 
-// =========================================================================
-// == AGGIUNTA NECESSARIA: IMPORT PER LE CLASSI NEL SOTTO-PACCHETTO ======
-import it.unicas.service.exception.ServiceException;
-import it.unicas.service.exception.ValidationException;
-// =========================================================================
-
 import it.unicas.dao.PasswordResetDAO;
 import it.unicas.dao.UserAuthDAO;
 import it.unicas.dbutil.DBUtil;
 import it.unicas.dto.PasswordResetDTO;
+import it.unicas.dto.UserAuthDTO;
+import it.unicas.service.exception.ServiceException;
+import it.unicas.service.exception.ValidationException;
+import it.unicas.util.PasswordUtil; // <-- IMPORT per il singleton
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -21,7 +19,6 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Base64;
 
-
 /**
  * Gestisce la logica di business per il processo di reset password.
  * Orchestra le operazioni sui DAO e garantisce l'atomicità tramite transazioni.
@@ -31,38 +28,41 @@ public class PasswordResetService {
     private static final Logger logger = LogManager.getLogger(PasswordResetService.class);
     private static final int MIN_PASSWORD_LENGTH = 8;
 
+    // --- Le dipendenze del service ---
     private final UserAuthDAO userAuthDAO;
     private final PasswordResetDAO passwordResetDAO;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final EmailService emailService; // <-- 1. AGGIUNTA LA DIPENDENZA EMAILSERVICE
 
     public PasswordResetService() {
+        // Istanziazione manuale in assenza di un framework di Dependency Injection
         this.userAuthDAO = new UserAuthDAO();
         this.passwordResetDAO = new PasswordResetDAO();
-        this.passwordEncoder = new BCryptPasswordEncoder();
+        this.emailService = new EmailService(); // <-- Istanzia il nuovo service
     }
-    
-    // =========================================================================
-    // == HO INCLUSO ANCHE IL METODO 'initiatePasswordReset' E L'HELPER   ======
-    // == CHE TI HO SUGGERITO NELLA RISPOSTA PRECEDENTE, COSÌ HAI TUTTO   ======
-    // == IL CODICE COMPLETO E FUNZIONANTE IN UN UNICO POSTO.             ======
-    // =========================================================================
 
     public String initiatePasswordReset(String email) throws ServiceException, ValidationException {
         if (email == null || email.trim().isEmpty() || !email.contains("@")) {
             throw new ValidationException("A valid email is required.");
         }
 
-        try (Connection conn = DBUtil.getConnection()) {
+        // 2. GESTIONE MANUALE DELLA TRANSAZIONE
+        // Per garantire che salvataggio su DB e invio email siano atomici
+        Connection conn = null;
+        try {
+            conn = DBUtil.getConnection();
+            conn.setAutoCommit(false); // INIZIO TRANSAZIONE
+
             UserAuthDTO user = userAuthDAO.getUserAuthByEmail(email, conn);
 
             if (user == null || user.getIsActive() == 0) {
                 logger.warn("Password reset initiated for a non-existent or inactive user: {}", email);
+                conn.commit(); // Confermiamo la transazione (che non ha fatto nulla) e usciamo
                 return null;
             }
 
             String selector = generateSecureString(16);
             String verifier = generateSecureString(32);
-            String verifierHash = passwordEncoder.encode(verifier);
+            String verifierHash = PasswordUtil.getInstance().encode(verifier); // <-- 4. USO DEL SINGLETON
 
             PasswordResetDTO resetDTO = new PasswordResetDTO();
             resetDTO.setUserId(user.getUserId());
@@ -71,14 +71,25 @@ public class PasswordResetService {
             resetDTO.setExpirationTime(Timestamp.valueOf(LocalDateTime.now().plusMinutes(30)));
             resetDTO.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
 
-            // Nota: qui ci vorrà il nuovo metodo save() nel DAO
-            passwordResetDAO.save(resetDTO, conn);
+            passwordResetDAO.save(resetDTO, conn); // Salva il token nel DB
 
-            return selector + ":" + verifier;
+            String tokenCompleto = selector + ":" + verifier;
 
-        } catch (SQLException e) {
-            logger.error("Database error during password reset initiation for {}", email, e);
-            throw new ServiceException("An internal database error occurred.", e);
+            // 3. CHIAMATA EFFETTIVA ALL'INVIO EMAIL
+            // Se questo metodo fallisce, lancia un'eccezione e la transazione verrà annullata.
+            emailService.sendPasswordResetEmail(email, tokenCompleto);
+
+            conn.commit(); // FINE TRANSAZIONE (tutto è andato a buon fine)
+            logger.info("Reset token created and email sent successfully for {}", email);
+            return tokenCompleto;
+
+        } catch (Exception e) {
+            rollback(conn); // Se qualcosa va storto (DB o email), annulla tutto
+            // Rilanciamo un'eccezione generica del service
+            logger.error("Error during password reset initiation for {}. Transaction rolled back.", email, e);
+            throw new ServiceException("An internal error occurred while initiating the password reset.", e);
+        } finally {
+            closeConnection(conn);
         }
     }
 
@@ -98,22 +109,20 @@ public class PasswordResetService {
             conn = DBUtil.getConnection();
             conn.setAutoCommit(false);
 
-            // Nota: qui ci vorrà il nuovo metodo findBySelector() nel DAO
             PasswordResetDTO resetDTO = passwordResetDAO.findBySelector(selector, conn);
             
             if (resetDTO == null || resetDTO.getExpirationTime().before(Timestamp.valueOf(LocalDateTime.now()))) {
                 throw new ServiceException("Reset token is invalid or has expired.");
             }
 
-            if (!passwordEncoder.matches(verifier, resetDTO.getVerifierHash())) {
+            if (!PasswordUtil.getInstance().matches(verifier, resetDTO.getVerifierHash())) { // <-- 4. USO DEL SINGLETON
                 throw new ServiceException("Reset token is invalid or has expired.");
             }
 
             logger.info("Token verified for user ID: {}. Proceeding to reset password.", resetDTO.getUserId());
-            String newPasswordHash = passwordEncoder.encode(newPassword);
+            String newPasswordHash = PasswordUtil.getInstance().encode(newPassword); // <-- 4. USO DEL SINGLETON
             userAuthDAO.updatePassword(resetDTO.getUserId(), newPasswordHash, conn);
             
-            // Nota: qui ci vorrà il nuovo metodo deleteBySelector() nel DAO
             passwordResetDAO.deleteBySelector(selector, conn);
 
             conn.commit();
