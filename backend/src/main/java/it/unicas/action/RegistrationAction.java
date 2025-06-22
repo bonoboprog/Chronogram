@@ -6,9 +6,10 @@ import it.unicas.dao.UserAuthDAO;
 import it.unicas.dbutil.DBUtil;
 import it.unicas.dto.UserDTO;
 import it.unicas.dto.UserAuthDTO;
+import it.unicas.util.PasswordUtil; // <-- 1. AGGIUNTO QUESTO IMPORT
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+// import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder; // Non più necessario qui
 
 import java.sql.*;
 import java.text.SimpleDateFormat;
@@ -49,15 +50,19 @@ public class RegistrationAction extends ActionSupport {
         }
 
         UserAuthDAO authDAO = new UserAuthDAO();
-        UserDAO      userDAO = new UserDAO();
+        UserDAO     userDAO = new UserDAO();
 
         /* 2. DTO preparation */
         Timestamp now = Timestamp.valueOf(LocalDateTime.now());
 
         UserAuthDTO authDTO = new UserAuthDTO();
         authDTO.setEmail(email);
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        authDTO.setPasswordHash(encoder.encode(password));
+
+        // --- INIZIO MODIFICA ---
+        // BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(); // <-- 2. RIMOSSA QUESTA RIGA
+        authDTO.setPasswordHash(PasswordUtil.getInstance().encode(password)); // <-- 3. MODIFICATA QUESTA RIGA
+        // --- FINE MODIFICA ---
+
         authDTO.setUsername(name + " " + surname);
         authDTO.setCreatedAt(now);
         authDTO.setUpdatedAt(now);
@@ -65,7 +70,7 @@ public class RegistrationAction extends ActionSupport {
 
         UserDTO userDTO = new UserDTO();
         userDTO.setGender(gender);
-        userDTO.setAddress(phone);          // (placeholder)
+        userDTO.setAddress(phone);       // (placeholder)
         userDTO.setBirthday(parseBirthday(birthday));
         userDTO.setCreatedAt(now);
         userDTO.setUpdatedAt(now);
