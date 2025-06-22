@@ -25,28 +25,22 @@ public class RequestPasswordResetAction extends ActionSupport {
     public String execute() {
         logger.info("Password reset requested for email: {}", email);
         try {
-            // Delega tutta la logica al service
-            String rawToken = passwordResetService.initiatePasswordReset(email);
+            // Delega tutta la logica al service.
+            // La chiamata a questo metodo ora crea il token, lo salva E INVIA L'EMAIL.
+            passwordResetService.initiatePasswordReset(email);
 
-            if (rawToken != null) {
-                // Se il service restituisce un token, significa che l'utente esiste e possiamo inviare l'email.
-                String resetUrl = "http://localhost:3000/reset-password?token=" + rawToken;
-                
-                // TODO: Logica per inviare l'email con la resetUrl
-                logger.info("SIMULATING EMAIL SEND to {}: Reset link is {}", email, resetUrl);
-            }
-
-            // Per motivi di sicurezza, la risposta al frontend è sempre la stessa,
-            // che l'utente esista o meno.
+            // La logica di business è completata. Impostiamo sempre lo stesso messaggio
+            // di successo per non rivelare se un'email esiste o meno nel sistema.
             this.success = true;
             this.message = "If your email address exists in our system, you will receive a password reset link.";
 
         } catch (ValidationException e) {
+            // Se l'input non è valido (es. email vuota), restituisci un errore chiaro.
             logger.warn("Invalid input for password reset request: {}", e.getMessage());
-            // Anche in caso di validazione fallita, potremmo voler dare un messaggio generico
             this.success = false;
             this.message = e.getMessage();
         } catch (ServiceException e) {
+            // Se c'è un errore interno (DB, invio email, ecc.), restituisci un errore generico.
             logger.error("A service error occurred while requesting password reset for {}", email, e);
             this.success = false;
             this.message = "An internal error occurred. Please try again later.";
