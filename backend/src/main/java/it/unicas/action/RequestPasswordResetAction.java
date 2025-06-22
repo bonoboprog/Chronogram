@@ -1,106 +1,61 @@
 package it.unicas.action;
 
 import com.opensymphony.xwork2.ActionSupport;
-import it.unicas.dao.PasswordResetDAO;
-import it.unicas.dao.UserAuthDAO;
-import it.unicas.dbutil.DBUtil;
-import it.unicas.dto.PasswordResetDTO;
-import it.unicas.dto.UserAuthDTO;
+import it.unicas.service.PasswordResetService;
+import it.unicas.service.ServiceException;
+import it.unicas.service.ValidationException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.security.crypto.bcrypt.BCrypt;
-
-import java.sql.Connection;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 public class RequestPasswordResetAction extends ActionSupport {
 
     private static final Logger logger = LogManager.getLogger(RequestPasswordResetAction.class);
 
+    // --- Dipendenze ---
+    private final PasswordResetService passwordResetService = new PasswordResetService();
+
+    // --- INPUT ---
     private String email;
+
+    // --- OUTPUT ---
     private boolean success;
     private String message;
-
-    public void setEmail(String email) { this.email = email; }
-    public boolean isSuccess() { return success; }
-    public String getMessage() { return message; }
 
     @Override
     public String execute() {
         logger.info("Password reset requested for email: {}", email);
+        try {
+            // Delega tutta la logica al service
+            String rawToken = passwordResetService.initiatePasswordReset(email);
 
-        if (isBlank(email)) {
-            fail("Email is required.");
-            logger.warn("Missing email input for password reset.");
-            return SUCCESS;
-        }
-
-        try (Connection conn = DBUtil.getConnection()) {
-            UserAuthDAO userAuthDAO = new UserAuthDAO();
-            UserAuthDTO user = userAuthDAO.getUserAuthByEmail(email, conn);
-
-            if (user == null) {
-                // Avoid leaking whether the user exists
-                success = true;
-                message = "If your email is registered, you’ll receive a reset link.";
-                logger.warn("Password reset requested for unknown email: {}", email);
-                return SUCCESS;
+            if (rawToken != null) {
+                // Se il service restituisce un token, significa che l'utente esiste e possiamo inviare l'email.
+                String resetUrl = "http://localhost:3000/reset-password?token=" + rawToken;
+                
+                // TODO: Logica per inviare l'email con la resetUrl
+                logger.info("SIMULATING EMAIL SEND to {}: Reset link is {}", email, resetUrl);
             }
 
-            if (user.getIsActive() == 0) {
-                fail("Account is inactive. Please contact support.");
-                logger.warn("Password reset attempted for inactive account: {}", email);
-                return SUCCESS;
-            }
+            // Per motivi di sicurezza, la risposta al frontend è sempre la stessa,
+            // che l'utente esista o meno.
+            this.success = true;
+            this.message = "If your email address exists in our system, you will receive a password reset link.";
 
-            // Generate raw token (for email) and hash (for DB)
-            String rawToken = UUID.randomUUID().toString();
-            String tokenHash = BCrypt.hashpw(rawToken, BCrypt.gensalt());
-
-            Timestamp createdAt = Timestamp.valueOf(LocalDateTime.now());
-            Timestamp expiration = Timestamp.valueOf(LocalDateTime.now().plusMinutes(30));
-
-            PasswordResetDTO resetDTO = new PasswordResetDTO();
-            resetDTO.setUserId(user.getUserId());
-            resetDTO.setToken_hash(tokenHash);
-            resetDTO.setCreated_at(createdAt);
-            resetDTO.setExpirationTime(expiration);
-
-            PasswordResetDAO resetDAO = new PasswordResetDAO();
-            resetDAO.insertResetToken(resetDTO, conn);
-
-
-
-
-
-            // Compose the reset URL with the raw token
-
-
-
-
-
-            String resetUrl = "https://yourapp.com/reset-password?token=" + rawToken;
-            logger.info("Password reset link for {}: {}", email, resetUrl);
-            // TODO: Actually send email with this resetUrl
-
-            success = true;
-            message = "If your email is registered, you’ll receive a reset link.";
-        } catch (Exception e) {
-            logger.error("Error processing password reset for {}: {}", email, e.getMessage(), e);
-            fail("Internal server error. Please try again later.");
+        } catch (ValidationException e) {
+            logger.warn("Invalid input for password reset request: {}", e.getMessage());
+            // Anche in caso di validazione fallita, potremmo voler dare un messaggio generico
+            this.success = false;
+            this.message = e.getMessage();
+        } catch (ServiceException e) {
+            logger.error("A service error occurred while requesting password reset for {}", email, e);
+            this.success = false;
+            this.message = "An internal error occurred. Please try again later.";
         }
-
         return SUCCESS;
     }
 
-    private boolean isBlank(String s) {
-        return s == null || s.trim().isEmpty();
-    }
-
-    private void fail(String msg) {
-        this.success = false;
-        this.message = msg;
-    }
+    // --- Getters and Setters ---
+    public void setEmail(String email) { this.email = email; }
+    public boolean isSuccess() { return success; }
+    public String getMessage() { return message; }
 }
