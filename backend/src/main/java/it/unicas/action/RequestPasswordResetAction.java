@@ -2,8 +2,8 @@ package it.unicas.action;
 
 import com.opensymphony.xwork2.ActionSupport;
 import it.unicas.service.PasswordResetService;
-import it.unicas.service.ServiceException;
-import it.unicas.service.ValidationException;
+import it.unicas.service.exception.ServiceException;
+import it.unicas.service.exception.ValidationException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
