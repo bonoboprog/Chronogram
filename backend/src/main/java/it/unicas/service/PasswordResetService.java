@@ -1,5 +1,11 @@
 package it.unicas.service;
 
+// =========================================================================
+// == AGGIUNTA NECESSARIA: IMPORT PER LE CLASSI NEL SOTTO-PACCHETTO ======
+import it.unicas.service.exception.ServiceException;
+import it.unicas.service.exception.ValidationException;
+// =========================================================================
+
 import it.unicas.dao.PasswordResetDAO;
 import it.unicas.dao.UserAuthDAO;
 import it.unicas.dbutil.DBUtil;
@@ -8,10 +14,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.Base64;
+
 
 /**
  * Gestisce la logica di business per il processo di reset password.
@@ -22,30 +31,61 @@ public class PasswordResetService {
     private static final Logger logger = LogManager.getLogger(PasswordResetService.class);
     private static final int MIN_PASSWORD_LENGTH = 8;
 
-    // Le dipendenze del service. In un'app Spring, sarebbero iniettate (@Autowired).
     private final UserAuthDAO userAuthDAO;
     private final PasswordResetDAO passwordResetDAO;
     private final BCryptPasswordEncoder passwordEncoder;
 
     public PasswordResetService() {
-        // Istanziazione manuale in assenza di un framework di Dependency Injection
         this.userAuthDAO = new UserAuthDAO();
         this.passwordResetDAO = new PasswordResetDAO();
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
+    
+    // =========================================================================
+    // == HO INCLUSO ANCHE IL METODO 'initiatePasswordReset' E L'HELPER   ======
+    // == CHE TI HO SUGGERITO NELLA RISPOSTA PRECEDENTE, COSÌ HAI TUTTO   ======
+    // == IL CODICE COMPLETO E FUNZIONANTE IN UN UNICO POSTO.             ======
+    // =========================================================================
 
-    /**
-     * Metodo principale che esegue l'intero processo di reset password.
-     * @param token Il token completo (selector:verifier) ricevuto dall'utente.
-     * @param newPassword La nuova password in chiaro.
-     * @throws ValidationException se l'input non è valido (es. password troppo corta).
-     * @throws ServiceException se la logica di business fallisce (es. token non trovato o scaduto).
-     */
+    public String initiatePasswordReset(String email) throws ServiceException, ValidationException {
+        if (email == null || email.trim().isEmpty() || !email.contains("@")) {
+            throw new ValidationException("A valid email is required.");
+        }
+
+        try (Connection conn = DBUtil.getConnection()) {
+            UserAuthDTO user = userAuthDAO.getUserAuthByEmail(email, conn);
+
+            if (user == null || user.getIsActive() == 0) {
+                logger.warn("Password reset initiated for a non-existent or inactive user: {}", email);
+                return null;
+            }
+
+            String selector = generateSecureString(16);
+            String verifier = generateSecureString(32);
+            String verifierHash = passwordEncoder.encode(verifier);
+
+            PasswordResetDTO resetDTO = new PasswordResetDTO();
+            resetDTO.setUserId(user.getUserId());
+            resetDTO.setSelector(selector);
+            resetDTO.setVerifierHash(verifierHash);
+            resetDTO.setExpirationTime(Timestamp.valueOf(LocalDateTime.now().plusMinutes(30)));
+            resetDTO.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
+
+            // Nota: qui ci vorrà il nuovo metodo save() nel DAO
+            passwordResetDAO.save(resetDTO, conn);
+
+            return selector + ":" + verifier;
+
+        } catch (SQLException e) {
+            logger.error("Database error during password reset initiation for {}", email, e);
+            throw new ServiceException("An internal database error occurred.", e);
+        }
+    }
+
+
     public void resetPassword(String token, String newPassword) throws ValidationException, ServiceException {
-        // 1. Validazione preliminare dell'input
         validateInput(token, newPassword);
 
-        // 2. Parsing del token per ottenere selector e verifier
         String[] parts = token.split(":");
         if (parts.length != 2) {
             throw new ValidationException("Invalid token format.");
@@ -53,44 +93,30 @@ public class PasswordResetService {
         String selector = parts[0];
         String verifier = parts[1];
 
-        // 3. Blocco transazionale per garantire l'atomicità
         Connection conn = null;
         try {
             conn = DBUtil.getConnection();
-            conn.setAutoCommit(false); // INIZIO TRANSAZIONE
+            conn.setAutoCommit(false);
 
-            // 4. Cerca il token nel DB usando il selettore
-            // La query nel DAO dovrebbe anche controllare la scadenza (expiration_time > NOW())
+            // Nota: qui ci vorrà il nuovo metodo findBySelector() nel DAO
             PasswordResetDTO resetDTO = passwordResetDAO.findBySelector(selector, conn);
-            if (resetDTO == null) {
-                // Non dare informazioni specifiche per sicurezza (evita di dire "il token è scaduto" vs "non esiste")
+            
+            if (resetDTO == null || resetDTO.getExpirationTime().before(Timestamp.valueOf(LocalDateTime.now()))) {
                 throw new ServiceException("Reset token is invalid or has expired.");
             }
 
-            // 5. Verifica che il token non sia scaduto (doppio controllo)
-            if (resetDTO.getExpirationTime().before(Timestamp.valueOf(LocalDateTime.now()))) {
-                throw new ServiceException("Reset token is invalid or has expired.");
-            }
-
-            // 6. Verifica la parte segreta del token (verifier)
             if (!passwordEncoder.matches(verifier, resetDTO.getVerifierHash())) {
-                // Stesso messaggio di errore per non rivelare quale parte del token era sbagliata
                 throw new ServiceException("Reset token is invalid or has expired.");
             }
 
-            // 7. Se tutte le verifiche passano, procedi con l'aggiornamento
             logger.info("Token verified for user ID: {}. Proceeding to reset password.", resetDTO.getUserId());
-
-            // Hash della nuova password
             String newPasswordHash = passwordEncoder.encode(newPassword);
-
-            // Aggiorna la password dell'utente
             userAuthDAO.updatePassword(resetDTO.getUserId(), newPasswordHash, conn);
-
-            // Invalida/elimina il token usato per prevenire il riutilizzo
+            
+            // Nota: qui ci vorrà il nuovo metodo deleteBySelector() nel DAO
             passwordResetDAO.deleteBySelector(selector, conn);
 
-            conn.commit(); // FINE TRANSAZIONE (successo)
+            conn.commit();
             logger.info("Password successfully reset and transaction committed for user ID: {}", resetDTO.getUserId());
 
         } catch (SQLException e) {
@@ -98,9 +124,8 @@ public class PasswordResetService {
             logger.error("Database error during password reset process. Transaction rolled back.", e);
             throw new ServiceException("An internal database error occurred.", e);
         } catch (Exception e) {
-            // Cattura ValidationException e ServiceException per fare il rollback
             rollback(conn);
-            throw e; // Rilancia l'eccezione originale
+            throw e;
         } finally {
             closeConnection(conn);
         }
@@ -113,7 +138,13 @@ public class PasswordResetService {
         if (newPassword == null || newPassword.length() < MIN_PASSWORD_LENGTH) {
             throw new ValidationException("Password must be at least " + MIN_PASSWORD_LENGTH + " characters long.");
         }
-        // Qui si potrebbero aggiungere altri controlli sulla complessità della password
+    }
+    
+    private String generateSecureString(int length) {
+        SecureRandom random = new SecureRandom();
+        byte[] bytes = new byte[length];
+        random.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
     private void rollback(Connection conn) {
