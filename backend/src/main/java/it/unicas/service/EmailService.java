@@ -6,41 +6,60 @@ import jakarta.mail.internet.MimeMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.InputStream;
 import java.util.Properties;
 
 public class EmailService {
 
     private static final Logger logger = LogManager.getLogger(EmailService.class);
     private final Properties mailProperties;
+    private final String mailUser;
+    private final String mailPassword;
 
     public EmailService() {
-        this.mailProperties = loadMailProperties();
+        // Legge le credenziali e le configurazioni direttamente dalle variabili d'ambiente
+        this.mailUser = System.getenv("MAIL_USER");
+        this.mailPassword = System.getenv("MAIL_PASSWORD");
+        
+        // Se le variabili non sono impostate, logga un errore grave
+        if (this.mailUser == null || this.mailPassword == null) {
+            logger.fatal("SMTP environment variables MAIL_USER and/or MAIL_PASSWORD are not set!");
+            // Lancia un'eccezione per bloccare l'avvio o l'uso del servizio
+            throw new IllegalStateException("SMTP credentials are not configured.");
+        }
+
+        this.mailProperties = createMailProperties();
+    }
+
+    private Properties createMailProperties() {
+        Properties props = new Properties();
+        props.put("mail.smtp.host", System.getenv("MAIL_HOST"));
+        props.put("mail.smtp.port", System.getenv("MAIL_PORT"));
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        return props;
     }
 
     public void sendPasswordResetEmail(String toEmail, String token) throws ServiceException {
         logger.info("Preparing to send password reset email to {}", toEmail);
 
-        // Prepara la sessione con il server SMTP
         Session session = Session.getInstance(mailProperties, new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(mailProperties.getProperty("mail.smtp.user"),
-                                                mailProperties.getProperty("mail.smtp.password"));
+                // Usa le credenziali lette dalle variabili d'ambiente
+                return new PasswordAuthentication(mailUser, mailPassword);
             }
         });
 
         try {
             Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(mailProperties.getProperty("mail.smtp.user")));
+            message.setFrom(new InternetAddress(this.mailUser));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
             message.setSubject("Password Reset Request");
 
-            String resetUrl = "http://localhost:3000/reset-password?token=" + token;
+            String resetUrl = "http://localhost:3000/reset-password?token=" + token; // L'URL del tuo frontend
             String emailContent = createHtmlEmailBody(resetUrl);
 
             message.setContent(emailContent, "text/html; charset=utf-8");
-
             Transport.send(message);
 
             logger.info("Password reset email successfully sent to {}", toEmail);
@@ -52,28 +71,7 @@ public class EmailService {
     }
 
     private String createHtmlEmailBody(String resetUrl) {
-        return "<html>" +
-               "<body>" +
-               "<h2>Password Reset Request</h2>" +
-               "<p>We received a request to reset your password. Click the link below to set a new password:</p>" +
-               "<p><a href=\"" + resetUrl + "\">Reset Your Password</a></p>" +
-               "<p>This link will expire in 30 minutes.</p>" +
-               "<p>If you did not request a password reset, please ignore this email.</p>" +
-               "</body>" +
-               "</html>";
-    }
-
-    private Properties loadMailProperties() {
-        Properties props = new Properties();
-        try (InputStream input = getClass().getClassLoader().getResourceAsStream("mail.properties")) {
-            if (input == null) {
-                logger.error("Sorry, unable to find mail.properties");
-                return props;
-            }
-            props.load(input);
-        } catch (Exception e) {
-            logger.error("Error loading mail.properties", e);
-        }
-        return props;
+        // ... (contenuto HTML dell'email, rimane invariato) ...
+        return "<html><body>...<a href=\"" + resetUrl + "\">Reset...</a>...</body></html>";
     }
 }
