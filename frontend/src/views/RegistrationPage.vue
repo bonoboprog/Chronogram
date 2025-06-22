@@ -254,7 +254,7 @@ ion-item.glass-input {
 }
 ion-item.ion-invalid {
   --highlight-color-focused: var(--ion-color-danger);
-  --background: rgba(var(--ion-color-danger-rgb), 0.1);
+  --background: rgba(var(--red), 0.1);
 }
 .password-item ion-icon.toggle-eye {
   cursor: pointer;

@@ -119,7 +119,7 @@ public class UserAuthDAO {
 
 
 
-        public boolean usernameExists(String username) {
+    public boolean usernameExists(String username) {
         final String SQL = "SELECT 1 FROM user_auth WHERE LOWER(username) = LOWER(?) LIMIT 1";
 
         try (Connection conn = DBUtil.getConnection();
@@ -133,4 +133,14 @@ public class UserAuthDAO {
             return true; // fallback prudente: se errore, assume già preso
         }
     }
+
+    public void updatePassword(int userId, String hashedPassword, Connection conn) throws SQLException {
+        String sql = "UPDATE user_auth SET password_hash = ?, failed_login_attempts = 0, locked_until = NULL WHERE id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, hashedPassword);
+            stmt.setInt(2, userId);
+            stmt.executeUpdate();
+        }
+    }
+
 }

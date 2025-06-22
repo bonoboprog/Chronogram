@@ -24,6 +24,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/register',
     name: 'Register', // Questo è il nome che abbiamo usato in LoginPage.vue
     component: () => import('@/views/RegistrationPage.vue')
+  },
+  {
+    path: '/ForgotPassword',
+    name: 'ForgotPasswordPage', // Add "Page" to match your component
+    component: () => import('@/views/ForgotPasswordPage.vue')
   }
 ];
 
