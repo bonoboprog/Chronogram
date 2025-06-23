@@ -35,7 +35,7 @@ public final class RegistrationData {
     public String getBirthday() { return birthday; }
     public String getGender() { return gender; }
 
-    // Metodi standard: equals, hashCode, toString (generati da un IDE)
+    // Metodi standard: equals, hashCode, toString 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
