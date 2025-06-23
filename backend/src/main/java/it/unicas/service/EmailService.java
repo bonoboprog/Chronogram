@@ -101,34 +101,35 @@ public class EmailService {
      * @return una stringa contenente il codice HTML dell'email.
      */
     private String createHtmlEmailBody(String resetUrl) {
-        // Questo è un template HTML di base ma professionale. Puoi personalizzarlo come preferisci.
-        return "<!DOCTYPE html>" +
-               "<html lang=\"it\">" +
-               "<head>" +
-               "<meta charset=\"UTF-8\">" +
-               "<style>" +
-               " body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }" +
-               " .container { width: 90%; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }" +
-               " .button { display: inline-block; padding: 10px 20px; margin: 20px 0; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px; }" +
-               " .footer { font-size: 0.9em; color: #777; margin-top: 20px; }" +
-               "</style>" +
-               "</head>" +
-               "<body>" +
-               "<div class=\"container\">" +
-               "<h2>Richiesta di Reset Password</h2>" +
-               "<p>Ciao,</p>" +
-               "<p>Abbiamo ricevuto una richiesta per resettare la password del tuo account su Chronogram. Se non sei stato tu a richiederlo, puoi tranquillamente ignorare questa email.</p>" +
-               "<p>Per procedere con la creazione di una nuova password, clicca sul pulsante qui sotto:</p>" +
-               "<a href=\"" + resetUrl + "\" class=\"button\">Resetta la tua Password</a>" +
-               "<p>Questo link scadrà tra 30 minuti.</p>" +
-               "<p>Grazie,<br>Il Team di Chronogram</p>" +
-               "<div class=\"footer\">" +
-               "<p>Questo è un messaggio automatico, per favore non rispondere a questa email.</p>" +
-               "</div>" +
-               "</div>" +
-               "</body>" +
-               "</html>";
+    // This is a basic but professional HTML template. You can customize it as needed.
+    return "<!DOCTYPE html>" +
+           "<html lang=\"en\">" +
+           "<head>" +
+           "<meta charset=\"UTF-8\">" +
+           "<style>" +
+           " body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }" +
+           " .container { width: 90%; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }" +
+           " .button { display: inline-block; padding: 10px 20px; margin: 20px 0; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px; }" +
+           " .footer { font-size: 0.9em; color: #777; margin-top: 20px; }" +
+           "</style>" +
+           "</head>" +
+           "<body>" +
+           "<div class=\"container\">" +
+           "<h2>Password Reset Request</h2>" +
+           "<p>Hello,</p>" +
+           "<p>We received a request to reset the password for your Chronogram account. If you did not request this, you can safely ignore this email.</p>" +
+           "<p>To proceed with creating a new password, click the button below:</p>" +
+           "<a href=\"" + resetUrl + "\" class=\"button\">Reset Your Password</a>" +
+           "<p>This link will expire in 30 minutes.</p>" +
+           "<p>Thank you,<br>The Chronogram Team</p>" +
+           "<div class=\"footer\">" +
+           "<p>This is an automated message. Please do not reply to this email.</p>" +
+           "</div>" +
+           "</div>" +
+           "</body>" +
+           "</html>";
     }
+
 
     /**
      * Crea l'oggetto Properties leggendo le configurazioni dalle variabili d'ambiente.
