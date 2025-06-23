@@ -101,25 +101,33 @@ public class EmailService {
      * @return una stringa contenente il codice HTML dell'email.
      */
     private String createHtmlEmailBody(String resetUrl) {
-    // This is a basic but professional HTML template. You can customize it as needed.
     return "<!DOCTYPE html>" +
            "<html lang=\"en\">" +
            "<head>" +
            "<meta charset=\"UTF-8\">" +
+           "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
            "<style>" +
-           " body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }" +
-           " .container { width: 90%; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }" +
-           " .button { display: inline-block; padding: 10px 20px; margin: 20px 0; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px; }" +
-           " .footer { font-size: 0.9em; color: #777; margin-top: 20px; }" +
+           "  body { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }" +
+           "  .container { width: 90%; max-width: 600px; margin: 40px auto; background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }" +
+           "  .logo { text-align: center; margin-bottom: 30px; }" +
+           "  .logo img { max-width: 160px; height: auto; }" +
+           "  h2 { color: #333333; }" +
+           "  p { color: #555555; font-size: 16px; line-height: 1.6; }" +
+           "  .button { display: inline-block; padding: 12px 24px; margin: 20px 0; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold; transition: background-color 0.3s ease; }" +
+           "  .button:hover { background-color: #0056b3; }" +
+           "  .footer { font-size: 13px; color: #999999; margin-top: 30px; text-align: center; }" +
            "</style>" +
            "</head>" +
            "<body>" +
            "<div class=\"container\">" +
+           "<div class=\"logo\">" +
+           "<img src=\"https://github.com/bonoboprog/Chronogram/blob/Backend-patch-2/docs/Logo.png?raw=true\" alt=\"Chronogram Logo\">" +
+           "</div>" +
            "<h2>Password Reset Request</h2>" +
            "<p>Hello,</p>" +
-           "<p>We received a request to reset the password for your Chronogram account. If you did not request this, you can safely ignore this email.</p>" +
-           "<p>To proceed with creating a new password, click the button below:</p>" +
-           "<a href=\"" + resetUrl + "\" class=\"button\">Reset Your Password</a>" +
+           "<p>We received a request to reset the password for your Chronogram account. If you did not request this, please ignore this email.</p>" +
+           "<p>To set a new password, click the button below:</p>" +
+           "<p style=\"text-align: center;\"><a href=\"" + resetUrl + "\" class=\"button\">Reset Your Password</a></p>" +
            "<p>This link will expire in 30 minutes.</p>" +
            "<p>Thank you,<br>The Chronogram Team</p>" +
            "<div class=\"footer\">" +
