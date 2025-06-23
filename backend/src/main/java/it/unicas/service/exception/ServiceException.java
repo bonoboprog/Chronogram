@@ -1,4 +1,4 @@
-package it.unicas.service;
+package it.unicas.service.exception;
 
 public class ServiceException extends Exception {
     public ServiceException(String message) {

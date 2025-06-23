@@ -4,7 +4,7 @@ import com.opensymphony.xwork2.ActionSupport;
 import it.unicas.service.PasswordResetService;
 import it.unicas.service.exception.ServiceException;
 import it.unicas.service.exception.ValidationException;
-import jakarta.servlet.http.HttpServletRequest; // <-- 1. AGGIUNTO IMPORT
+import javax.servlet.http.HttpServletRequest;// <-- 1. AGGIUNTO IMPORT
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.struts2.interceptor.ServletRequestAware; // <-- 2. AGGIUNTO IMPORT
