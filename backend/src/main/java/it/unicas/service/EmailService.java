@@ -49,8 +49,8 @@ public class EmailService {
      * @param token Il token completo (selector:verifier) da includere nel link di reset.
      * @throws ServiceException se si verifica un errore durante l'invio dell'email.
      */
-    public void sendPasswordResetEmail(String toEmail, String token) throws ServiceException {
-        logger.info("Preparing to send password reset email to {}", toEmail);
+    public void sendPasswordResetEmail(String toEmail, String token, String origin) throws ServiceException {
+        logger.info("Preparing to send password reset email to {} from origin {}", toEmail, origin);
 
         Session session = Session.getInstance(mailProperties, new Authenticator() {
             @Override
@@ -66,17 +66,33 @@ public class EmailService {
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
             message.setSubject("Richiesta di Reset Password - Chronogram");
 
+            // OLD: NOT CONSIDER THIS COMMENTED SECTION!!!!!
             // Costruisce l'URL completo che l'utente cliccherà nell'email
             // NOTA: Assicurati che 'http://localhost:8100' sia l'indirizzo corretto del tuo frontend
-            String resetUrl = "http://localhost:8100/reset-password?token=" + token; 
+            //String resetUrl = "http://localhost:8100/reset-password?token=" + token; 
+           
+            // === INIZIO MODIFICA ===
+            String baseUrl;
+            // Se l'header Origin è presente e valido, usalo.
+            if (origin != null && !origin.trim().isEmpty()) {
+                baseUrl = origin;
+            } else {
+                // Altrimenti, usa il valore di fallback dalle variabili d'ambiente.
+                baseUrl = System.getenv().getOrDefault("APP_BASE_URL", "http://localhost:8100");
+                logger.warn("Origin header was not present. Falling back to APP_BASE_URL: {}", baseUrl);
+            }
+
+            // Costruisci l'URL dinamicamente
+            String resetUrl = baseUrl + "/reset-password?token=" + token;
+            // === FINE MODIFICA ===
+
             String emailContent = createHtmlEmailBody(resetUrl);
-
             message.setContent(emailContent, "text/html; charset=utf-8");
-
             Transport.send(message);
 
             logger.info("Password reset email successfully sent to {}", toEmail);
 
+            
         } catch (MessagingException e) {
             logger.error("Failed to send email to {}", toEmail, e);
             throw new ServiceException("Could not send the password reset email.");
