@@ -17,7 +17,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/home',
     name: 'Home',
-    component: () => import('@/views/AddActivity.vue')
+    component: () => import('@/views/HomePage.vue')
   },
   // --- ROTTA AGGIUNTA ---
   {
@@ -29,6 +29,16 @@ const routes: Array<RouteRecordRaw> = [
     path: '/ForgotPassword',
     name: 'ForgotPasswordPage', // Add "Page" to match your component
     component: () => import('@/views/ForgotPasswordPage.vue')
+  },
+  {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: () => import('@/views/ResetPasswordPage.vue')
+  },
+  {
+    path: '/add-activity',
+    name: 'AddActivity',
+    component: () => import('@/views/AddActivityPage.vue')
   }
 ];
 
