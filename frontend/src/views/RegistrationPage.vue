@@ -209,7 +209,7 @@ async function handleRegister() {
 
   isLoading.value = true;
   try {
-    const { data } = await api.post('/register', { ...form });
+    const { data } = await api.post('/api/auth/register', { ...form });
     // 👉 data ora è direttamente { success, message }
 
     if (!data?.success) {
