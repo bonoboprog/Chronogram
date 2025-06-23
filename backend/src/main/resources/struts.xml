@@ -17,7 +17,7 @@
 
         <action name="login" class="it.unicas.action.LoginAction">
             <result type="json">
-                <param name="root">success,message,username</param>
+                <param name="root">success,message,username,token</param>
             </result>
         </action>
 
