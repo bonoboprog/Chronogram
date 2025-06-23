@@ -144,8 +144,6 @@ public class UserAuthDAO {
     }
 
 
-// Dentro la classe UserAuthDAO.java
-
 /**
  * Azzera i tentativi di login falliti e aggiorna la data dell'ultimo login
  * dopo un accesso andato a buon fine.
