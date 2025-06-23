@@ -3,6 +3,7 @@ package it.unicas.service;
 import it.unicas.dao.UserAuthDAO;
 import it.unicas.dao.UserDAO;
 import it.unicas.dbutil.DBUtil;
+import it.unicas.dto.RegistrationDTO; // <-- 1. IMPORT MODIFICATO
 import it.unicas.dto.UserAuthDTO;
 import it.unicas.dto.UserDTO;
 import it.unicas.service.exception.ServiceException;
@@ -40,7 +41,7 @@ public class RegistrationService {
      * @throws ValidationException se i dati non sono validi.
      * @throws ServiceException se si verifica un errore di business (es. email duplicata) o di sistema.
      */
-    public void registerNewUser(RegistrationData data) throws ValidationException, ServiceException {
+    public void registerNewUser(RegistrationDTO data) throws ValidationException, ServiceException { // <-- 2. TIPO DEL PARAMETRO MODIFICATO
         // 1. Validazione approfondita dei dati
         validateRegistrationData(data);
 
@@ -48,17 +49,19 @@ public class RegistrationService {
         Timestamp now = Timestamp.valueOf(LocalDateTime.now());
 
         UserAuthDTO authDTO = new UserAuthDTO();
-        authDTO.setEmail(data.email());
-        authDTO.setPasswordHash(PasswordUtil.getInstance().encode(data.password()));
-        authDTO.setUsername(data.name() + " " + data.surname());
+        
+        // --- 3. USO DEI GETTER STANDARD ---
+        authDTO.setEmail(data.getEmail());
+        authDTO.setPasswordHash(PasswordUtil.getInstance().encode(data.getPassword()));
+        authDTO.setUsername(data.getName() + " " + data.getSurname());
         authDTO.setCreatedAt(now);
         authDTO.setUpdatedAt(now);
         authDTO.setIsActive(1);
 
         UserDTO userDTO = new UserDTO();
-        userDTO.setGender(data.gender());
-        userDTO.setAddress(data.phone()); // (Mantenuto come placeholder come nel tuo codice)
-        userDTO.setBirthday(parseBirthday(data.birthday()));
+        userDTO.setGender(data.getGender());
+        userDTO.setAddress(data.getPhone()); // (Mantenuto come placeholder come nel tuo codice)
+        userDTO.setBirthday(parseBirthday(data.getBirthday()));
         userDTO.setCreatedAt(now);
         userDTO.setUpdatedAt(now);
         
@@ -67,7 +70,7 @@ public class RegistrationService {
             conn.setAutoCommit(false);
             try {
                 // Controllo di unicità dell'email all'interno della transazione
-                if (authDAO.getUserAuthByEmail(data.email(), conn) != null) {
+                if (authDAO.getUserAuthByEmail(data.getEmail(), conn) != null) {
                     throw new ServiceException("Email already registered.");
                 }
 
@@ -82,11 +85,11 @@ public class RegistrationService {
                 }
 
                 conn.commit(); // Successo! Conferma la transazione
-                logger.info("User {} registered successfully with user_id={}", data.email(), userId);
+                logger.info("User {} registered successfully with user_id={}", data.getEmail(), userId);
 
             } catch (Exception e) {
                 conn.rollback(); // Se qualcosa va storto, annulla tutto
-                logger.warn("Registration transaction rolled back for email {}", data.email(), e);
+                logger.warn("Registration transaction rolled back for email {}", data.getEmail(), e);
                 // Rilancia l'eccezione per farla gestire all'Action
                 throw new ServiceException(e.getMessage(), e);
             }
@@ -96,19 +99,19 @@ public class RegistrationService {
         }
     }
 
-    private void validateRegistrationData(RegistrationData data) throws ValidationException {
-        if (data.name() == null || data.name().trim().isEmpty() ||
-            data.surname() == null || data.surname().trim().isEmpty() ||
-            data.email() == null || data.email().trim().isEmpty() ||
-            data.password() == null || data.password().trim().isEmpty()) {
+    private void validateRegistrationData(RegistrationDTO data) throws ValidationException { // <-- 2. TIPO DEL PARAMETRO MODIFICATO
+        // --- 3. USO DEI GETTER STANDARD ---
+        if (data.getName() == null || data.getName().trim().isEmpty() ||
+            data.getSurname() == null || data.getSurname().trim().isEmpty() ||
+            data.getEmail() == null || data.getEmail().trim().isEmpty() ||
+            data.getPassword() == null || data.getPassword().trim().isEmpty()) {
             throw new ValidationException("All required fields must be filled.");
         }
 
-        // Aggiungi qui le altre validazioni (complessità password, formato email, etc.)
-        if (!data.email().matches("^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,}$")) {
+        if (!data.getEmail().matches("^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,}$")) {
             throw new ValidationException("Invalid email format.");
         }
-        if (data.password().length() < 8) {
+        if (data.getPassword().length() < 8) {
             throw new ValidationException("Password must be at least 8 characters long.");
         }
     }
