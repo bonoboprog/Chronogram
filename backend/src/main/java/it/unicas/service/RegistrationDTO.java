@@ -1,12 +1,12 @@
-package it.unicas.service;
+package it.unicas.dto; // <-- 1. PACKAGE MODIFICATO
 
 import java.util.Objects;
 
 /**
  * Un Data Transfer Object (DTO) immutabile per contenere i dati di registrazione.
- * Sostituisce un 'record' Java, essendo compatibile con Java 8.
+ * Trasporta i dati dal form (Action) al Service Layer.
  */
-public final class RegistrationData {
+public final class RegistrationDTO { // <-- 2. NOME DELLA CLASSE MODIFICATO
 
     private final String name;
     private final String surname;
@@ -16,7 +16,7 @@ public final class RegistrationData {
     private final String birthday;
     private final String gender;
 
-    public RegistrationData(String name, String surname, String phone, String email, String password, String birthday, String gender) {
+    public RegistrationDTO(String name, String surname, String phone, String email, String password, String birthday, String gender) { // <-- 3. NOME DEL COSTRUTTORE MODIFICATO
         this.name = name;
         this.surname = surname;
         this.phone = phone;
@@ -40,7 +40,7 @@ public final class RegistrationData {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        RegistrationData that = (RegistrationData) o;
+        RegistrationDTO that = (RegistrationDTO) o; // <-- 4. TIPO INTERNO MODIFICATO
         return Objects.equals(name, that.name) &&
                Objects.equals(surname, that.surname) &&
                Objects.equals(phone, that.phone) &&
@@ -57,7 +57,7 @@ public final class RegistrationData {
 
     @Override
     public String toString() {
-        return "RegistrationData[" +
+        return "RegistrationDTO[" + // <-- 5. NOME NEL toString() MODIFICATO
                "name='" + name + '\'' +
                ", surname='" + surname + '\'' +
                ", phone='" + phone + '\'' +
