@@ -18,7 +18,7 @@ public class PasswordResetDAO {
     private static final Logger logger = LogManager.getLogger(PasswordResetDAO.class);
 
     /**
-     * NUOVO METODO: Salva un nuovo record di reset password nel database.
+     * Salva un nuovo record di reset password nel database.
      * Utilizza "ON DUPLICATE KEY UPDATE" per gestire il caso in cui un utente richieda
      * un nuovo token prima che il vecchio sia scaduto, sovrascrivendolo.
      * Questo richiede un UNIQUE index sulla colonna `user_id`.
@@ -49,7 +49,7 @@ public class PasswordResetDAO {
     }
 
     /**
-     * NUOVO METODO: Trova un token usando il selettore (veloce e sicuro).
+     * Trova un token usando il selettore (veloce e sicuro).
      * Questa query è performante perché la colonna 'selector' è indicizzata.
      * @param selector La parte pubblica del token.
      * @param conn La connessione al database.
@@ -86,7 +86,7 @@ public class PasswordResetDAO {
     }
 
     /**
-     * NUOVO METODO: Elimina un token usando il suo selettore dopo che è stato usato.
+     * Elimina un token usando il suo selettore dopo che è stato usato.
      * @param selector La parte pubblica del token da eliminare.
      * @param conn La connessione al database.
      * @throws SQLException in caso di errore DB.
