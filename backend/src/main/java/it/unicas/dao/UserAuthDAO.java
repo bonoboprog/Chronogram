@@ -143,4 +143,49 @@ public class UserAuthDAO {
         }
     }
 
+
+// Dentro la classe UserAuthDAO.java
+
+/**
+ * Azzera i tentativi di login falliti e aggiorna la data dell'ultimo login
+ * dopo un accesso andato a buon fine.
+ * @param userId L'ID dell'utente.
+ * @param conn La connessione al database.
+ * @throws SQLException
+ */
+public void resetLoginAttempts(int userId, Connection conn) throws SQLException {
+    String sql = "UPDATE user_auth SET failed_login_attempts = 0, last_login_time = NOW(), locked_until = NULL WHERE user_id = ?";
+    logger.debug("Resetting login attempts for user_id: {}", userId);
+    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setInt(1, userId);
+        stmt.executeUpdate();
+    } catch (SQLException e) {
+        logger.error("Error resetting login attempts for user_id: {}", userId, e);
+        throw e;
+    }
+}
+
+/**
+ * Aggiorna il contatore dei tentativi di login falliti e imposta un eventuale
+ * timestamp di blocco per l'account.
+ * @param userId L'ID dell'utente.
+ * @param attempts il nuovo numero di tentativi falliti.
+ * @param lockedUntil il timestamp fino al quale l'account è bloccato (può essere null).
+ * @param conn La connessione al database.
+ * @throws SQLException
+ */
+public void updateFailedLoginAttempt(int userId, int attempts, Timestamp lockedUntil, Connection conn) throws SQLException {
+    String sql = "UPDATE user_auth SET failed_login_attempts = ?, locked_until = ? WHERE user_id = ?";
+    logger.debug("Updating failed login attempts to {} for user_id: {}", attempts, userId);
+    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setInt(1, attempts);
+        stmt.setTimestamp(2, lockedUntil);
+        stmt.setInt(3, userId);
+        stmt.executeUpdate();
+    } catch (SQLException e) {
+        logger.error("Error updating failed login attempts for user_id: {}", userId, e);
+        throw e;
+    }
+}
+
 }
