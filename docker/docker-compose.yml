@@ -30,6 +30,10 @@ services:
       DB_HOST: chronogram-mysql
       DEBUG_MODE: ${DEBUG_MODE:-false}
       LLM_API_KEY: ${LLM_API_KEY}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USER: ${MAIL_USER}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
     volumes:
       - ./logs:/usr/local/tomcat/logs  
 
