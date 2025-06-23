@@ -1,7 +1,7 @@
 package it.unicas.action;
 
 import com.opensymphony.xwork2.ActionSupport;
-import it.unicas.service.RegistrationData;
+import it.unicas.dto.RegistrationDTO; // <-- 1. IMPORT AGGIORNATO
 import it.unicas.service.RegistrationService;
 import it.unicas.service.exception.ServiceException;
 import it.unicas.service.exception.ValidationException;
@@ -36,7 +36,9 @@ public class RegistrationAction extends ActionSupport {
         logger.info("Registration request received for email: {}", email);
 
         // 1. Raccoglie i dati in un unico oggetto per passarli in modo pulito.
-        RegistrationData data = new RegistrationData(name, surname, phone, email, password, birthday, gender);
+        // --- INIZIO MODIFICA ---
+        RegistrationDTO data = new RegistrationDTO(name, surname, phone, email, password, birthday, gender); // <-- 2. TIPO DELL'OGGETTO AGGIORNATO
+        // --- FINE MODIFICA ---
         
         try {
             // 2. Delega tutta la logica di business a un singolo metodo del service.
@@ -54,7 +56,7 @@ public class RegistrationAction extends ActionSupport {
             // Cattura errori di business (es. email già registrata) o errori interni.
             logger.error("Registration failed for {} due to a service error", email, e);
             // Non mostrare dettagli dell'errore interno all'utente, ma gestisci i casi noti.
-            if (e.getMessage().contains("Email already registered")) {
+            if (e.getMessage() != null && e.getMessage().contains("Email already registered")) {
                 setFailure("Email already registered.");
             } else {
                 setFailure("Registration failed due to a system error.");
