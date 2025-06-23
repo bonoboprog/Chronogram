@@ -84,7 +84,7 @@ const handleLogin = async () => {
 
   try {
     const API = import.meta.env.VITE_API_BASE_URL; // Ensure this is correctly configured
-    const response = await axios.post(`${API}/login`, payload, {
+    const response = await axios.post(`${API}/api/auth/login`, payload, {
       headers: { 'Content-Type': 'application/json' }
     });
 
