@@ -78,7 +78,7 @@ public class EmailService {
                 baseUrl = origin;
             } else {
                 // Altrimenti, usa il valore di fallback dalle variabili d'ambiente.
-                baseUrl = System.getenv().getOrDefault("APP_BASE_URL", "http://localhost:8100");
+                baseUrl =  "http://localhost:8100";
                 logger.warn("Origin header was not present. Falling back to APP_BASE_URL: {}", baseUrl);
             }
 
