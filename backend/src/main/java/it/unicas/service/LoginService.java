@@ -2,6 +2,7 @@ package it.unicas.service;
 
 import it.unicas.dao.UserAuthDAO;
 import it.unicas.dbutil.DBUtil;
+import it.unicas.dto.LoginResultDTO; // <-- 1. IMPORT AGGIORNATO
 import it.unicas.dto.UserAuthDTO;
 import it.unicas.service.exception.AuthenticationException;
 import it.unicas.util.JwtUtil;
@@ -14,6 +15,10 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
+/**
+ * Gestisce la logica di business per il processo di login,
+ * inclusa la protezione dalla forza bruta e la generazione di JWT.
+ */
 public class LoginService {
     private static final Logger logger = LogManager.getLogger(LoginService.class);
     private static final int MAX_FAILED_ATTEMPTS = 5;
@@ -25,10 +30,15 @@ public class LoginService {
         this.userAuthDAO = new UserAuthDAO();
     }
     
-    // Un record per restituire più valori in modo pulito
-    public record LoginResult(String username, String jwtToken) {}
-
-    public LoginResult loginUser(String email, String password) throws AuthenticationException, SQLException {
+    /**
+     * Esegue l'autenticazione di un utente.
+     * @param email L'email fornita per il login.
+     * @param password La password in chiaro fornita.
+     * @return Un oggetto LoginResultDTO contenente username e token JWT in caso di successo.
+     * @throws AuthenticationException se l'autenticazione fallisce per qualsiasi motivo.
+     * @throws SQLException se si verifica un errore a livello di database.
+     */
+    public LoginResultDTO loginUser(String email, String password) throws AuthenticationException, SQLException {
         if (email == null || email.trim().isEmpty() || password == null || password.isEmpty()) {
             throw new AuthenticationException("Email and password are required.");
         }
@@ -57,7 +67,8 @@ public class LoginService {
                 // Genera il JWT
                 String jwtToken = JwtUtil.generateToken(email);
                 
-                return new LoginResult(user.getUsername(), jwtToken);
+                // 2. USA IL NUOVO DTO
+                return new LoginResultDTO(user.getUsername(), jwtToken);
             } else {
                 // Fallimento!
                 logger.warn("Wrong password for {}", email);
