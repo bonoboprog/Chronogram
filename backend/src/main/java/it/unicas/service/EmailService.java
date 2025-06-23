@@ -66,10 +66,6 @@ public class EmailService {
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
             message.setSubject("Richiesta di Reset Password - Chronogram");
 
-            // OLD: NOT CONSIDER THIS COMMENTED SECTION!!!!!
-            // Costruisce l'URL completo che l'utente cliccherà nell'email
-            // NOTA: Assicurati che 'http://localhost:8100' sia l'indirizzo corretto del tuo frontend
-            //String resetUrl = "http://localhost:8100/reset-password?token=" + token; 
            
             // === INIZIO MODIFICA ===
             String baseUrl;
