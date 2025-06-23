@@ -1,40 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE struts PUBLIC
-  "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
-  "http://struts.apache.org/dtds/struts-2.5.dtd">
+    "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
+    "http://struts.apache.org/dtds/struts-2.5.dtd">
 
 <struts>
-  <package name="default" namespace="/" extends="json-default">
+    <constant name="struts.devMode" value="true" />
+    <constant name="struts.convention.result.path" value="/"/>
 
-    <!-- 🌐 LLM Prompt -->
-    <action name="llmPrompt" class="it.unicas.action.LLMAction">
-      <interceptor-ref name="json" />
-      <result type="json">
-        <param name="root">data</param>
-      </result>
-    </action>
+    <package name="api-auth" namespace="/api/auth" extends="json-default">
 
-    <!-- 🧾 Registration: returns wrapped response DTO -->
-    <action name="register" class="it.unicas.action.RegistrationAction">
-      <interceptor-ref name="json" />
-      <result type="json">
-        <param name="root">registrationResponse</param>
-      </result>
-    </action>
+        <action name="register" class="it.unicas.action.RegistrationAction">
+            <result type="json">
+                <param name="root">registrationResponse</param>
+            </result>
+        </action>
 
-    <!-- 🔐 Login -->
-    <action name="login" class="it.unicas.action.LoginAction">
-      <interceptor-ref name="json" />
-      <result type="json">
-        <param name="root">success,message,username</param>
-      </result>
-    </action>
+        <action name="login" class="it.unicas.action.LoginAction">
+            <result type="json">
+                <param name="root">success,message,username</param>
+            </result>
+        </action>
 
-    <!-- 👤 Username check -->
-    <action name="userExists" class="it.unicas.action.UsernameExistsAction">
-      <interceptor-ref name="json" />
-      <result type="json"/>
-    </action>
+        <action name="userExists" class="it.unicas.action.UsernameExistsAction">
+            <result type="json"/>
+        </action>
+        
+        <action name="request-reset" class="it.unicas.action.RequestPasswordResetAction" method="execute">
+            <result type="json">
+                <param name="root">success,message</param>
+            </result>
+        </action>
 
-  </package>
+        <action name="reset-password" class="it.unicas.action.ResetPasswordAction" method="execute">
+            <result type="json">
+                <param name="root">success,message</param>
+            </result>
+        </action>
+
+    </package>
+    
+    <package name="api-llm" namespace="/api/llm" extends="json-default">
+        <action name="prompt" class="it.unicas.action.LLMAction">
+            <result type="json">
+                <param name="root">data</param>
+            </result>
+        </action>
+    </package>
+    
+    <package name="default" namespace="/" extends="json-default">
+        </package>
+
 </struts>
