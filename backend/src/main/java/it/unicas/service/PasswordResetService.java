@@ -40,7 +40,7 @@ public class PasswordResetService {
         this.emailService = new EmailService(); // <-- Istanzia il nuovo service
     }
 
-    public String initiatePasswordReset(String email) throws ServiceException, ValidationException {
+    public String initiatePasswordReset(String email, String origin) throws ServiceException, ValidationException {
         if (email == null || email.trim().isEmpty() || !email.contains("@")) {
             throw new ValidationException("A valid email is required.");
         }
@@ -77,7 +77,7 @@ public class PasswordResetService {
 
             // 3. CHIAMATA EFFETTIVA ALL'INVIO EMAIL
             // Se questo metodo fallisce, lancia un'eccezione e la transazione verrà annullata.
-            emailService.sendPasswordResetEmail(email, tokenCompleto);
+            emailService.sendPasswordResetEmail(email, tokenCompleto, origin);
 
             conn.commit(); // FINE TRANSAZIONE (tutto è andato a buon fine)
             logger.info("Reset token created and email sent successfully for {}", email);
