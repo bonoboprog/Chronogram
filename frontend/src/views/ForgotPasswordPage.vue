@@ -65,7 +65,7 @@ const handleSendResetLink = async () => {
 
   try {
     const API = import.meta.env.VITE_API_BASE_URL
-    const response = await axios.post(`${API}/forgot-password`, { email: email.value }, {
+    const response = await axios.post(`${API}/api/auth/request-reset`, { email: email.value }, {
       headers: { 'Content-Type': 'application/json' }
     })
 
