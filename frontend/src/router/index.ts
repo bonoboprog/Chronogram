@@ -7,7 +7,7 @@ import { RouteRecordRaw } from 'vue-router';
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    redirect: '/edit-profile'// Imposta la pagina di login come predefinita
+    redirect: '/details'// Imposta la pagina di login come predefinita
   },
   {
     path: '/login',
@@ -66,6 +66,21 @@ const routes: Array<RouteRecordRaw> = [
     path: '/notifications',
     name: 'Notifications',
     component: () => import('@/views/Notifications.vue')
+  },
+  {
+    path: '/delete-account',
+    name: 'DeleteAccount',
+    component: () => import('@/views/DeleteAccount.vue')
+  },
+  {
+    path: '/delete-reasons',
+    name: 'DeleteReasons',
+    component: () => import('@/views/DeleteReasons.vue')
+  },
+  {
+    path: '/details',
+    name: 'Details',
+    component: () => import('@/views/DetailsPage.vue')
   }
 
 ];

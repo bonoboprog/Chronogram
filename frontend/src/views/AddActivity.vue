@@ -2,7 +2,6 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <!-- Navigation icons -->
         <ion-buttons slot="start">
           <ion-button @click="goTo('Home')">
             <ion-icon :icon="homeOutline" :color="selectedTab === 'Home' ? 'peach' : ''" slot="icon-only" />
@@ -26,96 +25,102 @@
       </ion-header>
 
       <!-- AI Input Section -->
-      <div class="magic-input-section">
-        <ion-item-divider color="light">
-          <ion-label>
+      <ion-card class="input-card">
+        <ion-card-header>
+          <ion-card-title class="section-title">
             <ion-icon :icon="sparkles" color="primary" class="magic-icon"></ion-icon>
             Describe with AI
-          </ion-label>
-        </ion-item-divider>
+          </ion-card-title>
+        </ion-card-header>
 
-        <ion-item>
-          <ion-textarea
-              label="Describe with AI"
-              label-placement="stacked"
-              v-model="naturalInput"
-              placeholder="e.g., Gym for an hour, it was tiring but enjoyable"
-              :auto-grow="true"
-              class="magic-textarea"
-              :rows="2" ></ion-textarea>
+        <ion-card-content>
+          <ion-item>
+            <ion-textarea
+                label="Describe with AI"
+                label-placement="stacked"
+                v-model="naturalInput"
+                placeholder="e.g., Gym for an hour, it was tiring but enjoyable"
+                :auto-grow="true"
+                class="magic-textarea"
+                :rows="2" />
+          </ion-item>
 
-          <ion-button @click="handleMagicInput" fill="clear" slot="end" :disabled="isLoading" style="align-self: flex-start;">
-            <ion-icon v-if="!isLoading" slot="icon-only" :icon="send" color="primary"></ion-icon>
-            <ion-spinner v-if="isLoading" name="crescent"></ion-spinner>
+          <ion-button expand="block" @click="handleMagicInput" :disabled="isLoading">
+            <ion-icon v-if="!isLoading" slot="start" :icon="send"></ion-icon>
+            <ion-spinner v-else name="crescent" slot="start"></ion-spinner>
+            Use AI
           </ion-button>
 
-          <ion-note slot="helper">
+          <ion-note class="helper-note">
             Tip: Include duration, cost, and feelings for better analysis.
           </ion-note>
-          <ion-note slot="error" v-if="errorMessage">{{ errorMessage }}</ion-note>
-        </ion-item>
-      </div>
+          <ion-note color="danger" v-if="errorMessage">{{ errorMessage }}</ion-note>
+        </ion-card-content>
+      </ion-card>
 
       <!-- Manual Input Section -->
-      <div class="manual-form-section">
-        <ion-item-divider color="light">
-          <ion-label>Or fill details manually</ion-label>
-        </ion-item-divider>
+      <ion-card class="input-card">
+        <ion-card-header>
+          <ion-card-title class="section-title">
+            <ion-icon :icon="pencilOutline" color="medium"></ion-icon>
+            Or fill details manually
+          </ion-card-title>
+        </ion-card-header>
 
-        <ion-item>
-          <ion-icon :icon="pencilOutline" slot="start" color="medium"></ion-icon>
-          <ion-input label="Name of New Activity" label-placement="stacked" v-model="activity.name"></ion-input>
-        </ion-item>
+        <ion-card-content>
+          <ion-item>
+            <ion-input label="Name of New Activity" label-placement="stacked" v-model="activity.name"></ion-input>
+          </ion-item>
 
-        <ion-item>
-          <ion-input label="Duration (min)" label-placement="stacked" type="number" v-model="activity.duration"></ion-input>
-        </ion-item>
+          <ion-item>
+            <ion-input label="Duration (min)" label-placement="stacked" type="number" v-model="activity.duration"></ion-input>
+          </ion-item>
 
-        <ion-item>
-          <ion-textarea label="Details" label-placement="stacked" :auto-grow="true" v-model="activity.details"></ion-textarea>
-        </ion-item>
+          <ion-item>
+            <ion-textarea label="Details" label-placement="stacked" :auto-grow="true" v-model="activity.details"></ion-textarea>
+          </ion-item>
 
-        <ion-item>
-          <ion-label>Enjoyment</ion-label>
-          <div class="stepper" slot="end">
-            <ion-button @click="adjustEnjoyment(-1)" fill="clear" size="small">-</ion-button>
-            <span class="stepper-value">{{ activity.enjoyment }}</span>
-            <ion-button @click="adjustEnjoyment(1)" fill="clear" size="small">+</ion-button>
-          </div>
-        </ion-item>
+          <ion-item>
+            <ion-label>Enjoyment</ion-label>
+            <div class="stepper" slot="end">
+              <ion-button @click="adjustEnjoyment(-1)" fill="clear" size="small">-</ion-button>
+              <span class="stepper-value">{{ activity.enjoyment }}</span>
+              <ion-button @click="adjustEnjoyment(1)" fill="clear" size="small">+</ion-button>
+            </div>
+          </ion-item>
 
-        <ion-item>
-          <ion-input label="Category" label-placement="stacked" v-model="activity.category"></ion-input>
-        </ion-item>
+          <ion-item>
+            <ion-input label="Category" label-placement="stacked" v-model="activity.category"></ion-input>
+          </ion-item>
 
-        <ion-item>
-          <ion-select label="Type of activity" label-placement="stacked" interface="popover" v-model="activity.type">
-            <ion-select-option value="instrumental">Instrumental</ion-select-option>
-            <ion-select-option value="final">Final</ion-select-option>
-          </ion-select>
-        </ion-item>
+          <ion-item>
+            <ion-select label="Type of activity" label-placement="stacked" interface="popover" v-model="activity.type">
+              <ion-select-option value="instrumental">Instrumental</ion-select-option>
+              <ion-select-option value="final">Final</ion-select-option>
+            </ion-select>
+          </ion-item>
 
-        <ion-item>
-          <ion-select label="Recurrence" label-placement="stacked" interface="popover" v-model="activity.recurrence">
-            <ion-select-option value="R">Routinary (R)</ion-select-option>
-            <ion-select-option value="E">Exceptional (E)</ion-select-option>
-          </ion-select>
-        </ion-item>
+          <ion-item>
+            <ion-select label="Recurrence" label-placement="stacked" interface="popover" v-model="activity.recurrence">
+              <ion-select-option value="R">Routinary (R)</ion-select-option>
+              <ion-select-option value="E">Exceptional (E)</ion-select-option>
+            </ion-select>
+          </ion-item>
 
-        <ion-item>
-          <ion-input label="Cost (€)" label-placement="stacked" type="number" inputmode="decimal" v-model="activity.cost"></ion-input>
-        </ion-item>
+          <ion-item>
+            <ion-input label="Cost (€)" label-placement="stacked" type="number" inputmode="decimal" v-model="activity.cost"></ion-input>
+          </ion-item>
 
-        <ion-item>
-          <ion-input label="Location" label-placement="stacked" v-model="activity.location"></ion-input>
-        </ion-item>
-      </div>
+          <ion-item>
+            <ion-input label="Location" label-placement="stacked" v-model="activity.location"></ion-input>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
 
       <ion-button expand="block" @click="saveActivity" class="ion-margin-top" size="large">
         Save Activity
         <ion-icon slot="end" :icon="checkmarkCircleOutline"></ion-icon>
       </ion-button>
-
     </ion-content>
   </ion-page>
 </template>
@@ -125,12 +130,14 @@ import { ref, reactive } from 'vue';
 import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton, IonIcon,
   IonItem, IonLabel, IonInput, IonTextarea, IonSelect, IonSelectOption, IonSpinner,
-  IonItemDivider, IonNote
+  IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonNote, toastController
 } from '@ionic/vue';
+
 import {
   sparkles, send, pencilOutline, checkmarkCircleOutline,
   homeOutline, calendarOutline, settingsOutline
 } from 'ionicons/icons';
+
 import axios from 'axios';
 import { useRouter, useRoute } from 'vue-router';
 
@@ -178,7 +185,6 @@ const isLoading = ref(false);
 const errorMessage = ref<string | null>(null);
 const currentDate = new Intl.DateTimeFormat('en-GB').format(new Date());
 
-// Send input to backend and populate form fields
 async function handleMagicInput() {
   if (!naturalInput.value.trim()) return;
   isLoading.value = true;
@@ -192,8 +198,6 @@ async function handleMagicInput() {
     );
 
     const data = response.data;
-    console.log('LLM Response:', data);
-
     if (data && typeof data === 'object') {
       let updated = false;
       for (const [key, value] of Object.entries(data)) {
@@ -203,16 +207,13 @@ async function handleMagicInput() {
         }
       }
       if (!updated) {
-        console.warn('No valid data received from AI:', data);
         errorMessage.value = 'No useful data found in AI response.';
       }
       naturalInput.value = '';
     } else {
       errorMessage.value = 'Invalid response from backend.';
     }
-
   } catch (e: unknown) {
-    console.error('Error calling LLM:', e);
     if (axios.isAxiosError<ErrorResponse>(e)) {
       errorMessage.value = e.response?.data?.error || `Network error: ${e.message}`;
     } else {
@@ -223,7 +224,6 @@ async function handleMagicInput() {
   }
 }
 
-// Adjust enjoyment from -3 to +3
 function adjustEnjoyment(adjustment: number) {
   const newValue = activity.enjoyment + adjustment;
   if (newValue >= -3 && newValue <= 3) {
@@ -231,34 +231,51 @@ function adjustEnjoyment(adjustment: number) {
   }
 }
 
-// Simulate save
-function saveActivity() {
+async function saveActivity() {
   console.log('Activity saved:', JSON.stringify(activity, null, 2));
-  alert('Activity saved! Check the console.');
+  const toast = await toastController.create({
+    message: 'Activity saved successfully!',
+    duration: 2000,
+    color: 'success',
+    position: 'bottom'
+  });
+  await toast.present();
 }
 </script>
 
 <style scoped>
-.magic-input-section {
+.input-card {
   margin-bottom: 2rem;
-  border: 1px solid var(--ion-color-light-shade);
-  border-radius: 8px;
-  background: var(--ion-color-light-tint);
+  border-radius: 12px;
+  background-color: #2b2b3a; /* gris oscuro suave */
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 
+.section-title {
+  font-size: 1.1em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #e0aaff; /* rosita pastel */
+}
+
+
+
 .magic-icon {
-  margin-right: 8px;
   font-size: 1.2em;
-  vertical-align: middle;
 }
 
 .magic-textarea {
   font-style: italic;
 }
 
-.manual-form-section ion-item {
-  --padding-start: 0;
+.helper-note {
+  margin-top: 0.5rem;
+  display: block;
+  color: #aaa;
 }
+
 
 .stepper {
   display: flex;
@@ -277,9 +294,5 @@ ion-title.ion-text-right {
   padding-inline-end: 16px;
   font-size: 0.9em;
   color: var(--ion-color-medium-shade);
-}
-
-ion-note[slot="helper"] {
-  font-size: 0.8em;
 }
 </style>

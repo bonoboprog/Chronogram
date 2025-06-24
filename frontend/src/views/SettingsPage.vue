@@ -61,6 +61,12 @@
           <ion-label class="danger-text">Sign Out</ion-label>
           <ion-icon :icon="exitOutline" slot="end" class="danger-text" />
         </ion-item>
+
+        <!-- ✅ New Row: Delete Account -->
+        <ion-item button>
+          <ion-label class="danger-text">Delete Account</ion-label>
+          <ion-icon :icon="trashOutline" slot="end" class="danger-text" />
+        </ion-item>
       </ion-list>
     </ion-content>
   </ion-page>
@@ -75,7 +81,7 @@ import {
 } from '@ionic/vue';
 import {
   personOutline, lockClosedOutline, notificationsOutline, helpCircleOutline, exitOutline,
-  homeOutline, logOutOutline, createOutline
+  homeOutline, logOutOutline, createOutline, trashOutline // 🔧 Importado nuevo icono
 } from 'ionicons/icons';
 
 const router = useRouter();
@@ -170,7 +176,6 @@ onMounted(() => {
   color: var(--ion-color-danger);
 }
 
-/* Opzionale effetto "glass" per ion-list */
 .glass-card {
   background-color: var(--surface0);
   border-radius: 16px;
