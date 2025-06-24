@@ -134,12 +134,32 @@ public class UserAuthDAO {
         }
     }
 
-    public void updatePassword(int userId, String hashedPassword, Connection conn) throws SQLException {
-        String sql = "UPDATE user_auth SET password_hash = ?, failed_login_attempts = 0, locked_until = NULL WHERE id = ?";
+       /**
+     * Aggiorna la password hash per un dato utente.
+     * @param userId L'ID dell'utente da aggiornare.
+     * @param newPasswordHash il nuovo hash della password.
+     * @param conn La connessione al database.
+     * @throws SQLException
+     */
+    public void updatePassword(int userId, String newPasswordHash, Connection conn) throws SQLException {
+        // La query usa 'user_id' come chiave nella clausola WHERE
+        String sql = "UPDATE user_auth SET password_hash = ?, updated_at = NOW() WHERE user_id = ?";
+
+        logger.debug("Attempting to update password for user_id: {}", userId);
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, hashedPassword);
+            stmt.setString(1, newPasswordHash);
             stmt.setInt(2, userId);
-            stmt.executeUpdate();
+
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows > 0) {
+                logger.info("Successfully updated password for user_id: {}", userId);
+            } else {
+                // Questo potrebbe accadere se l'ID utente non esiste, ma la logica precedente dovrebbe prevenirlo.
+                logger.warn("No user found with user_id: {} to update password.", userId);
+            }
+        } catch (SQLException e) {
+            logger.error("Error updating password for user_id: {}", userId, e);
+            throw e;
         }
     }
 
