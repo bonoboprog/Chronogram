@@ -1,53 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE struts PUBLIC
-    "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
-    "http://struts.apache.org/dtds/struts-2.5.dtd">
+  "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
+  "http://struts.apache.org/dtds/struts-2.5.dtd">
 
 <struts>
-    <constant name="struts.devMode" value="true" />
-    <constant name="struts.convention.result.path" value="/"/>
+  <constant name="struts.devMode" value="true" />
+  <constant name="struts.convention.result.path" value="/"/>
 
-    <package name="api-auth" namespace="/api/auth" extends="json-default">
+  <package name="api-auth" namespace="/api/auth" extends="json-default">
 
-        <action name="register" class="it.unicas.action.RegistrationAction">
-            <result type="json">
-                <param name="root">registrationResponse</param>
-            </result>
-        </action>
+    <interceptors>
+      <interceptor-stack name="apiAuthStack">
+        <interceptor-ref name="json"/>
+        <interceptor-ref name="defaultStack"/>
+      </interceptor-stack>
+    </interceptors>
 
-        <action name="login" class="it.unicas.action.LoginAction">
-            <result type="json">
-                <param name="root">success,message,username,token</param>
-            </result>
-        </action>
+    <default-interceptor-ref name="apiAuthStack"/>
 
-        <action name="userExists" class="it.unicas.action.UsernameExistsAction">
-            <result type="json"/>
-        </action>
-        
-        <action name="request-reset" class="it.unicas.action.RequestPasswordResetAction" method="execute">
-            <result type="json">
-                <param name="root">success,message</param>
-            </result>
-        </action>
+    <action name="register" class="it.unicas.action.RegistrationAction">
+      <result type="json"><param name="root">registrationResponse</param></result>
+    </action>
 
-        <action name="reset-password" class="it.unicas.action.ResetPasswordAction" method="execute">
-            <result type="json">
-                <param name="root">success,message</param>
-            </result>
-        </action>
+    <action name="login" class="it.unicas.action.LoginAction">
+      <result type="json"><param name="root">success,message,username,token</param></result>
+    </action>
 
-    </package>
-    
-    <package name="api-llm" namespace="/api/llm" extends="json-default">
-        <action name="prompt" class="it.unicas.action.LLMAction">
-            <result type="json">
-                <param name="root">data</param>
-            </result>
-        </action>
-    </package>
-    
-    <package name="default" namespace="/" extends="json-default">
-        </package>
+    <action name="request-reset" class="it.unicas.action.RequestPasswordResetAction" method="execute">
+      <result type="json"><param name="root">success,message</param></result>
+    </action>
+
+    <action name="reset-password" class="it.unicas.action.ResetPasswordAction" method="execute">
+      <result type="json"><param name="root">success,message</param></result>
+    </action>
+
+  </package>
+
+  <package name="api-llm" namespace="/api/llm" extends="json-default">
+    <interceptors>
+      <interceptor-stack name="apiLlmStack">
+        <interceptor-ref name="json"/>
+        <interceptor-ref name="defaultStack"/>
+      </interceptor-stack>
+    </interceptors>
+
+    <default-interceptor-ref name="apiLlmStack"/>
+
+    <action name="prompt" class="it.unicas.action.LLMAction">
+      <result type="json"><param name="root">data</param></result>
+    </action>
+  </package>
 
 </struts>
