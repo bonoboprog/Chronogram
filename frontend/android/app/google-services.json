@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1082070683678",
+    "project_id": "chronogram-6a169",
+    "storage_bucket": "chronogram-6a169.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1082070683678:android:1763c0075b8976eb875e0f",
+        "android_client_info": {
+          "package_name": "it.unicas.chronogram"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAhM8u7DPpZ4AM1gzk2tLE5UnSrFwuBFts"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
