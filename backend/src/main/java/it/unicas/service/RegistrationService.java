@@ -51,6 +51,9 @@ public class RegistrationService {
         UserDTO userDTO = new UserDTO();
         userDTO.setGender(data.getGender());
         userDTO.setAddress(data.getAddress()); // <-- CAMPO CORRETTO
+        userDTO.setPhone(data.getPhone());  // <-- CAMPO CORRETTO
+        userDTO.setName(data.getName());    // <-- CAMPO CORRETTO
+        userDTO.setSurname(data.getSurname());  // <-- CAMPO CORRETTO
         userDTO.setBirthday(parseBirthday(data.getBirthday()));
         userDTO.setCreatedAt(now);
         userDTO.setUpdatedAt(now);

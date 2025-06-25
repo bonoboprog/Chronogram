@@ -1,10 +1,13 @@
 package it.unicas.dto;
 
 import java.sql.Date;
-import java.sql.Timestamp; // Import for new Timestamp fields
+import java.sql.Timestamp;
 
 public class UserDTO {
     private int userId;
+    private String name;          // New field
+    private String surname;       // New field
+    private String phone;         // New field
     private String weeklyIncome;
     private String weeklyIncomeOther;
     private String weeklyHomeCost;
@@ -12,16 +15,22 @@ public class UserDTO {
     private String gender;
     private Date birthday;
     private String address;
-    private Timestamp createdAt; // New field
-    private Timestamp updatedAt; // New field
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
 
     // Constructor
     public UserDTO() {
     }
 
-    public UserDTO(int userId, String weeklyIncome, String weeklyIncomeOther, String weeklyHomeCost,
-                   String notes, String gender, Date birthday, String address, Timestamp createdAt, Timestamp updatedAt) { // Updated constructor
+    // Updated constructor with new fields
+    public UserDTO(int userId, String name, String surname, String phone,
+                   String weeklyIncome, String weeklyIncomeOther, String weeklyHomeCost,
+                   String notes, String gender, Date birthday, String address,
+                   Timestamp createdAt, Timestamp updatedAt) {
         this.userId = userId;
+        this.name = name;
+        this.surname = surname;
+        this.phone = phone;
         this.weeklyIncome = weeklyIncome;
         this.weeklyIncomeOther = weeklyIncomeOther;
         this.weeklyHomeCost = weeklyHomeCost;
@@ -29,8 +38,8 @@ public class UserDTO {
         this.gender = gender;
         this.birthday = birthday;
         this.address = address;
-        this.createdAt = createdAt; // Set new field
-        this.updatedAt = updatedAt; // Set new field
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     // Getters and Setters
@@ -40,6 +49,30 @@ public class UserDTO {
 
     public void setUserId(int userId) {
         this.userId = userId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getSurname() {
+        return surname;
+    }
+
+    public void setSurname(String surname) {
+        this.surname = surname;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public String getWeeklyIncome() {
@@ -98,26 +131,29 @@ public class UserDTO {
         this.address = address;
     }
 
-    public Timestamp getCreatedAt() { // New getter
+    public Timestamp getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Timestamp createdAt) { // New setter
+    public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
     }
 
-    public Timestamp getUpdatedAt() { // New getter
+    public Timestamp getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(Timestamp updatedAt) { // New setter
+    public void setUpdatedAt(Timestamp updatedAt) {
         this.updatedAt = updatedAt;
     }
 
     @Override
     public String toString() {
-        return "User{" +
+        return "UserDTO{" +
                 "userId=" + userId +
+                ", name='" + name + '\'' +
+                ", surname='" + surname + '\'' +
+                ", phone='" + phone + '\'' +
                 ", weeklyIncome='" + weeklyIncome + '\'' +
                 ", weeklyIncomeOther='" + weeklyIncomeOther + '\'' +
                 ", weeklyHomeCost='" + weeklyHomeCost + '\'' +
@@ -125,8 +161,8 @@ public class UserDTO {
                 ", gender='" + gender + '\'' +
                 ", birthday=" + birthday +
                 ", address='" + address + '\'' +
-                ", createdAt=" + createdAt + // New field
-                ", updatedAt=" + updatedAt + // New field
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
                 '}';
     }
 }
