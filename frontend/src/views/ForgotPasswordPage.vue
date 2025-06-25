@@ -21,7 +21,7 @@
 
         <!-- Email field -->
         <ion-item class="reset-input" lines="inset">
-          <ion-icon slot="start" :icon="mailOutline"></ion-icon>
+          <ion-icon slot="start" :icon="mailOutline" color="#f9c7a1;"></ion-icon>
           <ion-input
               v-model="email"
               type="email"
