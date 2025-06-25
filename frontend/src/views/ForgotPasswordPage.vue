@@ -2,18 +2,26 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
+        <!-- Gear icon to go back to Settings -->
+        <ion-buttons slot="start">
+          <ion-button @click="goToSettings">
+            <ion-icon :icon="settingsOutline" slot="icon-only" />
+          </ion-button>
+        </ion-buttons>
         <ion-title class="reset-header-title">Recover Access</ion-title>
       </ion-toolbar>
     </ion-header>
 
     <ion-content class="ion-padding">
       <div class="reset-container">
+
         <p class="reset-subtitle">
           Enter your email to receive reset instructions.
         </p>
 
+        <!-- Email field -->
         <ion-item class="reset-input" lines="inset">
-          <ion-icon slot="start" :icon="mailOutline"></ion-icon>
+          <ion-icon slot="start" :icon="mailOutline" color="#f9c7a1;"></ion-icon>
           <ion-input
               v-model="email"
               type="email"
@@ -22,12 +30,14 @@
           ></ion-input>
         </ion-item>
 
-        <ion-button expand="block" class="reset-button" @click="handleSendResetLink">
+        <!-- Submit button -->
+        <ion-button expand="block" class="reset-button">
           Send Reset Link
         </ion-button>
 
+        <!-- Back to login -->
         <ion-text class="back-login">
-          <RouterLink to="/login">Back to login</RouterLink>
+          <router-link to="/login">Back to login</router-link>
         </ion-text>
       </div>
     </ion-content>
@@ -36,49 +46,15 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter, RouterLink } from 'vue-router'
-import axios from 'axios'
-import { mailOutline } from 'ionicons/icons'
-import {
-  IonPage,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
-  IonItem,
-  IonIcon,
-  IonInput,
-  IonButton,
-  IonText
-} from '@ionic/vue'
+import { mailOutline, settingsOutline } from 'ionicons/icons'
+import { useRouter } from 'vue-router'
 
-const router = useRouter()
 const email = ref('')
+const router = useRouter()
 
-const handleSendResetLink = async () => {
-  if (!email.value || !email.value.includes('@')) {
-    alert('Please enter a valid email address.')
-    return
-  }
-
-  console.log('Sending password reset link to:', email.value)
-
-  try {
-    const API = import.meta.env.VITE_API_BASE_URL
-    const response = await axios.post(`${API}/api/auth/request-reset`, { email: email.value }, {
-      headers: { 'Content-Type': 'application/json' }
-    })
-
-    if (response.data.success) {
-      alert('Reset link sent! Check your inbox.')
-      router.push('/login')
-    } else {
-      alert(`Failed to send link: ${response.data.message}`)
-    }
-  } catch (error) {
-    console.error('Error sending reset link:', error)
-    alert('An error occurred. Please try again later.')
-  }
+// Navigate back to Settings page
+function goToSettings() {
+  router.push({ name: 'Settings' })
 }
 </script>
 
@@ -94,12 +70,13 @@ const handleSendResetLink = async () => {
 .reset-header-title {
   text-align: center;
   font-size: 1.2rem;
+  color: #e0aaff;
 }
 
 .reset-subtitle {
   font-size: 0.95rem;
   margin: 0 2rem 1.5rem;
-  color: var(--text, #aaa);
+  color: #aaa;
 }
 
 .reset-input {
@@ -114,11 +91,15 @@ const handleSendResetLink = async () => {
   max-width: 400px;
   font-weight: 500;
   margin-bottom: 1rem;
+  --background: #c18aff;
+  --background-hover: #d7aaff;
+  --color: white;
+  border-radius: 12px;
 }
 
 .back-login {
   font-size: 0.85rem;
   margin-top: 1rem;
-  color: var(--text, #aaa);
+  color: #aaa;
 }
 </style>

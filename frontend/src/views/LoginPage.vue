@@ -34,16 +34,22 @@
           </ion-list>
 
           <div class="forgot-password-container">
-            <ion-button @click="handleForgotPassword" fill="clear" class="forgot-password-btn">Forgot Password?</ion-button>
+            <ion-button @click="handleForgotPassword" fill="clear" class="forgot-password-btn">
+              Forgot Password?
+            </ion-button>
           </div>
 
           <ion-grid class="ion-margin-top">
             <ion-row class="ion-justify-content-around">
               <ion-col size="5">
-                <ion-button @click="handleLogin" expand="block" class="pill-button gradient-outline">Login</ion-button>
+                <ion-button @click="handleLogin" expand="block" class="pill-button gradient-outline">
+                  Login
+                </ion-button>
               </ion-col>
               <ion-col size="5">
-                <ion-button @click="goToRegistration" expand="block" class="pill-button gradient-outline">Sign Up</ion-button>
+                <ion-button @click="goToRegistration" expand="block" class="pill-button gradient-outline">
+                  Sign Up
+                </ion-button>
               </ion-col>
             </ion-row>
           </ion-grid>
@@ -54,18 +60,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'; // Import ref
+import { ref } from 'vue';
 import {
-  IonPage, IonContent, IonList, IonItem, IonInput, IonIcon,
-  IonButton, IonGrid, IonRow, IonCol,
+  IonPage,
+  IonContent,
+  IonList,
+  IonItem,
+  IonInput,
+  IonIcon,
+  IonButton,
+  IonGrid,
+  IonRow,
+  IonCol,
 } from '@ionic/vue';
 import { personOutline, keyOutline } from 'ionicons/icons';
 import { useRouter } from 'vue-router';
-import axios from 'axios'; // Import axios
 
 const router = useRouter();
 
-// Define reactive variables for form inputs
 const email = ref('');
 const password = ref('');
 
@@ -73,43 +85,17 @@ const goToRegistration = () => {
   router.push({ name: 'Register' });
 };
 
-const handleLogin = async () => {
-  console.log('Attempting login...');
-  const payload = {
-    email: email.value,
-    password: password.value
-  };
-
-  console.log('Sending login payload:', payload);
-
-  try {
-    const API = import.meta.env.VITE_API_BASE_URL; // Ensure this is correctly configured
-    const response = await axios.post(`${API}/api/auth/login`, payload, {
-      headers: { 'Content-Type': 'application/json' }
-    });
-
-    console.log('Backend login response:', response.data);
-    if (response.data.success) {
-      alert(`Login successful! Welcome, ${response.data.username}`);
-      router.push({ name: 'Home' }); // Redirect to home on success
-    } else {
-      alert(`Login failed: ${response.data.message}`);
-    }
-  } catch (error) {
-    console.error('Error during login:', error);
-    alert('An error occurred during login. Please try again.');
-  }
+const handleLogin = () => {
+  console.log('Tentativo di login...');
 };
 
 const handleForgotPassword = () => {
-  console.log('Forgot password clicked...');
-  router.push({ name: 'ForgotPasswordPage' });
+  console.log('Navigazione a recupero password...');
+  router.push({ name: 'ForgotPassword' });
 };
 </script>
 
 <style scoped>
-
-/* Il tuo stile rimane invariato */
 .login-container {
   display: flex;
   flex-direction: column;
