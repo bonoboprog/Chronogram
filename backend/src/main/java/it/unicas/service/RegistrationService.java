@@ -1,5 +1,4 @@
 package it.unicas.service;
-
 import it.unicas.dao.UserAuthDAO;
 import it.unicas.dao.UserDAO;
 import it.unicas.dbutil.DBUtil;
@@ -19,7 +18,6 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-
 /**
  * Gestisce la logica di business per la registrazione di un nuovo utente.
  */
@@ -37,32 +35,37 @@ public class RegistrationService {
 
     public void registerNewUser(RegistrationDTO data) throws ValidationException, ServiceException {
         validateRegistrationData(data);
-
         Timestamp now = Timestamp.valueOf(LocalDateTime.now());
 
         UserAuthDTO authDTO = new UserAuthDTO();
         authDTO.setEmail(data.getEmail());
         authDTO.setPasswordHash(PasswordUtil.getInstance().encode(data.getPassword()));
-        authDTO.setUsername(data.getName() + " " + data.getSurname());
+        authDTO.setUsername(data.getUsername()); // <-- CAMPO CORRETTO
         authDTO.setCreatedAt(now);
         authDTO.setUpdatedAt(now);
         authDTO.setIsActive(1);
-
         UserDTO userDTO = new UserDTO();
         userDTO.setGender(data.getGender());
-        userDTO.setAddress(data.getAddress()); // <-- CAMPO CORRETTO
-        userDTO.setPhone(data.getPhone());  // <-- CAMPO CORRETTO
-        userDTO.setName(data.getName());    // <-- CAMPO CORRETTO
-        userDTO.setSurname(data.getSurname());  // <-- CAMPO CORRETTO
+        userDTO.setAddress(data.getAddress());
+        userDTO.setPhone(data.getPhone());
+
+        userDTO.setName(data.getName());
+
+        userDTO.setSurname(data.getSurname());
+
         userDTO.setBirthday(parseBirthday(data.getBirthday()));
         userDTO.setCreatedAt(now);
         userDTO.setUpdatedAt(now);
-
         try (Connection conn = DBUtil.getConnection()) {
             conn.setAutoCommit(false);
             try {
                 if (authDAO.getUserAuthByEmail(data.getEmail(), conn) != null) {
                     throw new ServiceException("Email already registered.");
+                }
+
+                // Check for username existence
+                if (authDAO.usernameExists(data.getUsername(), conn)) {
+                    throw new ServiceException("Username already exists.");
                 }
 
                 int userId = authDAO.insertUserAuth(authDTO, conn);
@@ -90,10 +93,12 @@ public class RegistrationService {
     }
 
     private void validateRegistrationData(RegistrationDTO data) throws ValidationException {
-        if (data.getName() == null || data.getName().trim().isEmpty() ||
+        if (data.getUsername() == null || data.getUsername().trim().isEmpty() || // <-- NUOVO CHECK
+                data.getName() == null || data.getName().trim().isEmpty() ||
                 data.getSurname() == null || data.getSurname().trim().isEmpty() ||
                 data.getEmail() == null || data.getEmail().trim().isEmpty() ||
                 data.getPassword() == null || data.getPassword().trim().isEmpty()) {
+
             throw new ValidationException("All required fields must be filled.");
         }
 

@@ -15,11 +15,10 @@ import org.apache.logging.log4j.Logger;
 public class RegistrationAction extends ActionSupport {
 
     private static final Logger logger = LogManager.getLogger(RegistrationAction.class);
-
     // --- Dipendenza dal Service Layer ---
     private final RegistrationService registrationService = new RegistrationService();
-
     // --- Campi del form (INPUT da Struts) ---
+    private String username; // <-- NUOVO CAMPO
     private String name;
     private String surname;
     private String phone;
@@ -27,7 +26,8 @@ public class RegistrationAction extends ActionSupport {
     private String password;
     private String birthday;
     private String gender;
-    private String address; // <-- NUOVO CAMPO
+    private String address;
+
 
     // --- Wrapper della risposta (OUTPUT per Struts) ---
     private RegistrationResponse registrationResponse;
@@ -35,12 +35,10 @@ public class RegistrationAction extends ActionSupport {
     @Override
     public String execute() {
         logger.info("Registration request received for email: {}", email);
-
-        // 1. Raccoglie i dati in un unico oggetto per passarli in modo pulito.
+// 1. Raccoglie i dati in un unico oggetto per passarli in modo pulito.
         RegistrationDTO data = new RegistrationDTO(
-                name, surname, phone, email, password, birthday, gender, address // <-- AGGIORNATO
+                username, name, surname, phone, email, password, birthday, gender, address // <-- AGGIORNATO
         );
-
         try {
             // 2. Delega tutta la logica di business a un singolo metodo del service.
             registrationService.registerNewUser(data);
@@ -55,10 +53,22 @@ public class RegistrationAction extends ActionSupport {
             logger.error("Registration failed for {} due to a service error", email, e);
             if (e.getMessage() != null && e.getMessage().contains("Email already registered")) {
                 setFailure("Email already registered.");
+            } else if (e.getMessage() != null && e.getMessage().contains("Username already exists")) { // <-- NUOVO BLOCCO
+                setFailure("Username already exists.");
             } else {
                 setFailure("Registration failed due to a system error.");
             }
         }
+
+        // --- START: DEBUGGING BLOCK ---
+        if (this.registrationResponse != null) {
+            logger.debug("Returning JSON with success={} and message='{}'",
+                    this.registrationResponse.isSuccess(),
+                    this.registrationResponse.getMessage());
+        } else {
+            logger.error("FATAL: registrationResponse object is null before returning result. No JSON will be generated correctly.");
+        }
+        // --- END: DEBUGGING BLOCK ---
 
         return SUCCESS;
     }
@@ -82,8 +92,8 @@ public class RegistrationAction extends ActionSupport {
             this.message = message;
         }
 
-        public boolean isSuccess() { return success; }
-        public String getMessage() { return message; }
+        public boolean isSuccess() { return success;}
+        public String getMessage() { return message;}
     }
 
     // --- Getters e Setters per Struts2 ---
@@ -91,12 +101,21 @@ public class RegistrationAction extends ActionSupport {
         return registrationResponse;
     }
 
-    public void setName(String name) { this.name = name; }
-    public void setSurname(String surname) { this.surname = surname; }
-    public void setPhone(String phone) { this.phone = phone; }
-    public void setEmail(String email) { this.email = email; }
-    public void setPassword(String password) { this.password = password; }
-    public void setBirthday(String birthday) { this.birthday = birthday; }
-    public void setGender(String gender) { this.gender = gender; }
-    public void setAddress(String address) { this.address = address; } // <-- NUOVO SETTER
+    public void setUsername(String username) { this.username = username; } // <-- NUOVO SETTER
+    public void setName(String name) { this.name = name;
+    }
+    public void setSurname(String surname) { this.surname = surname;
+    }
+    public void setPhone(String phone) { this.phone = phone;
+    }
+    public void setEmail(String email) { this.email = email;
+    }
+    public void setPassword(String password) { this.password = password;
+    }
+    public void setBirthday(String birthday) { this.birthday = birthday;
+    }
+    public void setGender(String gender) { this.gender = gender;
+    }
+    public void setAddress(String address) { this.address = address;
+    }
 }

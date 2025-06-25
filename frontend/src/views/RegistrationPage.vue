@@ -9,7 +9,6 @@
 
         <div class="form-wrapper">
           <ion-list lines="none">
-            <!-- NAME -->
             <ion-item :class="errorClass('name')" class="glass-input">
               <ion-icon slot="start" :icon="personOutline" class="input-icon" />
               <ion-input
@@ -22,7 +21,6 @@
               />
             </ion-item>
 
-            <!-- SURNAME -->
             <ion-item :class="errorClass('surname')" class="glass-input">
               <ion-icon slot="start" :icon="personOutline" class="input-icon" />
               <ion-input
@@ -35,7 +33,18 @@
               />
             </ion-item>
 
-            <!-- ADDRESS -->
+            <ion-item :class="errorClass('username')" class="glass-input">
+              <ion-icon slot="start" :icon="atOutline" class="input-icon" />
+              <ion-input
+                  v-model="form.username"
+                  label="Username"
+                  label-placement="floating"
+                  type="text"
+                  :aria-label="'Username'"
+                  autocomplete="username"
+              />
+            </ion-item>
+
             <ion-item :class="errorClass('address')" class="glass-input">
               <ion-icon slot="start" :icon="locationOutline" class="input-icon" />
               <ion-input
@@ -48,7 +57,6 @@
               />
             </ion-item>
 
-            <!-- PHONE -->
             <ion-item class="glass-input">
               <ion-icon slot="start" :icon="callOutline" class="input-icon" />
               <ion-input
@@ -61,7 +69,6 @@
               />
             </ion-item>
 
-            <!-- EMAIL -->
             <ion-item :class="errorClass('email')" class="glass-input">
               <ion-icon slot="start" :icon="mailOutline" class="input-icon" />
               <ion-input
@@ -70,11 +77,10 @@
                   label-placement="floating"
                   type="email"
                   :aria-label="'Email'"
-                  autocomplete="username"
+                  autocomplete="email"
               />
             </ion-item>
 
-            <!-- PASSWORD -->
             <ion-item :class="errorClass('password')" class="glass-input password-item">
               <ion-icon slot="start" :icon="keyOutline" class="input-icon" />
               <ion-input
@@ -93,7 +99,6 @@
               />
             </ion-item>
 
-            <!-- BIRTHDAY -->
             <ion-item
                 class="glass-input"
                 :class="{ 'item-has-value': !!form.birthday }"
@@ -106,7 +111,6 @@
               <div class="custom-input-value">{{ formattedBirthday }}</div>
             </ion-item>
 
-            <!-- GENDER -->
             <ion-item class="glass-input">
               <ion-icon slot="start" :icon="transgenderOutline" class="input-icon" />
               <ion-select
@@ -124,7 +128,6 @@
             </ion-item>
           </ion-list>
 
-          <!-- BUTTONS -->
           <ion-grid class="ion-margin-top">
             <ion-row class="ion-justify-content-around">
               <ion-col size="5">
@@ -145,7 +148,6 @@
         </div>
       </div>
 
-      <!-- MODALS & TOASTS -->
       <ion-modal ref="birthdayModal" :keep-contents-mounted="true">
         <ion-datetime
             presentation="date"
@@ -173,7 +175,7 @@ import {
   personAddOutline, eyeOutline, eyeOffOutline,
   callOutline, mailOutline, personOutline,
   keyOutline, calendarOutline, transgenderOutline,
-  locationOutline
+  locationOutline, atOutline // <-- IMPORTED ICON
 } from 'ionicons/icons';
 import dayjs from 'dayjs';
 import { api } from '@/composables/useApi';
@@ -186,7 +188,7 @@ const showPassword  = ref(false);
 const dateIso       = ref<string>();
 
 const form = reactive({
-  name: '', surname: '', address: '', phone: '',
+  name: '', surname: '', username: '', address: '', phone: '', // <-- ADDED USERNAME
   email: '', password: '', birthday: '', gender: ''
 });
 
@@ -197,6 +199,7 @@ const formattedBirthday = computed(() => form.birthday);
 const hasErrors = computed(() =>
     !form.name.trim()       ||
     !form.surname.trim()    ||
+    !form.username.trim()   || // <-- ADDED CHECK
     !form.address.trim()    ||
     !isValidEmail(form.email) ||
     !isStrongPassword(form.password)
@@ -213,7 +216,7 @@ const errorClass = (f: keyof typeof form) => ({
   'ion-invalid':
       (f === 'email'    && form.email    && !isValidEmail(form.email)) ||
       (f === 'password' && form.password && !isStrongPassword(form.password)) ||
-      (!(form[f] as string).trim() && ['name', 'surname', 'address'].includes(f))
+      (!(form[f] as string).trim() && ['name', 'surname', 'address', 'username'].includes(f)) // <-- ADDED USERNAME
 });
 
 const openBirthdayModal = () => birthdayModal.value?.$el.present();
