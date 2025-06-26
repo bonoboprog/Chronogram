@@ -42,11 +42,15 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/ForgotPasswordPage.vue')
   },
   {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: () => import('@/views/ResetPasswordPage.vue')
+  },
+  {
     path: '/calendar',
     name: 'Calendar',
     component: () => import('@/views/CalendarPage.vue')
   },
-
   {
     path: '/support',
     name: 'Support',

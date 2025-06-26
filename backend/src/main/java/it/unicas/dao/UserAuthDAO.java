@@ -10,7 +10,7 @@ public class UserAuthDAO {
     private static final Logger logger = LogManager.getLogger(UserAuthDAO.class);
     public int insertUserAuth(UserAuthDTO userAuth, Connection conn) throws SQLException {
         final String SQL = "INSERT INTO user_auth(email, password_hash, created_at, updated_at, last_login, is_active, failed_login_attempts, locked_until) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement pstmt = conn.prepareStatement(SQL, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, userAuth.getEmail());
             pstmt.setString(2, userAuth.getPasswordHash());
