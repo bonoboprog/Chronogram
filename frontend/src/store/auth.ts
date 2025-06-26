@@ -48,11 +48,6 @@ export const useAuthStore = defineStore('auth', () => {
         return data;
     }
 
-
-
-
-
-
     /**
      * Esegue il logout, pulisce lo stato e lo storage.
      */
