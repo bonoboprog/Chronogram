@@ -23,24 +23,35 @@ export const useAuthStore = defineStore('auth', () => {
     /**
      * Esegue il login, salva il token e lo stato dell'utente.
      */
-    async function login(credentials: { email: string, password: string }) {
-        const { data } = await api.post('/api/auth/login', credentials);
+
+    async function login(
+        credentials: { email: string; password: string }
+    ): Promise<LoginResponse> {
+        const response = await api.post<LoginResponse>('/api/auth/login', credentials);
+        const data = response.data; // Extract the JSON body
+
+        console.log('[login] Raw response:', response);
+        console.log('[login] Parsed data:', data);
 
         if (!data.success || !data.token) {
             throw new Error(data.message || 'Login failed');
         }
 
-        // Aggiorna lo stato dello store
         token.value = data.token;
         user.value = { username: data.username };
 
-        // Salva il token in modo persistente e sicuro sul dispositivo
         await Preferences.set({ key: 'authToken', value: data.token });
         await Preferences.set({ key: 'userData', value: JSON.stringify(user.value) });
 
-        // Configura l'header di default per tutte le future chiamate API
         api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+
+        return data;
     }
+
+
+
+
+
 
     /**
      * Esegue il logout, pulisce lo stato e lo storage.

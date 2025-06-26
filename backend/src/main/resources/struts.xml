@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE struts PUBLIC
-  "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
-  "http://struts.apache.org/dtds/struts-2.5.dtd">
+        "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
+        "http://struts.apache.org/dtds/struts-2.5.dtd">
 
 <struts>
   <constant name="struts.devMode" value="true" />
@@ -19,11 +19,15 @@
     <default-interceptor-ref name="apiAuthStack"/>
 
     <action name="register" class="it.unicas.action.RegistrationAction">
-      <result type="json"><param name="root">registrationResponse</param></result>
+      <result type="json">
+        <param name="root">registrationResponse</param>
+      </result>
     </action>
 
     <action name="login" class="it.unicas.action.LoginAction">
-      <result type="json"><param name="root">success,message,username,token</param></result>
+      <result type="json">
+        <param name="root">loginResponse</param>
+      </result>
     </action>
 
     <action name="request-reset" class="it.unicas.action.RequestPasswordResetAction" method="execute">
@@ -38,7 +42,9 @@
 
   <package name="api-llm" namespace="/api/llm" extends="json-default">
     <interceptors>
+      <interceptor name="authInterceptor" class="it.unicas.filter.AuthInterceptor"/>
       <interceptor-stack name="apiLlmStack">
+        <interceptor-ref name="authInterceptor"/>
         <interceptor-ref name="json"/>
         <interceptor-ref name="defaultStack"/>
       </interceptor-stack>
@@ -50,5 +56,4 @@
       <result type="json"><param name="root">data</param></result>
     </action>
   </package>
-
 </struts>

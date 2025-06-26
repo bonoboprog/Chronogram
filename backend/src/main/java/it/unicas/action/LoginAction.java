@@ -2,7 +2,7 @@ package it.unicas.action;
 
 import com.opensymphony.xwork2.ActionSupport;
 import it.unicas.service.LoginService;
-import it.unicas.dto.LoginResultDTO; // <-- Importa il nuovo DTO
+import it.unicas.dto.LoginResultDTO;
 import it.unicas.service.exception.AuthenticationException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,56 +14,77 @@ import org.apache.logging.log4j.Logger;
 public class LoginAction extends ActionSupport {
     private static final Logger logger = LogManager.getLogger(LoginAction.class);
 
-    // --- Dipendenza dal Service Layer ---
     private final LoginService loginService = new LoginService();
 
-    // --- INPUT (impostati da Struts) ---
+    // --- INPUT da Struts ---
     private String email;
     private String password;
 
-    // --- OUTPUT (serializzati in JSON da Struts) ---
-    private boolean success;
-    private String message;
-    private String username;
-    private String token; // Il nostro nuovo JWT!
+    // --- OUTPUT wrapper ---
+    private LoginResponse loginResponse;
 
     @Override
     public String execute() {
         logger.info("Login attempt received for email: {}", email);
+
         try {
-            // 1. Tutta la logica è delegata a un singolo metodo del service.
             LoginResultDTO result = loginService.loginUser(email, password);
-            
-            // 2. Se il service ha successo, popola i campi di output dall'oggetto risultato.
-            this.success = true;
-            this.message = "Login successful!";
-            this.username = result.getUsername();
-            this.token = result.getJwtToken(); // Aggiunge il token alla risposta
-            
+            setSuccess("Login successful!", result.getUsername(), result.getJwtToken());
             logger.info("Login for {} successful. JWT generated.", email);
-            
         } catch (AuthenticationException e) {
-            // 3. Gestisce gli errori di autenticazione in modo pulito.
             logger.warn("Authentication failed for email {}: {}", email, e.getMessage());
-            this.success = false;
-            this.message = e.getMessage(); // Usa il messaggio specifico dall'eccezione (es. "Account is locked")
+            setFailure(e.getMessage());
         } catch (Exception e) {
-            // 4. Gestisce tutti gli altri errori imprevisti.
             logger.error("An unexpected error occurred during login for {}", email, e);
-            this.success = false;
-            this.message = "An internal server error occurred.";
+            setFailure("An internal server error occurred.");
         }
+
+        // --- DEBUG LOG ---
+        if (loginResponse != null) {
+            logger.debug("Returning JSON with success={} and message='{}'",
+                    loginResponse.isSuccess(), loginResponse.getMessage());
+        } else {
+            logger.error("FATAL: loginResponse is null before returning result.");
+        }
+
         return SUCCESS;
     }
 
-    // --- Getters e Setters per tutti i campi INPUT e OUTPUT ---
-    // Struts li usa per popolare i dati in entrata e per creare il JSON in uscita.
+    // --- Metodi helper ---
+    private void setSuccess(String msg, String username, String token) {
+        this.loginResponse = new LoginResponse(true, msg, username, token);
+    }
 
+    private void setFailure(String msg) {
+        this.loginResponse = new LoginResponse(false, msg, null, null);
+    }
+
+    // --- DTO interno per la risposta JSON ---
+    public static class LoginResponse {
+        private final boolean success;
+        private final String message;
+        private final String username;
+        private final String token;
+
+        public LoginResponse(boolean success, String message, String username, String token) {
+            this.success = success;
+            this.message = message;
+            this.username = username;
+            this.token = token;
+        }
+
+        public boolean isSuccess() { return success; }
+        public String getMessage() { return message; }
+        public String getUsername() { return username; }
+        public String getToken() { return token; }
+    }
+
+    // --- Getter per la risposta JSON (usato da Struts) ---
+    public LoginResponse getLoginResponse() {
+        return loginResponse;
+    }
+
+    // --- Setters per input da Struts ---
     public void setEmail(String email) { this.email = email; }
     public void setPassword(String password) { this.password = password; }
-
-    public boolean isSuccess() { return success; }
-    public String getMessage() { return message; }
-    public String getUsername() { return username; }
-    public String getToken() { return token; }
 }

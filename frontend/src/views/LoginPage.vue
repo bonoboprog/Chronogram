@@ -34,22 +34,16 @@
           </ion-list>
 
           <div class="forgot-password-container">
-            <ion-button @click="handleForgotPassword" fill="clear" class="forgot-password-btn">
-              Forgot Password?
-            </ion-button>
+            <ion-button @click="handleForgotPassword" fill="clear" class="forgot-password-btn">Forgot Password?</ion-button>
           </div>
 
           <ion-grid class="ion-margin-top">
             <ion-row class="ion-justify-content-around">
               <ion-col size="5">
-                <ion-button @click="handleLogin" expand="block" class="pill-button gradient-outline">
-                  Login
-                </ion-button>
+                <ion-button @click="handleLogin" expand="block" class="pill-button gradient-outline">Login</ion-button>
               </ion-col>
               <ion-col size="5">
-                <ion-button @click="goToRegistration" expand="block" class="pill-button gradient-outline">
-                  Sign Up
-                </ion-button>
+                <ion-button @click="goToRegistration" expand="block" class="pill-button gradient-outline">Sign Up</ion-button>
               </ion-col>
             </ion-row>
           </ion-grid>
@@ -60,24 +54,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref } from 'vue'; // Import ref
 import {
-  IonPage,
-  IonContent,
-  IonList,
-  IonItem,
-  IonInput,
-  IonIcon,
-  IonButton,
-  IonGrid,
-  IonRow,
-  IonCol,
+  IonPage, IonContent, IonList, IonItem, IonInput, IonIcon,
+  IonButton, IonGrid, IonRow, IonCol,
 } from '@ionic/vue';
 import { personOutline, keyOutline } from 'ionicons/icons';
 import { useRouter } from 'vue-router';
+import axios from 'axios'; // Import axios
+import { useAuthStore } from '@/store/auth'; // Import the auth store
 
 const router = useRouter();
+const auth = useAuthStore(); // Initialize the auth store
 
+// Define reactive variables for form inputs
 const email = ref('');
 const password = ref('');
 
@@ -85,17 +75,36 @@ const goToRegistration = () => {
   router.push({ name: 'Register' });
 };
 
-const handleLogin = () => {
-  console.log('Tentativo di login...');
+const handleLogin = async () => {
+  try {
+    console.log('Attempting login...');
+
+    // Call the auth store's login method
+    const response = await auth.login({
+      email: email.value,
+      password: password.value
+    });
+
+    console.log('Login successful:', response);
+
+    // Redirect to home page after successful login
+    router.push({ name: 'Home' });
+
+  } catch (error) {
+    console.error('Login error:', error);
+    alert(error instanceof Error ? error.message : 'Login failed. Please try again.');
+  }
 };
 
 const handleForgotPassword = () => {
-  console.log('Navigazione a recupero password...');
-  router.push({ name: 'ForgotPassword' });
+  console.log('Forgot password clicked...');
+  router.push({ name: 'ForgotPasswordPage' });
 };
 </script>
 
 <style scoped>
+
+/* Il tuo stile rimane invariato */
 .login-container {
   display: flex;
   flex-direction: column;

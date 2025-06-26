@@ -182,7 +182,7 @@ public class UserAuthDAO {
      * @throws SQLException
      */
     public void resetLoginAttempts(int userId, Connection conn) throws SQLException {
-        String sql = "UPDATE user_auth SET failed_login_attempts = 0, last_login_time = NOW(), locked_until = NULL WHERE user_id = ?";
+        String sql = "UPDATE user_auth SET failed_login_attempts = 0, last_login = NOW(), locked_until = NULL WHERE user_id = ?";
         logger.debug("Resetting login attempts for user_id: {}", userId);
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);

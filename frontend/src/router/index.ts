@@ -7,7 +7,7 @@ import { RouteRecordRaw } from 'vue-router';
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    redirect: '/activity'// Imposta la pagina di login come predefinita
+    redirect: '/login'// Imposta la pagina di login come predefinita
   },
   {
     path: '/login',

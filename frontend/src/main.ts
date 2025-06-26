@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from './router';
 
 import { IonicVue } from '@ionic/vue';
+import { createPinia } from 'pinia' // Importa
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
@@ -40,7 +41,8 @@ import '@/theme/catppuccin.scss'
 
 const app = createApp(App)
   .use(IonicVue)
-  .use(router);
+  .use(router)
+  .use(createPinia()); // <-- Usa Pinia
 
 /* Set the active theme on root element  */
 document.documentElement.setAttribute('data-theme', 'mocha')
