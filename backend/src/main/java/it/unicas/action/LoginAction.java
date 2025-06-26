@@ -29,7 +29,7 @@ public class LoginAction extends ActionSupport {
 
         try {
             LoginResultDTO result = loginService.loginUser(email, password);
-            setSuccess("Login successful!", result.getUsername(), result.getJwtToken());
+            setSuccess("Login successful!", result.getEmail(), result.getJwtToken());
             logger.info("Login for {} successful. JWT generated.", email);
         } catch (AuthenticationException e) {
             logger.warn("Authentication failed for email {}: {}", email, e.getMessage());

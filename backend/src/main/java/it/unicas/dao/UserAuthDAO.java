@@ -9,7 +9,7 @@ public class UserAuthDAO {
 
     private static final Logger logger = LogManager.getLogger(UserAuthDAO.class);
     public int insertUserAuth(UserAuthDTO userAuth, Connection conn) throws SQLException {
-        final String SQL = "INSERT INTO user_auth(email, password_hash, created_at, updated_at, last_login, username, is_active, failed_login_attempts, locked_until) " +
+        final String SQL = "INSERT INTO user_auth(email, password_hash, created_at, updated_at, last_login, is_active, failed_login_attempts, locked_until) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement pstmt = conn.prepareStatement(SQL, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, userAuth.getEmail());
@@ -17,10 +17,9 @@ public class UserAuthDAO {
             pstmt.setTimestamp(3, userAuth.getCreatedAt());
             pstmt.setTimestamp(4, userAuth.getUpdatedAt());
             pstmt.setTimestamp(5, userAuth.getLastLogin());
-            pstmt.setString(6, userAuth.getUsername());
-            pstmt.setInt(7, userAuth.getIsActive());
-            pstmt.setInt(8, userAuth.getFailedLoginAttempts());
-            pstmt.setTimestamp(9, userAuth.getLockedUntil());
+            pstmt.setInt(6, userAuth.getIsActive());
+            pstmt.setInt(7, userAuth.getFailedLoginAttempts());
+            pstmt.setTimestamp(8, userAuth.getLockedUntil());
 
             int affectedRows = pstmt.executeUpdate();
             if (affectedRows > 0) {
@@ -45,7 +44,7 @@ public class UserAuthDAO {
     }
 
     public UserAuthDTO getUserAuthByEmail(String email, Connection conn) throws SQLException {
-        final String SQL = "SELECT user_id, email, password_hash, created_at, updated_at, last_login, username, is_active, failed_login_attempts, locked_until " +
+        final String SQL = "SELECT user_id, email, password_hash, created_at, updated_at, last_login, is_active, failed_login_attempts, locked_until " +
                 "FROM user_auth WHERE LOWER(email) = LOWER(?)";
         try (PreparedStatement pstmt = conn.prepareStatement(SQL)) {
             pstmt.setString(1, email);
@@ -60,7 +59,6 @@ public class UserAuthDAO {
                             rs.getTimestamp("updated_at"),
 
                             rs.getTimestamp("last_login"),
-                            rs.getString("username"),
                             rs.getInt("is_active"),
                             rs.getInt("failed_login_attempts"),
 
@@ -111,39 +109,6 @@ public class UserAuthDAO {
         }
     }
 
-    /**
-     * Checks if a username exists. (Used by standalone actions)
-     * @param username The username to check.
-     * @return true if the username exists, false otherwise.
-     */
-    public boolean usernameExists(String username) {
-        final String SQL = "SELECT 1 FROM user_auth WHERE LOWER(username) = LOWER(?) LIMIT 1";
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL)) {
-
-            ps.setString(1, username);
-            return ps.executeQuery().next(); // true se esiste almeno una riga
-
-        } catch (SQLException e) {
-            logger.error("Error checking username existence for '{}'", username, e);
-            return true; // fallback prudente: se errore, assume già preso
-        }
-    }
-
-    /**
-     * Checks if a username exists using an existing transaction.
-     * @param username The username to check.
-     * @param conn The existing database connection.
-     * @return true if the username exists, false otherwise.
-     * @throws SQLException if a database access error occurs.
-     */
-    public boolean usernameExists(String username, Connection conn) throws SQLException {
-        final String SQL = "SELECT 1 FROM user_auth WHERE LOWER(username) = LOWER(?) LIMIT 1";
-        try (PreparedStatement ps = conn.prepareStatement(SQL)) {
-            ps.setString(1, username);
-            return ps.executeQuery().next();
-        }
-    }
 
     /**
      * Aggiorna la password hash per un dato utente.

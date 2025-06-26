@@ -8,16 +8,16 @@ import java.util.Objects;
  */
 public final class LoginResultDTO {
 
-    private final String username;
+    private final String email;
     private final String jwtToken;
 
-    public LoginResultDTO(String username, String jwtToken) {
-        this.username = username;
+    public LoginResultDTO(String email, String jwtToken) {
+        this.email = email;
         this.jwtToken = jwtToken;
     }
 
-    public String getUsername() {
-        return username;
+    public String getEmail() {
+        return email;
     }
 
     public String getJwtToken() {
@@ -29,18 +29,18 @@ public final class LoginResultDTO {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         LoginResultDTO that = (LoginResultDTO) o;
-        return Objects.equals(username, that.username) && Objects.equals(jwtToken, that.jwtToken);
+        return Objects.equals(email, that.email) && Objects.equals(jwtToken, that.jwtToken);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(username, jwtToken);
+        return Objects.hash(email, jwtToken);
     }
 
     @Override
     public String toString() {
         return "LoginResultDTO[" +
-               "username='" + username + '\'' +
+               "email='" + email + '\'' +
                ", jwtToken='[REDACTED]'" +
                ']';
     }

@@ -40,7 +40,6 @@ public class RegistrationService {
         UserAuthDTO authDTO = new UserAuthDTO();
         authDTO.setEmail(data.getEmail());
         authDTO.setPasswordHash(PasswordUtil.getInstance().encode(data.getPassword()));
-        authDTO.setUsername(data.getUsername()); // <-- CAMPO CORRETTO
         authDTO.setCreatedAt(now);
         authDTO.setUpdatedAt(now);
         authDTO.setIsActive(1);
@@ -61,11 +60,6 @@ public class RegistrationService {
             try {
                 if (authDAO.getUserAuthByEmail(data.getEmail(), conn) != null) {
                     throw new ServiceException("Email already registered.");
-                }
-
-                // Check for username existence
-                if (authDAO.usernameExists(data.getUsername(), conn)) {
-                    throw new ServiceException("Username already exists.");
                 }
 
                 int userId = authDAO.insertUserAuth(authDTO, conn);
@@ -93,8 +87,7 @@ public class RegistrationService {
     }
 
     private void validateRegistrationData(RegistrationDTO data) throws ValidationException {
-        if (data.getUsername() == null || data.getUsername().trim().isEmpty() || // <-- NUOVO CHECK
-                data.getName() == null || data.getName().trim().isEmpty() ||
+        if (data.getName() == null || data.getName().trim().isEmpty() ||
                 data.getSurname() == null || data.getSurname().trim().isEmpty() ||
                 data.getEmail() == null || data.getEmail().trim().isEmpty() ||
                 data.getPassword() == null || data.getPassword().trim().isEmpty()) {

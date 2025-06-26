@@ -18,7 +18,6 @@ public class RegistrationAction extends ActionSupport {
     // --- Dipendenza dal Service Layer ---
     private final RegistrationService registrationService = new RegistrationService();
     // --- Campi del form (INPUT da Struts) ---
-    private String username; // <-- NUOVO CAMPO
     private String name;
     private String surname;
     private String phone;
@@ -37,7 +36,7 @@ public class RegistrationAction extends ActionSupport {
         logger.info("Registration request received for email: {}", email);
 // 1. Raccoglie i dati in un unico oggetto per passarli in modo pulito.
         RegistrationDTO data = new RegistrationDTO(
-                username, name, surname, phone, email, password, birthday, gender, address // <-- AGGIORNATO
+                name, surname, phone, email, password, birthday, gender, address // <-- AGGIORNATO
         );
         try {
             // 2. Delega tutta la logica di business a un singolo metodo del service.
@@ -53,8 +52,6 @@ public class RegistrationAction extends ActionSupport {
             logger.error("Registration failed for {} due to a service error", email, e);
             if (e.getMessage() != null && e.getMessage().contains("Email already registered")) {
                 setFailure("Email already registered.");
-            } else if (e.getMessage() != null && e.getMessage().contains("Username already exists")) { // <-- NUOVO BLOCCO
-                setFailure("Username already exists.");
             } else {
                 setFailure("Registration failed due to a system error.");
             }
@@ -101,7 +98,6 @@ public class RegistrationAction extends ActionSupport {
         return registrationResponse;
     }
 
-    public void setUsername(String username) { this.username = username; } // <-- NUOVO SETTER
     public void setName(String name) { this.name = name;
     }
     public void setSurname(String surname) { this.surname = surname;

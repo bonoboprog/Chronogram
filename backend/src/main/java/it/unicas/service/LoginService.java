@@ -34,7 +34,7 @@ public class LoginService {
      * Esegue l'autenticazione di un utente.
      * @param email L'email fornita per il login.
      * @param password La password in chiaro fornita.
-     * @return Un oggetto LoginResultDTO contenente username e token JWT in caso di successo.
+     * @return Un oggetto LoginResultDTO contenente email e token JWT in caso di successo.
      * @throws AuthenticationException se l'autenticazione fallisce per qualsiasi motivo.
      * @throws SQLException se si verifica un errore a livello di database.
      */
@@ -68,7 +68,7 @@ public class LoginService {
                 String jwtToken = JwtUtil.generateToken(email);
                 
                 // 2. USA IL NUOVO DTO
-                return new LoginResultDTO(user.getUsername(), jwtToken);
+                return new LoginResultDTO(user.getEmail(), jwtToken);
             } else {
                 // Fallimento!
                 logger.warn("Wrong password for {}", email);

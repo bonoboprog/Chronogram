@@ -33,18 +33,6 @@
               />
             </ion-item>
 
-            <ion-item :class="errorClass('username')" class="glass-input">
-              <ion-icon slot="start" :icon="atOutline" class="input-icon" />
-              <ion-input
-                  v-model="form.username"
-                  label="Username"
-                  label-placement="floating"
-                  type="text"
-                  :aria-label="'Username'"
-                  autocomplete="username"
-              />
-            </ion-item>
-
             <ion-item :class="errorClass('address')" class="glass-input">
               <ion-icon slot="start" :icon="locationOutline" class="input-icon" />
               <ion-input
@@ -188,7 +176,7 @@ const showPassword  = ref(false);
 const dateIso       = ref<string>();
 
 const form = reactive({
-  name: '', surname: '', username: '', address: '', phone: '', // <-- ADDED USERNAME
+  name: '', surname: '', address: '', phone: '',
   email: '', password: '', birthday: '', gender: ''
 });
 
@@ -199,7 +187,6 @@ const formattedBirthday = computed(() => form.birthday);
 const hasErrors = computed(() =>
     !form.name.trim()       ||
     !form.surname.trim()    ||
-    !form.username.trim()   || // <-- ADDED CHECK
     !form.address.trim()    ||
     !isValidEmail(form.email) ||
     !isStrongPassword(form.password)
@@ -216,7 +203,7 @@ const errorClass = (f: keyof typeof form) => ({
   'ion-invalid':
       (f === 'email'    && form.email    && !isValidEmail(form.email)) ||
       (f === 'password' && form.password && !isStrongPassword(form.password)) ||
-      (!(form[f] as string).trim() && ['name', 'surname', 'address', 'username'].includes(f)) // <-- ADDED USERNAME
+      (!(form[f] as string).trim() && ['name', 'surname', 'address'].includes(f))
 });
 
 const openBirthdayModal = () => birthdayModal.value?.$el.present();

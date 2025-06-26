@@ -11,11 +11,11 @@
             <ion-item class="glass-input">
               <ion-icon :icon="personOutline" class="input-icon" />
               <ion-input
-                  label="Username or Email"
+                  label="Email"
                   label-placement="floating"
-                  placeholder="Insert your username"
+                  placeholder="Insert your email"
                   type="email"
-                  autocomplete="username"
+                  autocomplete="email"
                   v-model="email"
               ></ion-input>
             </ion-item>
