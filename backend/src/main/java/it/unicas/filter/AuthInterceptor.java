@@ -22,10 +22,13 @@ public class AuthInterceptor extends AbstractInterceptor {
 
         String authHeader = request.getHeader("Authorization");
 
+        /** Non viene mai invocato
         // Consenti alle richieste OPTIONS di passare (preflight CORS)
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             return invocation.invoke();
         }
+        **/
+
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             logger.warn("Tentativo di accesso non autorizzato: Header Authorization mancante o malformato.");

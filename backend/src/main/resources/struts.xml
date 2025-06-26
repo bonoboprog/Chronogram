@@ -31,11 +31,13 @@
     </action>
 
     <action name="request-reset" class="it.unicas.action.RequestPasswordResetAction" method="execute">
-      <result type="json"><param name="root">success,message</param></result>
+      <result type="json">
+        <param name="root">passwordResetResponse</param> </result>
     </action>
 
     <action name="reset-password" class="it.unicas.action.ResetPasswordAction" method="execute">
-      <result type="json"><param name="root">success,message</param></result>
+      <result type="json">
+        <param name="root">resetPasswordResponse</param> </result>
     </action>
 
   </package>
