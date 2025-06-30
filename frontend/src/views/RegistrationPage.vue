@@ -9,7 +9,6 @@
 
         <div class="form-wrapper">
           <ion-list lines="none">
-            <!-- NAME -->
             <ion-item :class="errorClass('name')" class="glass-input">
               <ion-icon slot="start" :icon="personOutline" class="input-icon" />
               <ion-input
@@ -22,7 +21,6 @@
               />
             </ion-item>
 
-            <!-- SURNAME -->
             <ion-item :class="errorClass('surname')" class="glass-input">
               <ion-icon slot="start" :icon="personOutline" class="input-icon" />
               <ion-input
@@ -35,7 +33,18 @@
               />
             </ion-item>
 
-            <!-- PHONE -->
+            <ion-item :class="errorClass('address')" class="glass-input">
+              <ion-icon slot="start" :icon="locationOutline" class="input-icon" />
+              <ion-input
+                  v-model="form.address"
+                  label="Address"
+                  label-placement="floating"
+                  type="text"
+                  :aria-label="'Address'"
+                  autocomplete="street-address"
+              />
+            </ion-item>
+
             <ion-item class="glass-input">
               <ion-icon slot="start" :icon="callOutline" class="input-icon" />
               <ion-input
@@ -48,7 +57,6 @@
               />
             </ion-item>
 
-            <!-- EMAIL -->
             <ion-item :class="errorClass('email')" class="glass-input">
               <ion-icon slot="start" :icon="mailOutline" class="input-icon" />
               <ion-input
@@ -57,11 +65,10 @@
                   label-placement="floating"
                   type="email"
                   :aria-label="'Email'"
-                  autocomplete="username"
+                  autocomplete="email"
               />
             </ion-item>
 
-            <!-- PASSWORD -->
             <ion-item :class="errorClass('password')" class="glass-input password-item">
               <ion-icon slot="start" :icon="keyOutline" class="input-icon" />
               <ion-input
@@ -80,7 +87,6 @@
               />
             </ion-item>
 
-            <!-- BIRTHDAY -->
             <ion-item
                 class="glass-input"
                 :class="{ 'item-has-value': !!form.birthday }"
@@ -93,7 +99,6 @@
               <div class="custom-input-value">{{ formattedBirthday }}</div>
             </ion-item>
 
-            <!-- GENDER -->
             <ion-item class="glass-input">
               <ion-icon slot="start" :icon="transgenderOutline" class="input-icon" />
               <ion-select
@@ -111,7 +116,6 @@
             </ion-item>
           </ion-list>
 
-          <!-- BUTTONS (invariati) -->
           <ion-grid class="ion-margin-top">
             <ion-row class="ion-justify-content-around">
               <ion-col size="5">
@@ -132,7 +136,6 @@
         </div>
       </div>
 
-      <!-- BIRTHDAY MODAL, LOADING E TOAST (invariati) -->
       <ion-modal ref="birthdayModal" :keep-contents-mounted="true">
         <ion-datetime
             presentation="date"
@@ -148,7 +151,6 @@
   </ion-page>
 </template>
 
-
 <script setup lang="ts">
 import { reactive, ref, computed } from 'vue';
 import {
@@ -160,7 +162,8 @@ import { useRouter } from 'vue-router';
 import {
   personAddOutline, eyeOutline, eyeOffOutline,
   callOutline, mailOutline, personOutline,
-  keyOutline, calendarOutline, transgenderOutline
+  keyOutline, calendarOutline, transgenderOutline,
+  locationOutline, atOutline // <-- IMPORTED ICON
 } from 'ionicons/icons';
 import dayjs from 'dayjs';
 import { api } from '@/composables/useApi';
@@ -173,8 +176,8 @@ const showPassword  = ref(false);
 const dateIso       = ref<string>();
 
 const form = reactive({
-  name: '', surname: '', phone: '', email: '', password: '',
-  birthday: '', gender: '',
+  name: '', surname: '', address: '', phone: '',
+  email: '', password: '', birthday: '', gender: ''
 });
 
 const toast = reactive({ open: false, message: '', color: 'danger' as const });
@@ -184,27 +187,38 @@ const formattedBirthday = computed(() => form.birthday);
 const hasErrors = computed(() =>
     !form.name.trim()       ||
     !form.surname.trim()    ||
+    !form.address.trim()    ||
     !isValidEmail(form.email) ||
     !isStrongPassword(form.password)
 );
 
 /* ---------- helpers ---------- */
-const isValidEmail    = (e:string) => /^[\w-.]+@([\w-]+\.)+[\w-]{2,}$/.test(e);
-const isStrongPassword= (p:string) => /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(p);
-const errorClass = (f:keyof typeof form)=>({
+const isValidEmail = (e: string) =>
+    /^[\w-.]+@([\w-]+\.)+[\w-]{2,}$/.test(e);
+
+const isStrongPassword = (p: string) =>
+    /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(p);
+
+const errorClass = (f: keyof typeof form) => ({
   'ion-invalid':
-      (f==='email'    && form.email    && !isValidEmail(form.email))   ||
-      (f==='password' && form.password && !isStrongPassword(form.password)) ||
-      (!(form[f] as string).trim() && (f==='name'||f==='surname'))
+      (f === 'email'    && form.email    && !isValidEmail(form.email)) ||
+      (f === 'password' && form.password && !isStrongPassword(form.password)) ||
+      (!(form[f] as string).trim() && ['name', 'surname', 'address'].includes(f))
 });
 
 const openBirthdayModal = () => birthdayModal.value?.$el.present();
+
 const onBirthdaySelected = () => {
-  if (dateIso.value) form.birthday = dayjs(dateIso.value).format('DD-MM-YYYY');
+  if (dateIso.value) {
+    form.birthday = dayjs(dateIso.value).format('DD-MM-YYYY');
+  }
   birthdayModal.value?.$el.dismiss();
 };
-const showToast = (msg:string,col:'success'|'danger')=>{
-  toast.message=msg; toast.color=col; toast.open=true;
+
+const showToast = (msg: string, col: 'success' | 'danger') => {
+  toast.message = msg;
+  toast.color = col;
+  toast.open = true;
 };
 
 /* ---------- registration ---------- */
@@ -216,24 +230,22 @@ async function handleRegister() {
 
   isLoading.value = true;
   try {
-    const { data } = await api.post('/register', { ...form });
-    // 👉 data ora è direttamente { success, message }
-
-    if (!data?.success) {
-      throw new Error(data?.message ?? 'Unknown error');
-    }
+    const { data } = await api.post('/api/auth/register', { ...form });
+    console.log('Register API response data:', data);  // <-- ADD THIS
+    if (!data?.success) throw new Error(data?.message ?? 'Unknown error');
 
     showToast(data.message || 'Registered successfully!', 'success');
-    await router.push({ name: 'Login' });           // <— redirect
+    await router.push({ name: 'Login' });
   } catch (err: any) {
-    showToast(err.message || 'Unexpected error', 'danger');
+    console.error('Registration error:', err);
+    const message = err.response?.data?.message || err.message || 'Unexpected error';
+    showToast(message, 'danger');
   } finally {
     isLoading.value = false;
   }
 }
 
 </script>
-
 
 <style scoped>
 .registration-container {
@@ -255,23 +267,18 @@ async function handleRegister() {
   max-width: 450px;
   width: 100%;
 }
-
-/* Altezza e padding coerenti con login */
 ion-item.glass-input {
   --inner-padding-top: 4px;
   --inner-padding-bottom: 4px;
   --min-height: 48px;
   font-size: 0.95rem;
 }
-
-/* Altezza coerente anche per input/select interni */
 ion-input,
 ion-select {
   font-size: 0.95rem;
   --padding-start: 0;
   --padding-end: 0;
 }
-
 ion-item.ion-invalid {
   --highlight-color-focused: var(--ion-color-danger);
   --background: rgba(var(--ion-color-danger-rgb), 0.1);
@@ -288,28 +295,18 @@ ion-item.ion-invalid {
   padding: 8px 0;
   min-height: calc(1em + 16px);
 }
-
-/* Titolo "Registration" in peach */
 .title-peach {
   color: var(--peach);
 }
-
-/* Icone all’interno degli input */
 ion-icon.input-icon {
   color: var(--peach);
   font-size: 1.2rem;
   margin-right: 8px;
 }
-
-/* Icona occhio per mostrare/nascondere la password */
 ion-icon.toggle-eye {
   color: var(--peach);
 }
-
-/* Freccetta (icona dropdown) di ion-select in mauve */
 ion-select::part(icon) {
   color: var(--peach);
 }
-
-
 </style>
