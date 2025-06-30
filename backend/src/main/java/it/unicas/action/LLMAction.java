@@ -11,6 +11,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.sql.Date;
 
 public class LLMAction extends ActionSupport {
     private static final Logger logger = LogManager.getLogger(LLMAction.class);
@@ -132,15 +133,57 @@ public class LLMAction extends ActionSupport {
 
     private ActivityDTO parseJsonToDTO(JSONObject json) {
         ActivityDTO dto = new ActivityDTO();
-        dto.setName(json.optString("name", null));
-        dto.setDuration(json.has("duration") ? json.optInt("duration") : null);
-        dto.setDetails(json.optString("details", null));
-        dto.setEnjoyment(json.has("enjoyment") ? json.optInt("enjoyment") : null);
-        dto.setCategory(json.optString("category", null));
-        dto.setType(json.optString("type", null));
-        dto.setRecurrence(json.optString("recurrence", null));
-        dto.setCost(json.has("cost") ? json.optDouble("cost") : null);
-        dto.setLocation(json.optString("location", null));
+
+        if (json.has("activityId")) {
+            dto.setActivityId(json.optInt("activityId"));
+        }
+
+        if (json.has("activityDate")) {
+            dto.setActivityDate(Date.valueOf(json.optString("activityDate")));
+        }
+
+        if (json.has("duration")) {
+            dto.setDurationMins(json.optInt("duration"));
+        }
+
+        if (json.has("enjoyment")) {
+            dto.setPleasantness(json.optInt("enjoyment"));
+        }
+
+        if (json.has("location")) {
+            dto.setLocation(json.optString("location"));
+        }
+
+        if (json.has("cost")) {
+            dto.setCostEuro(String.valueOf(json.optDouble("cost")));
+        }
+
+        if (json.has("userId")) {
+            dto.setUserId(json.optInt("userId"));
+        }
+
+        if (json.has("activityTypeId")) {
+            dto.setActivityTypeId(json.optInt("activityTypeId"));
+        }
+
+        // Optional: also set activity type info if provided
+        if (json.has("activityTypeName")) {
+            dto.setActivityTypeName(json.optString("activityTypeName"));
+        }
+
+        if (json.has("activityTypeDescription")) {
+            dto.setActivityTypeDescription(json.optString("activityTypeDescription"));
+        }
+
+        if (json.has("isInstrumental")) {
+            dto.setIsInstrumental(json.optBoolean("isInstrumental"));
+        }
+
+        if (json.has("isRoutinary")) {
+            dto.setIsRoutinary(json.optBoolean("isRoutinary"));
+        }
+
         return dto;
     }
+
 }

@@ -58,4 +58,25 @@
       <result type="json"><param name="root">data</param></result>
     </action>
   </package>
+
+  <!-- PACKAGE PER LE ATTIVITÀ CON APPROCCIO DINAMICO -->
+  <package name="api-activities" namespace="/api/activities" extends="json-default">
+    <interceptors>
+      <interceptor name="authInterceptor" class="it.unicas.filter.AuthInterceptor"/>
+      <interceptor-stack name="apiActivitiesStack">
+        <interceptor-ref name="authInterceptor"/>
+        <interceptor-ref name="json"/>
+        <interceptor-ref name="defaultStack"/>
+      </interceptor-stack>
+    </interceptors>
+
+    <default-interceptor-ref name="apiActivitiesStack"/>
+
+    <!-- Gestione dinamica: qualsiasi URL viene mappato al metodo corrispondente -->
+    <action name="*" class="it.unicas.action.ActivityAction" method="{1}">
+      <result type="json">
+        <param name="root">activityResponse</param>
+      </result>
+    </action>
+  </package>
 </struts>
