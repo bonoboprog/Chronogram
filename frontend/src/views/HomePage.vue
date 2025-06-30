@@ -1,20 +1,6 @@
 <template>
   <ion-page>
-    <ion-header>
-      <ion-toolbar>
-        <ion-segment :value="selectedTab" @ionChange="navigateTab">
-          <ion-segment-button value="home">
-            <ion-icon :icon="homeOutline" />
-          </ion-segment-button>
-          <ion-segment-button value="calendar">
-            <ion-icon :icon="calendarOutline" />
-          </ion-segment-button>
-          <ion-segment-button value="settings">
-            <ion-icon :icon="settingsOutline" />
-          </ion-segment-button>
-        </ion-segment>
-      </ion-toolbar>
-    </ion-header>
+    <ion-header></ion-header>
 
     <ion-content class="ion-padding">
       <div class="user-info gradient-text">
@@ -22,19 +8,16 @@
         <h2>User name</h2>
       </div>
 
-      <!-- ───────────── TIMELINE CONTENT ───────────── -->
       <div class="time-diary-page">
         <!-- DATE PAGER -->
         <div class="date-toolbar" color="dark">
           <div class="date-toolbar-inner">
-            <!-- Prev Day -->
             <ion-buttons slot="start">
               <ion-button fill="clear" @click="goPrevDay">
                 <ion-icon :icon="chevronBackOutline" />
               </ion-button>
             </ion-buttons>
 
-            <!-- Centered date segment -->
             <div class="date-pager-wrapper">
               <ion-segment v-model="selectedDateIndex" class="date-pager" :scrollable="false">
                 <ion-segment-button
@@ -48,7 +31,6 @@
               </ion-segment>
             </div>
 
-            <!-- Next Day -->
             <ion-buttons slot="end">
               <ion-button fill="clear" @click="goNextDay">
                 <ion-icon :icon="chevronForwardOutline" />
@@ -84,12 +66,30 @@
           </transition-group>
         </div>
 
-        <!-- FABs -->
+        <!-- FAB central "+" -->
         <ion-fab vertical="bottom" horizontal="center" slot="fixed" class="add-fab">
           <ion-fab-button class="add-fab-btn" @click="addActivity">
             <ion-icon :icon="addOutline" />
           </ion-fab-button>
         </ion-fab>
+
+        <!-- Botón Home (izquierda) -->
+        <ion-button
+            fill="clear"
+            class="bottom-icon left"
+            @click="navigateTab({ detail: { value: 'home' } })"
+        >
+          <ion-icon :icon="homeOutline" />
+        </ion-button>
+
+        <!-- Botón Settings (derecha) -->
+        <ion-button
+            fill="clear"
+            class="bottom-icon right"
+            @click="navigateTab({ detail: { value: 'settings' } })"
+        >
+          <ion-icon :icon="settingsOutline" />
+        </ion-button>
       </div>
     </ion-content>
   </ion-page>
@@ -99,12 +99,11 @@
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import {
-  IonPage, IonHeader, IonToolbar, IonSegment, IonSegmentButton,
-  IonContent, IonIcon, IonButton, IonButtons, IonCard, IonCardContent,
-  IonFab, IonFabButton
+  IonPage, IonHeader, IonContent, IonIcon, IonButton, IonButtons,
+  IonCard, IonCardContent, IonFab, IonFabButton, IonSegment, IonSegmentButton
 } from '@ionic/vue';
 import {
-  homeOutline, calendarOutline, settingsOutline, personCircleOutline,
+  homeOutline, settingsOutline, personCircleOutline,
   chevronBackOutline, chevronForwardOutline, addOutline
 } from 'ionicons/icons';
 
@@ -115,7 +114,6 @@ const selectedTab = ref(route.name?.toString().toLowerCase() || 'home');
 const navigateTab = (event: CustomEvent) => {
   const tab = event.detail.value;
   if (tab === 'home') router.push({ name: 'Home' });
-  else if (tab === 'calendar') router.push({ name: 'Calendar' });
   else if (tab === 'settings') router.push({ name: 'Settings' });
 };
 
@@ -127,9 +125,8 @@ interface Activity {
   category: string
 }
 
-/* ---------- Dates ---------- */
 const today = new Date()
-const selectedDateIndex = ref(1) // 0 = prev, 1 = today, 2 = next
+const selectedDateIndex = ref(1)
 const displayDates = ref([
   offsetDate(-1),
   offsetDate(0),
@@ -156,7 +153,6 @@ function goNextDay() {
   rotateDates(1)
 }
 
-/* ---------- Activities ---------- */
 const activities = ref<Activity[]>([
   { id: 1, time: '06:30', code: '403', text: 'Getting up, getting out of bed, going to bed', category: 'morning' },
   { id: 2, time: '06:45', code: '401', text: 'Washing, personal care (brush teeth, shave, make-up…)', category: 'hygiene' },
@@ -168,36 +164,24 @@ const activities = ref<Activity[]>([
 ])
 
 function addActivity() {
-  // placeholder action
   console.log('add new activity')
 }
 
-/* ---------- Category Colors ---------- */
 const categoryColors: Record<string, string> = {
   morning: 'var(--sky)',
-  hygiene:  'var(--teal)',
-  food:     'var(--peach)',
-  commute:  'var(--blue)',
-  work:     'var(--mauve)',
-  break:    'var(--green)'
+  hygiene: 'var(--teal)',
+  food: 'var(--peach)',
+  commute: 'var(--blue)',
+  work: 'var(--mauve)',
+  break: 'var(--green)'
 }
 
-// Set theme on mount
 onMounted(() => {
   document.documentElement.setAttribute('data-theme', 'mocha');
 });
 </script>
 
 <style scoped>
-/* Tab Navigation */
-ion-segment-button {
-  padding: 0.5rem;
-  border-radius: 9999px;
-  backdrop-filter: blur(6px);
-  --color-checked: var(--peach);
-  --indicator-color: transparent;
-}
-
 /* User Info */
 .user-info {
   display: flex;
@@ -206,17 +190,13 @@ ion-segment-button {
   gap: 0.5rem;
   margin-bottom: 1.5rem;
 }
-
 .user-icon {
   font-size: 2rem;
   color: var(--ion-color-primary);
 }
 
-/* Timeline Styles */
-.date-toolbar {
-  --min-height: 44px;
-  margin-bottom: 1rem;
-}
+/* Date Toolbar */
+.date-toolbar { margin-bottom: 1rem; }
 .date-toolbar-inner {
   display: flex;
   align-items: center;
@@ -232,7 +212,6 @@ ion-segment-button {
   --background: transparent;
   border-radius: 999px;
   padding: 0 4px;
-  overflow: hidden;
 }
 .date-pager ion-segment-button {
   --background: transparent;
@@ -241,14 +220,14 @@ ion-segment-button {
   flex-direction: column;
   text-transform: uppercase;
 }
-.date-pager ion-segment-button::part(indicator) { display: none; }
 .date-pager ion-segment-button.ion-activated {
   background: var(--surface2);
   border-radius: 12px;
 }
-.date-number { font-size: 1rem;  font-weight: 700; line-height: 1; }
-.date-month  { font-size: .7rem; line-height: 1; opacity: .7; }
+.date-number { font-size: 1rem; font-weight: 700; }
+.date-month { font-size: .7rem; opacity: .7; }
 
+/* Timeline */
 .timeline-container { padding: 0 0 64px 0; }
 .activity-row {
   position: relative;
@@ -279,7 +258,6 @@ ion-segment-button {
   width: 1px;
   background: var(--surface2);
 }
-
 .activity-bubble {
   flex: 1;
   margin-left: 64px;
@@ -288,7 +266,6 @@ ion-segment-button {
   border: 1px solid rgba(255,255,255,.12);
   border-left: 4px solid var(--stripe-color);
   border-radius: 18px 18px 6px 18px;
-  transition: background .15s ease, box-shadow .15s ease;
 }
 .activity-bubble:hover {
   background: linear-gradient(
@@ -298,18 +275,8 @@ ion-segment-button {
   );
   box-shadow: 0 0 12px -2px var(--mauve);
 }
-.activity-bubble::after {
-  content: '';
-  position: absolute;
-  left: -6px; bottom: 0;
-  width: 12px; height: 12px;
-  border-radius: 0 0 0 12px;
-  background: inherit;
-  border-left: inherit;
-  border-bottom: inherit;
-}
 
-/* FAB principale "+" */
+/* FAB central */
 .add-fab {
   --background: transparent !important;
   width: 68px; height: 68px;
@@ -323,22 +290,24 @@ ion-segment-button {
   width: 68px; height: 68px;
   border-radius: 50%;
   box-shadow: 0 4px 14px -4px var(--mauve);
-  transition: transform .15s ease;
 }
-.add-fab-btn:hover  { transform: scale(1.05); }
-.add-fab-btn:active { transform: scale(.95); }
 
-/* Animations */
-.activity-enter-active,
-.activity-leave-active {
-  transition: all .25s cubic-bezier(.2,.8,.4,1);
+/* Botones Home y Settings */
+.bottom-icon {
+  position: fixed;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  z-index: 50;
+  background: transparent;
+  --color: #c7b8f5;
+  font-size: 1.8rem;
+  padding: 0;
+  min-width: auto;
+  height: auto;
 }
-.activity-enter-from {
-  opacity: 0;
-  transform: translateY(12px) scale(.98);
+.bottom-icon.left {
+  left: 20px;
 }
-.activity-enter-to {
-  opacity: 1;
-  transform: translateY(0) scale(1);
+.bottom-icon.right {
+  right: 20px;
 }
 </style>

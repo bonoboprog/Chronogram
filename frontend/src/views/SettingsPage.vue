@@ -30,7 +30,7 @@
             <ion-button class="peach-gradient pill-button" shape="round" size="small" @click="goToHome">
               <ion-icon :icon="homeOutline" slot="icon-only" />
             </ion-button>
-            <p>Came Home</p>
+            <p>Back Home</p>
           </ion-col>
         </ion-row>
       </ion-grid>
