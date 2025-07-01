@@ -15,9 +15,14 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/LoginPage.vue')
   },
   {
+    path: '/homeOld',
+    name: 'HomeOld',
+    component: () => import('@/views/HomePage.vue')
+  },
+  {
     path: '/home',
     name: 'Home',
-    component: () => import('@/views/HomePage.vue')
+    component: () => import('@/views/HomePageVio.vue')
   },
   {
     path: '/activity',
