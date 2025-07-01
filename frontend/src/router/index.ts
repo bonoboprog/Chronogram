@@ -27,7 +27,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/activity',
     name: 'AddActivity',
-    component: () => import('@/views/AddActivity.vue')
+    component: () => import('@/views/AddActivityPage.vue')
   },
   {
     path: '/settings',

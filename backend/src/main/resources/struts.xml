@@ -44,9 +44,9 @@
 
   <package name="api-llm" namespace="/api/llm" extends="json-default">
     <interceptors>
-      <interceptor name="authInterceptor" class="it.unicas.filter.AuthInterceptor"/>
+
       <interceptor-stack name="apiLlmStack">
-        <interceptor-ref name="authInterceptor"/>
+        
         <interceptor-ref name="json"/>
         <interceptor-ref name="defaultStack"/>
       </interceptor-stack>
