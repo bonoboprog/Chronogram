@@ -3,9 +3,6 @@
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-button @click="goTo('Home')">
-            <ion-icon :icon="homeOutline" :color="selectedTab === 'Home' ? 'peach' : ''" slot="icon-only" />
-          </ion-button>
           <ion-button @click="goTo('Calendar')">
             <ion-icon :icon="calendarOutline" :color="selectedTab === 'Calendar' ? 'peach' : ''" slot="icon-only" />
           </ion-button>
@@ -111,8 +108,13 @@
             <ion-input label="Cost (€)" label-placement="stacked" type="number" inputmode="decimal" v-model="activity.cost"></ion-input>
           </ion-item>
 
+          <!-- Replaced input with dropdown select for Location -->
           <ion-item>
-            <ion-input label="Location" label-placement="stacked" v-model="activity.location"></ion-input>
+            <ion-select label="Location" label-placement="stacked" interface="action-sheet" v-model="activity.location">
+            <ion-select-option value="home">At home</ion-select-option>
+              <ion-select-option value="work">At work</ion-select-option>
+              <ion-select-option value="outside">Outside</ion-select-option>
+            </ion-select>
           </ion-item>
         </ion-card-content>
       </ion-card>
@@ -135,7 +137,7 @@ import {
 
 import {
   sparkles, send, pencilOutline, checkmarkCircleOutline,
-  homeOutline, calendarOutline, settingsOutline
+  calendarOutline, settingsOutline
 } from 'ionicons/icons';
 
 import axios from 'axios';
@@ -247,7 +249,7 @@ async function saveActivity() {
 .input-card {
   margin-bottom: 2rem;
   border-radius: 12px;
-  background-color: #2b2b3a; /* gris oscuro suave */
+  background-color: #2b2b3a;
   border: 1px solid rgba(255, 255, 255, 0.05);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
@@ -257,10 +259,8 @@ async function saveActivity() {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #e0aaff; /* rosita pastel */
+  color: #e0aaff;
 }
-
-
 
 .magic-icon {
   font-size: 1.2em;
@@ -273,9 +273,8 @@ async function saveActivity() {
 .helper-note {
   margin-top: 0.5rem;
   display: block;
-  color: #aaa;
+  color: #fff;
 }
-
 
 .stepper {
   display: flex;
@@ -293,6 +292,6 @@ async function saveActivity() {
 ion-title.ion-text-right {
   padding-inline-end: 16px;
   font-size: 0.9em;
-  color: var(--ion-color-medium-shade);
+  color:  #fff;
 }
 </style>
