@@ -4,8 +4,7 @@ import { Preferences } from '@capacitor/preferences';
 import { SecureStoragePlugin } from 'capacitor-secure-storage-plugin';
 import { api } from '@/composables/useApi';
 import { useRouter } from 'vue-router';
-
-// Definiamo il tipo per i dati dell'utente che vogliamo salvare
+import { User, LoginResponse } from '@/types/auth';
 
 export const useAuthStore = defineStore('auth', () => {
     const user = ref<User | null>(null);
@@ -14,7 +13,9 @@ export const useAuthStore = defineStore('auth', () => {
 
     // --- GETTERS ---
     const isAuthenticated = computed(() => !!token.value && !!user.value);
-    const username = computed(() => user.value?.username);
+    const email = computed(() => user.value?.email);
+    const userId = computed(() => user.value?.id);
+    const userName = computed(() => user.value?.name);
 
     // --- ACTIONS ---
 
@@ -26,11 +27,11 @@ export const useAuthStore = defineStore('auth', () => {
 
             console.log('[AuthStore] Login successful. Token received:', data.token.substring(0, 10) + '...');
             token.value = data.token;
-            user.value = { username: data.username };
+            user.value = data.user;
 
             await SecureStoragePlugin.set({ key: 'authToken', value: data.token });
-            await Preferences.set({ key: 'userData', value: JSON.stringify(user.value) });
-            console.log('[AuthStore] Token securely stored');
+            await Preferences.set({ key: 'userData', value: JSON.stringify(data.user) });
+            console.log('[AuthStore] Token and user data stored');
 
             //api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
             return data;
@@ -48,9 +49,9 @@ export const useAuthStore = defineStore('auth', () => {
         try {
             await SecureStoragePlugin.remove({ key: 'authToken' });
             await Preferences.remove({ key: 'userData' });
-            console.log('[AuthStore] Token removed from storage');
+            console.log('[AuthStore] Token and user data removed from storage');
         } catch (storageError) {
-            console.error('[AuthStore] Error removing token:', storageError);
+            console.error('[AuthStore] Error removing auth data:', storageError);
         }
 
         //delete api.defaults.headers.common['Authorization'];
@@ -82,7 +83,9 @@ export const useAuthStore = defineStore('auth', () => {
         user,
         token,
         isAuthenticated,
-        username,
+        email,
+        userId,
+        userName,
         login,
         logout,
         checkAuthStatus

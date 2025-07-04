@@ -77,7 +77,7 @@
         <ion-button
             fill="clear"
             class="bottom-icon left"
-            @click="navigateTab({ detail: { value: 'home' } })"
+            @click="navigateTab('home')"
         >
           <ion-icon :icon="homeOutline" />
         </ion-button>
@@ -86,7 +86,7 @@
         <ion-button
             fill="clear"
             class="bottom-icon right"
-            @click="navigateTab({ detail: { value: 'settings' } })"
+            @click="navigateTab('settings')"
         >
           <ion-icon :icon="settingsOutline" />
         </ion-button>
@@ -111,10 +111,10 @@ const router = useRouter();
 const route = useRoute();
 const selectedTab = ref(route.name?.toString().toLowerCase() || 'home');
 
-const navigateTab = (event: CustomEvent) => {
-  const tab = event.detail.value;
-  if (tab === 'home') router.push({ name: 'Home' });
-  else if (tab === 'settings') router.push({ name: 'Settings' });
+const navigateTab = (tabName: string) => {
+  router.push({ name: tabName.charAt(0).toUpperCase() + tabName.slice(1) });
+  if (tabName === 'home') router.push({ name: 'Home' });
+  else if (tabName === 'settings') router.push({ name: 'Settings' });
 };
 
 interface Activity {

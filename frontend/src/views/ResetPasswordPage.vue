@@ -122,7 +122,7 @@ const errors = reactive({
 const toast = reactive({
   open: false,
   message: '',
-  color: 'danger' as const
+  color: 'danger' as string
 });
 
 /* ---------- computed ---------- */

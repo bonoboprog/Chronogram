@@ -40,10 +40,10 @@
 
       <ion-item class="enjoyment-item" lines="none">
         <ion-label>Enjoyment</ion-label>
-        <div class="stepper" slot="end">
-          <ion-button fill="clear" size="small" @click="adjustEnjoyment(-1)">−</ion-button>
-          <span class="stepper-value">{{ activity.enjoyment }}</span>
-          <ion-button fill="clear" size="small" @click="adjustEnjoyment(1)">+</ion-button>
+        <div class="stepper" slot="end" role="group" aria-label="Enjoyment level">
+          <ion-button aria-label="Decrease enjoyment" fill="clear" size="small" @click="adjustEnjoyment(-1)">−</ion-button>
+          <span class="stepper-value" aria-live="polite">{{ activity.enjoyment }}</span>
+          <ion-button aria-label="Increase enjoyment" fill="clear" size="small" @click="adjustEnjoyment(1)">+</ion-button>
         </div>
       </ion-item>
 
@@ -99,7 +99,7 @@
             Tip: include duration, cost and how you felt for better suggestions.
           </ion-note>
           <div class="ion-text-end">
-            <ion-button :disabled="isLoadingAI" @click="handleMagicInput">
+            <ion-button :disabled="isLoadingAI || !naturalInput.trim()" @click="handleMagicInput">
               <ion-icon v-if="!isLoadingAI" :icon="send" slot="start" />
               <ion-spinner v-else name="crescent" />
               Send
@@ -122,47 +122,56 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue';
-import { useRouter, useRoute } from 'vue-router'; // Importa useRoute per i parametri
-import { useActivityStore } from '@/stores/activityStore'; // Il tuo nuovo store per le attività
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { useActivityStore } from '@/store/activityStore';
 import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonBackButton,
   IonButton, IonIcon, IonItem, IonLabel, IonInput, IonTextarea, IonSelect,
   IonSelectOption, IonNote, IonFab, IonFabButton, IonModal, IonCard, IonCardContent,
-  IonSpinner, IonToast, toastController // Importa toastController per i toast
+  IonSpinner, IonToast
 } from '@ionic/vue';
 import { sparkles, send, checkmarkCircleOutline } from 'ionicons/icons';
 
 /* ---------- Stores and Router ---------- */
 const router = useRouter();
-const route = useRoute(); // Per accedere ai parametri della rotta (es. ID)
+const route = useRoute();
 const activityStore = useActivityStore();
 
 /* ---------- State ---------- */
-// Tipo per l'attività (assicurati che sia lo stesso definito in activityStore.ts se non è globale)
 interface ActivityForm {
-  name: string; duration: number | null; details: string; enjoyment: number;
-  category: string; type: 'instrumental' | 'final' | ''; recurrence: 'R' | 'E' | '';
-  cost: number | null; location: string;
+  name: string;
+  duration: number | null;
+  details: string;
+  enjoyment: number;
+  category: string;
+  type: 'instrumental' | 'final' | '';
+  recurrence: 'R' | 'E' | '';
+  cost: number | null;
+  location: string;
 }
 
 const activity = reactive<ActivityForm>({
-  name: '', duration: null, details: '', enjoyment: 0,
-  category: '', type: '', recurrence: '', cost: null, location: ''
+  name: '',
+  duration: null,
+  details: '',
+  enjoyment: 0,
+  category: '',
+  type: '',
+  recurrence: '',
+  cost: null,
+  location: ''
 });
 
-const activityId = ref<string | null>(null); // Per tenere traccia dell'ID in modalità modifica
-const isEditMode = computed(() => !!activityId.value); // Computed per sapere se siamo in modalità modifica
+const activityId = ref<string | null>(null);
+const isEditMode = computed(() => !!activityId.value);
 
 const naturalInput = ref('');
-// Caricamento ed errore per la parte AI, separati dallo store loading generale per chiarezza UI
 const isLoadingAI = ref(false);
 const errorMessageAI = ref<string | null>(null);
-
 const isModalOpen = ref(false);
 const currentDate = new Intl.DateTimeFormat('en-GB').format(new Date());
 
-// Toast state (copiato da LoginPage.vue per consistenza)
 const showToast = ref(false);
 const toastMessage = ref('');
 const toastColor = ref('danger');
@@ -171,106 +180,120 @@ const presentToast = async (message: string, color: string = 'danger') => {
   toastMessage.value = message;
   toastColor.value = color;
   showToast.value = true;
-  // Puoi anche usare direttamente toastController per più controllo
-  // const toast = await toastController.create({
-  //   message,
-  //   duration: 3000,
-  //   color,
-  // });
-  // toast.present();
 };
 
 /* ---------- Lifecycle Hooks ---------- */
 onMounted(async () => {
-  if (route.params.id) { // Se c'è un ID nei parametri della rotta, siamo in modalità modifica
-    activityId.value = route.params.id as string;
+  if (route.params.id && typeof route.params.id === 'string') {
+    activityId.value = route.params.id;
     try {
-      presentToast('Loading activity for editing...', 'tertiary'); // Toast informativo
-      // Recupera l'attività dal backend tramite lo store
+      presentToast('Loading activity for editing...', 'tertiary');
       const fetchedActivity = await activityStore.fetchActivityById(activityId.value);
-      // Assegna i dati recuperati all'oggetto reattivo del form
       Object.assign(activity, fetchedActivity);
       presentToast('Activity loaded!', 'success');
     } catch (error) {
       presentToast('Failed to load activity for editing. Please try again.', 'danger');
       console.error('Error loading activity for edit:', error);
-      router.replace({ name: 'Home' }); // Reindirizza se l'attività non esiste o non può essere caricata
+      router.replace({ name: 'Home' });
     }
   }
 });
 
+onBeforeUnmount(() => {
+  isModalOpen.value = false;
+});
 
 /* ---------- Methods ---------- */
 const adjustEnjoyment = (d: number) => {
-  const v = activity.enjoyment + d
-  if (v >= -3 && v <= 3) activity.enjoyment = v
-}
+  const v = activity.enjoyment + d;
+  if (v >= -3 && v <= 3) activity.enjoyment = v;
+};
 
 async function handleMagicInput() {
   if (!naturalInput.value.trim()) {
     presentToast('Please provide a description for the AI.', 'warning');
     return;
   }
+
   isLoadingAI.value = true;
   errorMessageAI.value = null;
+
   try {
-    // Chiama l'azione dello store per l'elaborazione LLM
     const parsedData = await activityStore.processNaturalInput(naturalInput.value);
 
-    // Applica i dati parsati all'oggetto reattivo del form
     for (const [k, v] of Object.entries(parsedData)) {
       if (k in activity && v != null) {
-        // Conversione esplicita per i tipi se necessario, es. 'type' o 'recurrence'
-        // Questo è un esempio, potresti voler aggiungere più controlli di tipo
         if (k === 'type' && (v === 'instrumental' || v === 'final')) {
-          (activity as any)[k] = v;
+          activity.type = v;
         } else if (k === 'recurrence' && (v === 'R' || v === 'E')) {
-          (activity as any)[k] = v;
+          activity.recurrence = v;
         } else if (k === 'duration' || k === 'cost' || k === 'enjoyment') {
-          (activity as any)[k] = Number(v); // Assicurati che i numeri siano numeri
-        } else {
-          (activity as any)[k] = v;
+          const numValue = Number(v);
+          if (!isNaN(numValue)) {
+            activity[k] = numValue;
+          }
+        } else if (k === 'name' || k === 'details' || k === 'category' || k === 'location') {
+          activity[k] = String(v);
         }
       }
     }
+
     naturalInput.value = '';
     presentToast('AI processed input successfully!', 'success');
     closeAIModal();
   } catch (e: any) {
-    errorMessageAI.value = (e?.message || e?.response?.data?.error) ?? 'Unknown error from AI';
+    errorMessageAI.value = 'Failed to process your description. ';
+    if (e?.response?.status === 429) {
+      errorMessageAI.value += 'Too many requests. Please try again later.';
+    } else {
+      errorMessageAI.value += 'Please try a different description.';
+    }
     presentToast(errorMessageAI.value, 'danger');
   } finally {
     isLoadingAI.value = false;
   }
 }
 
-const openAIModal  = () => (isModalOpen.value = true);
+const openAIModal = () => (isModalOpen.value = true);
 const closeAIModal = () => (isModalOpen.value = false);
 
-// Funzione unificata per salvare/aggiornare l'attività
 const saveActivity = async () => {
-  // Aggiungi qui la logica di validazione del form prima di inviare
   if (!activity.name.trim()) {
     presentToast('Activity name is required!', 'danger');
     return;
   }
-  if (activity.duration === null || activity.duration < 0) {
+
+  if (activity.duration === null || isNaN(activity.duration) || activity.duration < 0) {
     presentToast('Duration must be a positive number!', 'danger');
     return;
   }
-  // ... altre validazioni necessarie ...
+
+  if (activity.cost !== null && (isNaN(activity.cost) || activity.cost < 0)) {
+    presentToast('Cost must be a positive number!', 'danger');
+    return;
+  }
 
   try {
     if (isEditMode.value) {
-      // Chiama l'azione updateActivity dello store
       await activityStore.updateActivity(activityId.value!, activity);
       presentToast('Activity updated successfully!', 'success');
     } else {
-      // Chiama l'azione addActivity dello store
       await activityStore.addActivity(activity);
       presentToast('Activity added successfully!', 'success');
+      // Reset form after successful creation
+      Object.assign(activity, {
+        name: '',
+        duration: null,
+        details: '',
+        enjoyment: 0,
+        category: '',
+        type: '',
+        recurrence: '',
+        cost: null,
+        location: ''
+      });
     }
-    router.replace({ name: 'Home' }); // Reindirizza dopo il successo
+    router.replace({ name: 'Home' });
   } catch (e: any) {
     const msg = e?.response?.data?.message || 'Failed to save activity. Please try again.';
     presentToast(msg, 'danger');

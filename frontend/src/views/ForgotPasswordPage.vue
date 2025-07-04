@@ -75,7 +75,7 @@ const router = useRouter();
 const isLoading = ref(false);
 const email = ref('');
 
-const toast = reactive({ open: false, message: '', color: 'danger' as const });
+const toast = reactive({ open: false, message: '', color: 'danger' as string });
 
 /* ---------- computed ---------- */
 const isValidEmail = (e: string) =>
