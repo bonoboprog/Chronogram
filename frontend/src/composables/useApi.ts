@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useAuthStore } from '@/store/auth'; // Importa lo store Pinia
 import { useRouter } from 'vue-router';     // Importa il router di Vue
 import { toastController } from '@ionic/vue'; // Se vuoi mostrare toast di errore
+import { SecureStoragePlugin } from 'capacitor-secure-storage-plugin';
+
 
 export const api = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -17,7 +19,7 @@ api.interceptors.request.use(
         console.log(`[Axios] Sending request to: ${config.url}`);
 
         try {
-            const { value } = await SecureStorage.get({ key: 'authToken' });
+            const { value } = await SecureStoragePlugin.get({ key: 'authToken' });
             if (value) {
                 config.headers.Authorization = `Bearer ${value}`;
                 console.log(`[Axios] Added auth token to request (${value.substring(0, 10)}...)`);
@@ -25,7 +27,7 @@ api.interceptors.request.use(
                 console.log('[Axios] No auth token available');
             }
         } catch (error) {
-            console.error('[Axios] SecureStorage error:', error);
+            console.error('[Axios] SecureStoragePlugin error:', error);
         }
 
         return config;

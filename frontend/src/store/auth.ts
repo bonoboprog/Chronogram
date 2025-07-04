@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { Preferences } from '@capacitor/preferences';
-import { SecureStorage } from '@capacitor/secure-storage';
+import { SecureStoragePlugin } from 'capacitor-secure-storage-plugin';
 import { api } from '@/composables/useApi';
 import { useRouter } from 'vue-router';
 
@@ -28,7 +28,7 @@ export const useAuthStore = defineStore('auth', () => {
             token.value = data.token;
             user.value = { username: data.username };
 
-            await SecureStorage.set({ key: 'authToken', value: data.token });
+            await SecureStoragePlugin.set({ key: 'authToken', value: data.token });
             await Preferences.set({ key: 'userData', value: JSON.stringify(user.value) });
             console.log('[AuthStore] Token securely stored');
 
@@ -46,7 +46,7 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = null;
 
         try {
-            await SecureStorage.remove({ key: 'authToken' });
+            await SecureStoragePlugin.remove({ key: 'authToken' });
             await Preferences.remove({ key: 'userData' });
             console.log('[AuthStore] Token removed from storage');
         } catch (storageError) {
@@ -61,7 +61,7 @@ export const useAuthStore = defineStore('auth', () => {
     async function checkAuthStatus() {
         console.log('[AuthStore] Checking authentication status');
         try {
-            const { value } = await SecureStorage.get({ key: 'authToken' });
+            const { value } = await SecureStoragePlugin.get({ key: 'authToken' });
             const storedUser = await Preferences.get({ key: 'userData' });
 
             if (value && storedUser.value) {
@@ -74,7 +74,7 @@ export const useAuthStore = defineStore('auth', () => {
                 console.log('[AuthStore] No stored token found');
             }
         } catch (error) {
-            console.error('[AuthStore] SecureStorage error:', error);
+            console.error('[AuthStore] SecureStoragePlugin error:', error);
         }
     }
 
