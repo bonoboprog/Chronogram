@@ -12,38 +12,67 @@ export const api = axios.create({
 });
 
 // Interceptor per loggare o gestire errori e soprattutto l'autenticazione
+api.interceptors.request.use(
+    async (config) => {
+        console.log(`[Axios] Sending request to: ${config.url}`);
+
+        try {
+            const { value } = await SecureStorage.get({ key: 'authToken' });
+            if (value) {
+                config.headers.Authorization = `Bearer ${value}`;
+                console.log(`[Axios] Added auth token to request (${value.substring(0, 10)}...)`);
+            } else {
+                console.log('[Axios] No auth token available');
+            }
+        } catch (error) {
+            console.error('[Axios] SecureStorage error:', error);
+        }
+
+        return config;
+    },
+    (error) => {
+        console.error('[Axios] Request error:', error);
+        return Promise.reject(error);
+    }
+);
+
+// Response Interceptor con logging
 api.interceptors.response.use(
-    response => response,
-    async error => {
-        // Accedi allo store e al router solo all'interno dell'interceptor o di una funzione che verrà eseguita
-        // in un contesto Vue (come una composable o un componente), altrimenti potresti avere problemi di "outside setup"
-        // Una soluzione più pulita per gli interceptor globali è iniettare lo store tramite una closure o hook specifico.
-        // Per semplicità qui simuliamo l'accesso, ma in un'app reale potresti doverlo strutturare diversamente
-        // per evitare errori se l'interceptor viene caricato prima dell'app Pinia/Router.
-        // Ad esempio, potresti avere una funzione initApi che prende lo store e il router.
+    (response) => {
+        console.log(`[Axios] Response from ${response.config.url}: ${response.status}`);
+        return response;
+    },
+    async (error) => {
+        const originalRequest = error.config;
+        const status = error.response?.status;
 
-        const authStore = useAuthStore(); // Ottieni l'istanza dello store
-        const router = useRouter();       // Ottieni l'istanza del router
+        console.error(
+            `[Axios] API error: ${error.message}`,
+            `URL: ${originalRequest.url}`,
+            `Status: ${status}`
+        );
 
-        console.error('[Axios Error]', error);
+        if (status === 401 || status === 403) {
+            console.warn(`[Axios] Authentication error (${status}). Triggering logout`);
 
-        // Gestione specifica per errori 401 Unauthorized
-        if (error.response && error.response.status === 401) {
-            console.warn('Authentication error: 401 Unauthorized. Logging out user.');
+            const authStore = useAuthStore();
+            const router = useRouter();
 
-            // Effettua il logout forzato tramite Pinia
-            await authStore.logout(); // Il metodo logout dovrebbe già ripulire token e reindirizzare
+            // Evita loop di logout
+            if (!originalRequest._retry) {
+                originalRequest._retry = true;
+                await authStore.logout();
+            }
 
-            // Mostra un toast all'utente
             const toast = await toastController.create({
-                message: 'Sessione scaduta o non autorizzata. Effettua nuovamente il login.',
+                message: 'Sessione scaduta o non autorizzata',
                 duration: 3000,
                 color: 'warning'
             });
-            toast.present();
+            await toast.present();
 
-            // Reindirizza l'utente alla pagina di login (se non già fatto da authStore.logout)
-            if (router.currentRoute.value.name !== 'login') { // Evita loop di reindirizzamento
+            if (router.currentRoute.value.name !== 'login') {
+                console.log('[Axios] Redirecting to login page');
                 router.push({ name: 'login' });
             }
         }

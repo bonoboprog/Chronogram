@@ -1,15 +1,13 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { Preferences } from '@capacitor/preferences'; // Per lo storage sicuro
+import { Preferences } from '@capacitor/preferences';
+import { SecureStorage } from '@capacitor/secure-storage';
 import { api } from '@/composables/useApi';
 import { useRouter } from 'vue-router';
+
 // Definiamo il tipo per i dati dell'utente che vogliamo salvare
-interface User {
-    username: string;
-}
 
 export const useAuthStore = defineStore('auth', () => {
-    // --- STATE ---
     const user = ref<User | null>(null);
     const token = ref<string | null>(null);
     const router = useRouter();
@@ -20,66 +18,63 @@ export const useAuthStore = defineStore('auth', () => {
 
     // --- ACTIONS ---
 
-    /**
-     * Esegue il login, salva il token e lo stato dell'utente.
-     */
+    async function login(credentials: { email: string; password: string }) {
+        try {
+            console.log('[AuthStore] Attempting login with email:', credentials.email);
+            const response = await api.post<LoginResponse>('/api/auth/login', credentials);
+            const data = response.data;
 
-    async function login(
-        credentials: { email: string; password: string }
-    ): Promise<LoginResponse> {
-        const response = await api.post<LoginResponse>('/api/auth/login', credentials);
-        const data = response.data; // Extract the JSON body
+            console.log('[AuthStore] Login successful. Token received:', data.token.substring(0, 10) + '...');
+            token.value = data.token;
+            user.value = { username: data.username };
 
-        console.log('[login] Raw response:', response);
-        console.log('[login] Parsed data:', data);
+            await SecureStorage.set({ key: 'authToken', value: data.token });
+            await Preferences.set({ key: 'userData', value: JSON.stringify(user.value) });
+            console.log('[AuthStore] Token securely stored');
 
-        if (!data.success || !data.token) {
-            throw new Error(data.message || 'Login failed');
+            //api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+            return data;
+        } catch (error) {
+            console.error('[AuthStore] Login failed:', error);
+            throw error;
         }
-
-        token.value = data.token;
-        user.value = { username: data.username };
-
-        await Preferences.set({ key: 'authToken', value: data.token });
-        await Preferences.set({ key: 'userData', value: JSON.stringify(user.value) });
-
-        api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-
-        return data;
     }
 
-    /**
-     * Esegue il logout, pulisce lo stato e lo storage.
-     */
     async function logout() {
+        console.log('[AuthStore] Initiating logout');
         token.value = null;
         user.value = null;
 
-        // Rimuovi i dati persistenti
-        await Preferences.remove({ key: 'authToken' });
-        await Preferences.remove({ key: 'userData' });
+        try {
+            await SecureStorage.remove({ key: 'authToken' });
+            await Preferences.remove({ key: 'userData' });
+            console.log('[AuthStore] Token removed from storage');
+        } catch (storageError) {
+            console.error('[AuthStore] Error removing token:', storageError);
+        }
 
-        // Rimuovi l'header di default
-        delete api.defaults.headers.common['Authorization'];
-
-        // Reindirizza alla pagina di login
+        //delete api.defaults.headers.common['Authorization'];
         router.push('/login');
+        console.log('[AuthStore] User redirected to login');
     }
 
-    /**
-     * Controlla se esiste un token salvato all'avvio dell'app per ripristinare la sessione.
-     */
     async function checkAuthStatus() {
-        const storedToken = await Preferences.get({ key: 'authToken' });
-        const storedUser = await Preferences.get({ key: 'userData' });
+        console.log('[AuthStore] Checking authentication status');
+        try {
+            const { value } = await SecureStorage.get({ key: 'authToken' });
+            const storedUser = await Preferences.get({ key: 'userData' });
 
-        if (storedToken.value && storedUser.value) {
-            // Ri-popola lo stato dello store
-            token.value = storedToken.value;
-            user.value = JSON.parse(storedUser.value);
-
-            // Ri-configura l'header di default per le chiamate API
-            api.defaults.headers.common['Authorization'] = `Bearer ${token.value}`;
+            if (value && storedUser.value) {
+                console.log('[AuthStore] Found stored token. Length:', value.length);
+                token.value = value;
+                user.value = JSON.parse(storedUser.value);
+                //api.defaults.headers.common['Authorization'] = `Bearer ${value}`;
+                console.log('[AuthStore] User authenticated from storage');
+            } else {
+                console.log('[AuthStore] No stored token found');
+            }
+        } catch (error) {
+            console.error('[AuthStore] SecureStorage error:', error);
         }
     }
 

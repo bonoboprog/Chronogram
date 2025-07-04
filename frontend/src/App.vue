@@ -7,7 +7,15 @@
 <script setup lang="ts">
 import { IonApp, IonRouterOutlet } from '@ionic/vue';
 import { useAuthStore } from '@/store/auth';
-// Chiama l'azione per controllare lo stato all'avvio dell'app
+
+console.log('[App] Initializing application');
 const authStore = useAuthStore();
-authStore.checkAuthStatus();
+
+try {
+  console.log('[App] Checking authentication status');
+  await authStore.checkAuthStatus();
+  console.log('[App] Auth check completed');
+} catch (error) {
+  console.error('[App] Error during auth check:', error);
+}
 </script>
