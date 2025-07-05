@@ -91,44 +91,6 @@ public class ActivityDAO {
     }
 
     /**
-     * Recupera le attività per range di date e utente.
-     */
-    public List<ActivityDTO> getActivitiesByDateRangeAndUser(Date startDate, Date endDate, Integer userId, Connection conn) throws SQLException {
-        final String SQL = "SELECT a.activity_id, a.activity_date, a.duration_mins, a.pleasantness, " +
-                "a.location, a.cost_euro, a.user_id, a.activity_type_id, " +
-                "a.created_at, a.updated_at, " +
-                "at.name as activity_type_name, at.description as activity_type_description, " +
-                "at.is_instrumental, at.is_routinary " +
-                "FROM activity a " +
-                "JOIN activity_type at ON a.activity_type_id = at.activity_type_id " +
-                "WHERE a.activity_date BETWEEN ? AND ? AND a.user_id = ? " +
-                "ORDER BY a.activity_date ASC, a.created_at ASC";
-
-        logger.debug("Retrieving activities for date range: {} to {} and user_id: {}", startDate, endDate, userId);
-
-        List<ActivityDTO> activities = new ArrayList<>();
-        try (PreparedStatement pstmt = conn.prepareStatement(SQL)) {
-            pstmt.setDate(1, startDate);
-            pstmt.setDate(2, endDate);
-            pstmt.setInt(3, userId);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    ActivityDTO activity = mapResultSetToActivityDTO(rs);
-                    activities.add(activity);
-                }
-            }
-            logger.info("Retrieved {} activities for date range: {} to {} and user_id: {}",
-                    activities.size(), startDate, endDate, userId);
-            return activities;
-        } catch (SQLException e) {
-            logger.error("Error retrieving activities for date range: {} to {} and user_id: {}",
-                    startDate, endDate, userId, e);
-            throw e;
-        }
-    }
-
-    /**
      * Recupera una singola attività per ID e utente.
      */
     public ActivityDTO getActivityByIdAndUser(Integer activityId, Integer userId, Connection conn) throws SQLException {
@@ -225,40 +187,6 @@ public class ActivityDAO {
             logger.error("Error deleting activity with ID: {} for user_id: {}", activityId, userId, e);
             throw e;
         }
-    }
-
-    /**
-     * Verifica se esiste un conflitto di attività per la stessa data e utente.
-     */
-    public boolean hasActivityConflict(Date activityDate, Integer userId, Integer excludeActivityId, Connection conn) throws SQLException {
-        String SQL = "SELECT COUNT(*) FROM activity WHERE activity_date = ? AND user_id = ?";
-        if (excludeActivityId != null) {
-            SQL += " AND activity_id != ?";
-        }
-
-        logger.debug("Checking activity conflict for date: {} and user_id: {}", activityDate, userId);
-
-        try (PreparedStatement pstmt = conn.prepareStatement(SQL)) {
-            pstmt.setDate(1, activityDate);
-            pstmt.setInt(2, userId);
-            if (excludeActivityId != null) {
-                pstmt.setInt(3, excludeActivityId);
-            }
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    int count = rs.getInt(1);
-                    boolean hasConflict = count > 0;
-                    logger.debug("Activity conflict check result: {} for date: {} and user_id: {}",
-                            hasConflict, activityDate, userId);
-                    return hasConflict;
-                }
-            }
-        } catch (SQLException e) {
-            logger.error("Error checking activity conflict for date: {} and user_id: {}", activityDate, userId, e);
-            throw e;
-        }
-        return false;
     }
 
     /**

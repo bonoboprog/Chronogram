@@ -39,6 +39,21 @@ import './theme/variables.css';
 import '@/theme/catppuccin.scss'
 
 
+if (import.meta.env.DEV) {
+  import('@vue/devtools').then((devtools) => {
+    if (typeof devtools.connect === 'function') {
+      devtools.connect('http://192.168.59.1:8098', 8098);
+    } else {
+      console.warn('connect() not available from @vue/devtools');
+    }
+  }).catch((err) => {
+    console.error('Failed to load Vue Devtools:', err);
+  });
+}
+
+
+
+
 const app = createApp(App)
   .use(IonicVue)
   .use(router)

@@ -46,7 +46,7 @@
     <interceptors>
 
       <interceptor-stack name="apiLlmStack">
-        
+
         <interceptor-ref name="json"/>
         <interceptor-ref name="defaultStack"/>
       </interceptor-stack>
