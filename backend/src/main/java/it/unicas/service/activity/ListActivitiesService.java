@@ -28,26 +28,28 @@ public class ListActivitiesService {
     }
 
     /**
-     * Retrieves all activities for a user for the current date.
+     * Retrieves all activities for a user for a specific date.
+     * @param activityDate The date for which to retrieve activities.
      * @param userId The ID of the user.
-     * @return A list of ActivityDTOs for the current date.
-     * @throws ValidationException If the user ID is null.
+     * @return A list of ActivityDTOs for the specified date.
+     * @throws ValidationException If the user ID or activity date is null.
      * @throws ServiceException If a database error occurs during retrieval.
      */
-    public List<ActivityDTO> getTodaysActivities(Integer userId) throws ValidationException, ServiceException {
-        logger.info("Processing retrieval of today's activities for user_id: {}", userId);
+    public List<ActivityDTO> getActivitiesByDateAndUser(Date activityDate, Integer userId) throws ValidationException, ServiceException {
+        logger.info("Processing retrieval of activities for date: {} and user_id: {}", activityDate, userId);
         if (userId == null) {
             throw new ValidationException("User ID is required to retrieve activities.");
         }
+        if (activityDate == null) {
+            throw new ValidationException("Activity date is required to retrieve activities.");
+        }
 
-        // Calculate today's date
-        Date today = Date.valueOf(LocalDate.now());
         try (Connection conn = DBUtil.getConnection()) { // Connection is closed automatically by try-with-resources
-            List<ActivityDTO> activities = activityDAO.getActivitiesByDateAndUser(today, userId, conn);
-            logger.info("Retrieved {} activities for today for user_id: {}", activities.size(), userId);
+            List<ActivityDTO> activities = activityDAO.getActivitiesByDateAndUser(activityDate, userId, conn);
+            logger.info("Retrieved {} activities for date: {} for user_id: {}", activities.size(), activityDate, userId);
             return activities;
         } catch (SQLException e) {
-            logger.error("Database error while retrieving today's activities for user_id: {}", userId, e);
+            logger.error("Database error while retrieving activities for date: {} and user_id: {}", activityDate, userId, e);
             throw new ServiceException("Failed to retrieve activities due to database error.", e);
         }
     }
