@@ -59,7 +59,7 @@
     <interceptors>
 
       <interceptor-stack name="apiActivitiesStack">
-
+        
         <interceptor-ref name="json"/>
         <interceptor-ref name="defaultStack"/>
       </interceptor-stack>
@@ -85,6 +85,12 @@
     </action>
 
     <action name="list" class="it.unicas.action.activity.ListActivitiesAction" method="execute">
+      <result type="json">
+        <param name="root">responseDTO</param>
+      </result>
+    </action>
+
+    <action name="types" class="it.unicas.action.activity.ListActivityTypesAction" method="execute">
       <result type="json">
         <param name="root">responseDTO</param>
       </result>
