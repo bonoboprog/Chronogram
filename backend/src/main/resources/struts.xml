@@ -8,14 +8,12 @@
   <constant name="struts.convention.result.path" value="/"/>
 
   <package name="api-auth" namespace="/api/auth" extends="json-default">
-
     <interceptors>
       <interceptor-stack name="apiAuthStack">
         <interceptor-ref name="json"/>
         <interceptor-ref name="defaultStack"/>
       </interceptor-stack>
     </interceptors>
-
     <default-interceptor-ref name="apiAuthStack"/>
 
     <action name="register" class="it.unicas.action.RegistrationAction">
@@ -32,26 +30,24 @@
 
     <action name="request-reset" class="it.unicas.action.RequestPasswordResetAction" method="execute">
       <result type="json">
-        <param name="root">passwordResetResponse</param> </result>
+        <param name="root">passwordResetResponse</param>
+      </result>
     </action>
 
     <action name="reset-password" class="it.unicas.action.ResetPasswordAction" method="execute">
       <result type="json">
-        <param name="root">resetPasswordResponse</param> </result>
+        <param name="root">resetPasswordResponse</param>
+      </result>
     </action>
-
   </package>
 
   <package name="api-llm" namespace="/api/llm" extends="json-default">
     <interceptors>
-
       <interceptor-stack name="apiLlmStack">
-
         <interceptor-ref name="json"/>
         <interceptor-ref name="defaultStack"/>
       </interceptor-stack>
     </interceptors>
-
     <default-interceptor-ref name="apiLlmStack"/>
 
     <action name="prompt" class="it.unicas.action.LLMAction">
@@ -59,23 +55,38 @@
     </action>
   </package>
 
-  <!-- PACKAGE PER LE ATTIVITÀ CON APPROCCIO DINAMICO -->
   <package name="api-activities" namespace="/api/activities" extends="json-default">
     <interceptors>
-      <interceptor name="authInterceptor" class="it.unicas.filter.AuthInterceptor"/>
+
       <interceptor-stack name="apiActivitiesStack">
-        <interceptor-ref name="authInterceptor"/>
+
         <interceptor-ref name="json"/>
         <interceptor-ref name="defaultStack"/>
       </interceptor-stack>
     </interceptors>
-
     <default-interceptor-ref name="apiActivitiesStack"/>
 
-    <!-- Gestione dinamica: qualsiasi URL viene mappato al metodo corrispondente -->
-    <action name="*" class="it.unicas.action.ActivityAction" method="{1}">
+    <action name="create" class="it.unicas.action.activity.CreateActivityAction" method="execute">
       <result type="json">
-        <param name="root">activityResponse</param>
+        <param name="root">responseDTO</param>
+      </result>
+    </action>
+
+    <action name="update" class="it.unicas.action.activity.UpdateActivityAction" method="execute">
+      <result type="json">
+        <param name="root">responseDTO</param>
+      </result>
+    </action>
+
+    <action name="delete" class="it.unicas.action.activity.DeleteActivityAction" method="execute">
+      <result type="json">
+        <param name="root">responseDTO</param>
+      </result>
+    </action>
+
+    <action name="list" class="it.unicas.action.activity.ListActivitiesAction" method="execute">
+      <result type="json">
+        <param name="root">responseDTO</param>
       </result>
     </action>
   </package>
