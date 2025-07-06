@@ -9,7 +9,6 @@
       </div>
 
       <div class="time-diary-page">
-        <!-- DATE PAGER -->
         <div class="date-toolbar" color="dark">
           <div class="date-toolbar-inner">
             <ion-buttons slot="start">
@@ -39,41 +38,46 @@
           </div>
         </div>
 
-        <!-- TIMELINE -->
         <div class="timeline-container">
           <transition-group name="activity" tag="div">
             <div
                 v-for="a in activities"
-                :key="a.id"
+                :key="a.activityId"
                 class="activity-row"
-                :style="{ '--stripe-color': categoryColors[a.category] || 'var(--surface2)' }"
+                :style="{ '--stripe-color': categoryColors |
+
+| 'var(--surface2)' }"
             >
-              <div class="time-label">{{ a.time }}</div>
+              <div class="time-label">{{ formatTime(a.createdAt) }}</div>
               <div
                   class="timeline-dot"
-                  :style="{ background: categoryColors[a.category] }"
+                  :style="{ background: categoryColors }"
               />
               <div class="timeline-line" />
               <ion-card
                   class="activity-bubble"
-                  :style="{ borderLeftColor: categoryColors[a.category] }"
+                  :style="{ borderLeftColor: categoryColors }"
               >
                 <ion-card-content>
-                  <strong>{{ a.code }}</strong> {{ a.text }}
+                  <strong>{{ a.activityTypeName }}</strong> {{ a.activityTypeDescription }}
+                  <p v-if="a.details">{{ a.details }}</p>
+                  <p v-if="a.location">Location: {{ a.location }}</p>
+                  <p v-if="a.costEuro">Cost: €{{ a.costEuro }}</p>
                 </ion-card-content>
               </ion-card>
             </div>
           </transition-group>
+          <div v-if="activities.length === 0 &&!isLoading" class="ion-text-center ion-padding">
+            <ion-text color="medium">No activities for this date.</ion-text>
+          </div>
         </div>
 
-        <!-- FAB central "+" -->
         <ion-fab vertical="bottom" horizontal="center" slot="fixed" class="add-fab">
           <ion-fab-button class="add-fab-btn" @click="addActivity">
             <ion-icon :icon="addOutline" />
           </ion-fab-button>
         </ion-fab>
 
-        <!-- Botón Home (izquierda) -->
         <ion-button
             fill="clear"
             class="bottom-icon left"
@@ -82,7 +86,6 @@
           <ion-icon :icon="homeOutline" />
         </ion-button>
 
-        <!-- Botón Settings (derecha) -->
         <ion-button
             fill="clear"
             class="bottom-icon right"
@@ -91,93 +94,183 @@
           <ion-icon :icon="settingsOutline" />
         </ion-button>
       </div>
+      <ion-loading :is-open="isLoading" message="Loading activities..." />
+      <ion-toast :is-open="toast.open" :message="toast.message" :color="toast.color" :duration="2500" @didDismiss="toast.open=false" />
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import {
   IonPage, IonHeader, IonContent, IonIcon, IonButton, IonButtons,
-  IonCard, IonCardContent, IonFab, IonFabButton, IonSegment, IonSegmentButton
+  IonCard, IonCardContent, IonFab, IonFabButton, IonSegment, IonSegmentButton,
+  IonLoading, IonToast, IonText
 } from '@ionic/vue';
 import {
   homeOutline, settingsOutline, personCircleOutline,
   chevronBackOutline, chevronForwardOutline, addOutline
 } from 'ionicons/icons';
+import { api } from '@/composables/useApi'; // Assuming useApi handles JWT
+import dayjs from 'dayjs'; // For date formatting
 
+/* ---------- State ---------- */
 const router = useRouter();
 const route = useRoute();
-const selectedTab = ref(route.name?.toString().toLowerCase() || 'home');
+const selectedTab = ref(route.name?.toString().toLowerCase() |
 
+    | 'home');
+
+// Use a reactive variable for the current date being displayed
+const currentDate = ref(dayjs()); // Initialize with today's date
+
+const selectedDateIndex = ref(1); // 0: prev, 1: current, 2: next
+const displayDates = ref();
+
+interface Activity {
+  activityId: number;
+  activityDate: string; // ISO date string
+  durationMins: number;
+  pleasantness: number;
+  location: string;
+  costEuro: string; // Backend sends as string
+  userId: number;
+  activityTypeId: number;
+  createdAt: string; // ISO timestamp string
+  updatedAt: string; // ISO timestamp string
+  activityTypeName: string;
+  activityTypeDescription: string;
+  isInstrumental: boolean;
+  isRoutinary: boolean;
+  details?: string; // Optional, as it might not always be present or retrieved
+}
+
+const activities = ref<Activity>();
+const isLoading = ref(false);
+const toast = reactive({ open: false, message: '', color: 'danger' as const });
+
+/* ---------- Methods ---------- */
 const navigateTab = (event: CustomEvent) => {
   const tab = event.detail.value;
   if (tab === 'home') router.push({ name: 'Home' });
   else if (tab === 'settings') router.push({ name: 'Settings' });
 };
 
-interface Activity {
-  id: number
-  time: string
-  code: string
-  text: string
-  category: string
-}
-
-const today = new Date()
-const selectedDateIndex = ref(1)
-const displayDates = ref([
-  offsetDate(-1),
-  offsetDate(0),
-  offsetDate(1)
-])
-
-function offsetDate(offset: number) {
-  const d = new Date(today)
-  d.setDate(today.getDate() + offset)
+function offsetDate(baseDate: dayjs.Dayjs, offset: number) {
+  const d = baseDate.add(offset, 'day');
   return {
-    day: d.getDate().toString().padStart(2, '0'),
-    month: d.toLocaleString('default', { month: 'short' })
-  }
+    day: d.date().toString().padStart(2, '0'),
+    month: d.format('MMM') // e.g., 'Jul'
+  };
 }
+
 function rotateDates(dir: number) {
-  displayDates.value = displayDates.value.map((_, i) => offsetDate(i - 1 + dir))
+  currentDate.value = currentDate.value.add(dir, 'day');
+  displayDates.value = displayDates.value.map((_, i) => offsetDate(currentDate.value, i - 1));
+  fetchActivities(); // Re-fetch activities for the new date
 }
+
 function goPrevDay() {
-  selectedDateIndex.value = 0
-  rotateDates(-1)
+  selectedDateIndex.value = 0;
+  rotateDates(-1);
 }
+
 function goNextDay() {
-  selectedDateIndex.value = 2
-  rotateDates(1)
+  selectedDateIndex.value = 2;
+  rotateDates(1);
 }
 
-const activities = ref<Activity[]>([
-  { id: 1, time: '06:30', code: '403', text: 'Getting up, getting out of bed, going to bed', category: 'morning' },
-  { id: 2, time: '06:45', code: '401', text: 'Washing, personal care (brush teeth, shave, make-up…)', category: 'hygiene' },
-  { id: 3, time: '07:15', code: '100', text: 'Serving food, set the table', category: 'food' },
-  { id: 4, time: '07:25', code: '421', text: 'Sandwiches, breakfast, cold food…', category: 'food' },
-  { id: 5, time: '07:55', code: '900', text: 'Travelling to/from work', category: 'commute' },
-  { id: 6, time: '08:20', code: '000', text: 'Regular paid work (workplace or elsewhere)', category: 'work' },
-  { id: 7, time: '10:00', code: '010', text: 'Break: coffee/work break', category: 'break' }
-])
-
-function addActivity() {
-  router.push({ name: 'AddActivity' }); // Navigate to the AddActivity route
+function formatTime(isoTimestamp: string): string {
+  return dayjs(isoTimestamp).format('HH:mm');
 }
 
 const categoryColors: Record<string, string> = {
-  morning: 'var(--sky)',
-  hygiene: 'var(--teal)',
-  food: 'var(--peach)',
-  commute: 'var(--blue)',
-  work: 'var(--mauve)',
-  break: 'var(--green)'
+  // Map your backend activity type names to colors
+  // You'll need to define these based on your actual activity types
+  'Work': 'var(--mauve)',
+  'Study': 'var(--blue)',
+  'Leisure': 'var(--green)',
+  'Exercise': 'var(--sky)',
+  'Food': 'var(--peach)',
+  'Hygiene': 'var(--teal)',
+  'Commute': 'var(--mauve)',
+  'Default': 'var(--surface2)' // Fallback color
+};
+
+async function fetchActivities() {
+  isLoading.value = true;
+  activities.value =; // Clear current activities
+  try {
+    // Assuming userId is stored in localStorage after login
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      showToast('User not logged in. Please log in again.', 'danger');
+      router.push({ name: 'Login' }); // Redirect to login if no user ID
+      return;
+    }
+
+    const formattedDate = currentDate.value.format('YYYY-MM-DD'); // Format date for backend
+    const { data } = await api.get(`/api/activities/list?userId=${userId}&activityDate=${formattedDate}`);
+
+    if (data.success) {
+      activities.value = data.data ||; // Ensure it's an array, even if empty
+      showToast(data.message |
+
+          | 'Activities loaded.', 'success');
+    } else {
+      showToast(data.message |
+
+          | 'Failed to load activities.', 'danger');
+    }
+  } catch (error: any) {
+    console.error('Error fetching activities:', error);
+    const message = error.response?.data?.message |
+
+        | error.message |
+        | 'An unexpected error occurred while fetching activities.';
+    showToast(message, 'danger');
+  } finally {
+    isLoading.value = false;
+  }
 }
 
+function addActivity() {
+  router.push({ name: 'AddActivity' });
+}
+
+const showToast = (msg: string, col: 'success' | 'danger') => {
+  toast.message = msg;
+  toast.color = col;
+  toast.open = true;
+};
+
+/* ---------- Lifecycle Hooks ---------- */
 onMounted(() => {
   document.documentElement.setAttribute('data-theme', 'mocha');
+  fetchActivities(); // Fetch activities when component mounts
+});
+
+// Watch for changes in selectedDateIndex to re-fetch activities
+// This is important if the user navigates dates using the pager
+watch(selectedDateIndex, (newIndex, oldIndex) => {
+  // Only re-fetch if the index actually changes and it's not part of a rotation
+  // The rotateDates function already calls fetchActivities, so this might be redundant
+  // if user only uses prev/next buttons. But if they click directly on a segment, it's needed.
+  if (newIndex!== oldIndex && Math.abs(newIndex - oldIndex) === 1) {
+    // This condition helps prevent double-fetching if rotateDates already triggered it
+    // For direct segment clicks, we need to adjust currentDate and then fetch
+    currentDate.value = currentDate.value.add(newIndex - oldIndex, 'day');
+    displayDates.value = displayDates.value.map((_, i) => offsetDate(currentDate.value, i - 1));
+    fetchActivities();
+  }
+});
+
+// Also watch the currentDate itself, as rotateDates updates it
+watch(currentDate, () => {
+  // This watch ensures activities are fetched whenever currentDate changes,
+  // regardless of how it changed (e.g., direct manipulation or via rotateDates)
+  fetchActivities();
 });
 </script>
 
@@ -225,7 +318,7 @@ onMounted(() => {
   border-radius: 12px;
 }
 .date-number { font-size: 1rem; font-weight: 700; }
-.date-month { font-size: .7rem; opacity: .7; }
+.date-month { font-size:.7rem; opacity:.7; }
 
 /* Timeline */
 .timeline-container { padding: 0 0 64px 0; }
@@ -239,7 +332,7 @@ onMounted(() => {
 .time-label {
   width: 50px;
   text-align: right;
-  font-size: .75rem;
+  font-size:.75rem;
   color: var(--overlay1);
   margin-right: 14px;
 }
@@ -278,7 +371,7 @@ onMounted(() => {
 
 /* FAB central */
 .add-fab {
-  --background: transparent !important;
+  --background: transparent!important;
   width: 68px; height: 68px;
   border-radius: 50%;
   overflow: visible;
