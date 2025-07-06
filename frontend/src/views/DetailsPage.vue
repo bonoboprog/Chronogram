@@ -62,13 +62,11 @@
   </ion-page>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 // Simulamos los datos pasados (más adelante los recogerás del store o props)
-const route = useRoute();
-const router = useRouter();
 
 const activity = ref({
   name: 'University',
