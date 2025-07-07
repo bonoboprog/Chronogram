@@ -5,13 +5,15 @@
 
 <struts>
   <constant name="struts.devMode" value="true" />
-  <constant name="struts.convention.result.path" value="/"/>
+  <constant name="struts.convention.result.path" value="/" />
 
   <package name="api-auth" namespace="/api/auth" extends="json-default">
     <interceptors>
       <interceptor-stack name="apiAuthStack">
         <interceptor-ref name="json"/>
-        <interceptor-ref name="defaultStack"/>
+        <interceptor-ref name="defaultStack">
+          <param name="interceptor.excludeMethods">auth</param>
+        </interceptor-ref>
       </interceptor-stack>
     </interceptors>
     <default-interceptor-ref name="apiAuthStack"/>
@@ -45,7 +47,9 @@
     <interceptors>
       <interceptor-stack name="apiLlmStack">
         <interceptor-ref name="json"/>
-        <interceptor-ref name="defaultStack"/>
+        <interceptor-ref name="defaultStack">
+          <param name="interceptor.excludeMethods">auth</param>
+        </interceptor-ref>
       </interceptor-stack>
     </interceptors>
     <default-interceptor-ref name="apiLlmStack"/>
@@ -57,11 +61,11 @@
 
   <package name="api-activities" namespace="/api/activities" extends="json-default">
     <interceptors>
-
       <interceptor-stack name="apiActivitiesStack">
-        
         <interceptor-ref name="json"/>
-        <interceptor-ref name="defaultStack"/>
+        <interceptor-ref name="defaultStack">
+          <param name="interceptor.excludeMethods">auth</param>
+        </interceptor-ref>
       </interceptor-stack>
     </interceptors>
     <default-interceptor-ref name="apiActivitiesStack"/>

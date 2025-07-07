@@ -33,7 +33,7 @@ public class AuthInterceptor extends AbstractInterceptor {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             logger.warn("Tentativo di accesso non autorizzato: Header Authorization mancante o malformato.");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 Unauthorized
-            response.getWriter().write("{\"message\": \"Non autorizzato: Token mancante o non valido.\"}");
+            response.getWriter().write("{\"message\": \"Non autorizzato: Token mancante\"}");
             response.setContentType("application/json");
             return null; // Ferma ulteriore elaborazione
         }

@@ -163,7 +163,7 @@ import {
   personAddOutline, eyeOutline, eyeOffOutline,
   callOutline, mailOutline, personOutline,
   keyOutline, calendarOutline, transgenderOutline,
-  locationOutline, atOutline // <-- IMPORTED ICON
+  locationOutline
 } from 'ionicons/icons';
 import dayjs from 'dayjs';
 import { api } from '@/composables/useApi';

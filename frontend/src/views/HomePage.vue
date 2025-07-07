@@ -9,33 +9,8 @@
       </div>
 
       <div class="time-diary-page">
-        <div class="date-toolbar" color="dark">
-          <div class="date-toolbar-inner">
-            <ion-buttons slot="start">
-              <ion-button fill="clear" @click="goPrevDay">
-                <ion-icon :icon="chevronBackOutline" />
-              </ion-button>
-            </ion-buttons>
-
-            <div class="date-pager-wrapper">
-              <ion-segment v-model="selectedDateIndex" class="date-pager" :scrollable="false">
-                <ion-segment-button
-                    v-for="(d, i) in displayDates"
-                    :key="i"
-                    :value="i"
-                >
-                  <div class="date-number">{{ d.day }}</div>
-                  <div class="date-month">{{ d.month }}</div>
-                </ion-segment-button>
-              </ion-segment>
-            </div>
-
-            <ion-buttons slot="end">
-              <ion-button fill="clear" @click="goNextDay">
-                <ion-icon :icon="chevronForwardOutline" />
-              </ion-button>
-            </ion-buttons>
-          </div>
+        <div class="current-date-display">
+          <h3>{{ formattedCurrentDate }}</h3>
         </div>
 
         <div class="timeline-container">
@@ -44,21 +19,28 @@
                 v-for="a in activities"
                 :key="a.activityId"
                 class="activity-row"
-                :style="{ '--stripe-color': categoryColors |
-
-| 'var(--surface2)' }"
+                :style="{ '--stripe-color': categoryColors[a.activityTypeName] || 'var(--surface2)' }"
             >
               <div class="time-label">{{ formatTime(a.createdAt) }}</div>
               <div
                   class="timeline-dot"
-                  :style="{ background: categoryColors }"
+                  :style="{ background: categoryColors[a.activityTypeName] || 'var(--surface2)' }"
               />
               <div class="timeline-line" />
               <ion-card
                   class="activity-bubble"
-                  :style="{ borderLeftColor: categoryColors }"
+                  :style="{ borderLeftColor: categoryColors[a.activityTypeName] || 'var(--surface2)' }"
               >
                 <ion-card-content>
+                  <div class="action-buttons">
+                    <ion-button fill="clear" size="small" @click.stop="editActivity(a)">
+                      <ion-icon :icon="pencilOutline" />
+                    </ion-button>
+                    <ion-button fill="clear" size="small" @click.stop="confirmDelete(a.activityId)">
+                      <ion-icon :icon="trashBinOutline" color="danger" />
+                    </ion-button>
+                  </div>
+
                   <strong>{{ a.activityTypeName }}</strong> {{ a.activityTypeDescription }}
                   <p v-if="a.details">{{ a.details }}</p>
                   <p v-if="a.location">Location: {{ a.location }}</p>
@@ -67,8 +49,8 @@
               </ion-card>
             </div>
           </transition-group>
-          <div v-if="activities.length === 0 &&!isLoading" class="ion-text-center ion-padding">
-            <ion-text color="medium">No activities for this date.</ion-text>
+          <div v-if="activities.length === 0 && !isLoading" class="ion-text-center ion-padding">
+            <ion-text color="medium">No activities for today.</ion-text>
           </div>
         </div>
 
@@ -97,58 +79,84 @@
       <ion-loading :is-open="isLoading" message="Loading activities..." />
       <ion-toast :is-open="toast.open" :message="toast.message" :color="toast.color" :duration="2500" @didDismiss="toast.open=false" />
     </ion-content>
+    <ion-alert
+        :is-open="showDeleteConfirm"
+        header="Confirm Delete"
+        :message="`Delete activity from ${deleteTime}?`"
+        :buttons="alertButtons"
+        @didDismiss="showDeleteConfirm = false"
+    />
   </ion-page>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import {
-  IonPage, IonHeader, IonContent, IonIcon, IonButton, IonButtons,
-  IonCard, IonCardContent, IonFab, IonFabButton, IonSegment, IonSegmentButton,
-  IonLoading, IonToast, IonText
+  IonPage, IonHeader, IonContent, IonIcon, IonButton,
+  IonCard, IonCardContent, IonFab, IonFabButton,
+  IonLoading, IonToast, IonText, IonAlert
 } from '@ionic/vue';
 import {
-  homeOutline, settingsOutline, personCircleOutline,
-  chevronBackOutline, chevronForwardOutline, addOutline
+  homeOutline, settingsOutline, personCircleOutline, addOutline, pencilOutline, trashBinOutline
 } from 'ionicons/icons';
-import { api } from '@/composables/useApi'; // Assuming useApi handles JWT
-import dayjs from 'dayjs'; // For date formatting
+import dayjs from 'dayjs';
+import { api } from '@/composables/useApi';
 
 /* ---------- State ---------- */
 const router = useRouter();
 const route = useRoute();
-const selectedTab = ref(route.name?.toString().toLowerCase() |
+const selectedTab = ref(route.name?.toString().toLowerCase() || 'home');
+const showDeleteConfirm = ref(false);
+const pendingDeleteId = ref<number | null>(null);
+const deleteTime = ref('');
 
-    | 'home');
+const alertButtons = ref([
+  {
+    text: 'Cancel',
+    role: 'cancel',
+    handler: () => {
+      showDeleteConfirm.value = false;
+    }
+  },
+  {
+    text: 'Delete',
+    handler: () => {
+      if (pendingDeleteId.value !== null) {
+        deleteActivity(pendingDeleteId.value);
+      }
+    }
+  }
+]);
 
-// Use a reactive variable for the current date being displayed
-const currentDate = ref(dayjs()); // Initialize with today's date
-
-const selectedDateIndex = ref(1); // 0: prev, 1: current, 2: next
-const displayDates = ref();
+const currentDate = ref(dayjs());
 
 interface Activity {
   activityId: number;
-  activityDate: string; // ISO date string
+  activityDate: string;
   durationMins: number;
   pleasantness: number;
   location: string;
-  costEuro: string; // Backend sends as string
+  costEuro: string;
   userId: number;
   activityTypeId: number;
-  createdAt: string; // ISO timestamp string
-  updatedAt: string; // ISO timestamp string
+  createdAt: string;
+  updatedAt: string;
   activityTypeName: string;
   activityTypeDescription: string;
   isInstrumental: boolean;
   isRoutinary: boolean;
-  details?: string; // Optional, as it might not always be present or retrieved
+  details?: string;
 }
 
-const activities = ref<Activity>();
+const activities = ref<Activity[]>([]);
 const isLoading = ref(false);
-const toast = reactive({ open: false, message: '', color: 'danger' as const });
+const toast = ref({ open: false, message: '', color: 'danger' });
+
+/* ---------- Computed ---------- */
+const formattedCurrentDate = computed(() => {
+  return currentDate.value.format('MMMM D, YYYY');
+});
 
 /* ---------- Methods ---------- */
 const navigateTab = (event: CustomEvent) => {
@@ -157,37 +165,11 @@ const navigateTab = (event: CustomEvent) => {
   else if (tab === 'settings') router.push({ name: 'Settings' });
 };
 
-function offsetDate(baseDate: dayjs.Dayjs, offset: number) {
-  const d = baseDate.add(offset, 'day');
-  return {
-    day: d.date().toString().padStart(2, '0'),
-    month: d.format('MMM') // e.g., 'Jul'
-  };
-}
-
-function rotateDates(dir: number) {
-  currentDate.value = currentDate.value.add(dir, 'day');
-  displayDates.value = displayDates.value.map((_, i) => offsetDate(currentDate.value, i - 1));
-  fetchActivities(); // Re-fetch activities for the new date
-}
-
-function goPrevDay() {
-  selectedDateIndex.value = 0;
-  rotateDates(-1);
-}
-
-function goNextDay() {
-  selectedDateIndex.value = 2;
-  rotateDates(1);
-}
-
 function formatTime(isoTimestamp: string): string {
   return dayjs(isoTimestamp).format('HH:mm');
 }
 
 const categoryColors: Record<string, string> = {
-  // Map your backend activity type names to colors
-  // You'll need to define these based on your actual activity types
   'Work': 'var(--mauve)',
   'Study': 'var(--blue)',
   'Leisure': 'var(--green)',
@@ -195,40 +177,70 @@ const categoryColors: Record<string, string> = {
   'Food': 'var(--peach)',
   'Hygiene': 'var(--teal)',
   'Commute': 'var(--mauve)',
-  'Default': 'var(--surface2)' // Fallback color
+  'Default': 'var(--surface2)'
 };
+
+function editActivity(activity: Activity) {
+  router.push({
+    name: 'AddActivity',
+    query: { id: activity.activityId.toString() }
+  });
+}
+
+async function deleteActivity(activityId: number) {
+  isLoading.value = true;
+  try {
+    const { data } = await api.post(`/api/activities/delete`, {
+      activityId: activityId
+    });
+
+    if (data?.success) {
+      showToast('Activity deleted', 'success');
+      // Update local state instead of refetching
+      activities.value = activities.value.filter(a => a.activityId !== activityId);
+    } else {
+      throw new Error(data?.message || 'Failed to delete activity');
+    }
+  } catch (err: any) {
+    console.error('Delete error:', err);
+    showToast(err.message || 'Delete failed', 'danger');
+  } finally {
+    isLoading.value = false;
+    pendingDeleteId.value = null;
+    showDeleteConfirm.value = false;
+  }
+}
+
+function confirmDelete(activityId: number) {
+  const activity = activities.value.find(a => a.activityId === activityId);
+  if (activity) {
+    pendingDeleteId.value = activityId;
+    deleteTime.value = formatTime(activity.createdAt);
+    showDeleteConfirm.value = true;
+  }
+}
 
 async function fetchActivities() {
   isLoading.value = true;
-  activities.value =; // Clear current activities
+  activities.value = [];
+
+  const userId = 1; // ← Temporary hardcoded user ID
+  const activityDate = currentDate.value.format('YYYY-MM-DD');
+
   try {
-    // Assuming userId is stored in localStorage after login
-    const userId = localStorage.getItem('userId');
-    if (!userId) {
-      showToast('User not logged in. Please log in again.', 'danger');
-      router.push({ name: 'Login' }); // Redirect to login if no user ID
-      return;
+    const { data } = await api.post('/api/activities/list', {
+      userId,
+      activityDate
+    });
+
+    if (!data?.success) {
+      throw new Error(data?.message || 'Failed to fetch activities');
     }
 
-    const formattedDate = currentDate.value.format('YYYY-MM-DD'); // Format date for backend
-    const { data } = await api.get(`/api/activities/list?userId=${userId}&activityDate=${formattedDate}`);
-
-    if (data.success) {
-      activities.value = data.data ||; // Ensure it's an array, even if empty
-      showToast(data.message |
-
-          | 'Activities loaded.', 'success');
-    } else {
-      showToast(data.message |
-
-          | 'Failed to load activities.', 'danger');
-    }
-  } catch (error: any) {
-    console.error('Error fetching activities:', error);
-    const message = error.response?.data?.message |
-
-        | error.message |
-        | 'An unexpected error occurred while fetching activities.';
+    activities.value = data.data || [];
+  } catch (err: any) {
+    console.error('Activity fetch error:', err);
+    const message = err.response?.data?.message || err.message || 'Unexpected error';
     showToast(message, 'danger');
   } finally {
     isLoading.value = false;
@@ -240,36 +252,14 @@ function addActivity() {
 }
 
 const showToast = (msg: string, col: 'success' | 'danger') => {
-  toast.message = msg;
-  toast.color = col;
-  toast.open = true;
+  toast.value.message = msg;
+  toast.value.color = col;
+  toast.value.open = true;
 };
 
 /* ---------- Lifecycle Hooks ---------- */
 onMounted(() => {
   document.documentElement.setAttribute('data-theme', 'mocha');
-  fetchActivities(); // Fetch activities when component mounts
-});
-
-// Watch for changes in selectedDateIndex to re-fetch activities
-// This is important if the user navigates dates using the pager
-watch(selectedDateIndex, (newIndex, oldIndex) => {
-  // Only re-fetch if the index actually changes and it's not part of a rotation
-  // The rotateDates function already calls fetchActivities, so this might be redundant
-  // if user only uses prev/next buttons. But if they click directly on a segment, it's needed.
-  if (newIndex!== oldIndex && Math.abs(newIndex - oldIndex) === 1) {
-    // This condition helps prevent double-fetching if rotateDates already triggered it
-    // For direct segment clicks, we need to adjust currentDate and then fetch
-    currentDate.value = currentDate.value.add(newIndex - oldIndex, 'day');
-    displayDates.value = displayDates.value.map((_, i) => offsetDate(currentDate.value, i - 1));
-    fetchActivities();
-  }
-});
-
-// Also watch the currentDate itself, as rotateDates updates it
-watch(currentDate, () => {
-  // This watch ensures activities are fetched whenever currentDate changes,
-  // regardless of how it changed (e.g., direct manipulation or via rotateDates)
   fetchActivities();
 });
 </script>
@@ -288,37 +278,16 @@ watch(currentDate, () => {
   color: var(--ion-color-primary);
 }
 
-/* Date Toolbar */
-.date-toolbar { margin-bottom: 1rem; }
-.date-toolbar-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 1rem;
+/* Current Date Display */
+.current-date-display {
+  text-align: center;
+  margin-bottom: 1.5rem;
 }
-.date-pager-wrapper {
-  flex: 1;
-  display: flex;
-  justify-content: center;
+.current-date-display h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--text);
 }
-.date-pager {
-  --background: transparent;
-  border-radius: 999px;
-  padding: 0 4px;
-}
-.date-pager ion-segment-button {
-  --background: transparent;
-  --color: var(--text);
-  min-width: 80px;
-  flex-direction: column;
-  text-transform: uppercase;
-}
-.date-pager ion-segment-button.ion-activated {
-  background: var(--surface2);
-  border-radius: 12px;
-}
-.date-number { font-size: 1rem; font-weight: 700; }
-.date-month { font-size:.7rem; opacity:.7; }
 
 /* Timeline */
 .timeline-container { padding: 0 0 64px 0; }
@@ -403,4 +372,32 @@ watch(currentDate, () => {
 .bottom-icon.right {
   right: 20px;
 }
+
+.action-buttons {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  z-index: 10;
+}
+
+.action-buttons ion-button {
+  --padding-start: 4px;
+  --padding-end: 4px;
+  --padding-top: 4px;
+  --padding-bottom: 4px;
+  width: 28px;
+  height: 28px;
+}
+
+.activity-bubble {
+  position: relative; /* Needed for absolute positioning of buttons */
+}
+/* Adjust card content padding to make space for buttons */
+ion-card-content {
+  position: relative;
+  padding-right: 40px !important;
+}
+
 </style>
