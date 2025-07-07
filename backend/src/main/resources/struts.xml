@@ -7,12 +7,13 @@
   <constant name="struts.devMode" value="true" />
   <constant name="struts.convention.result.path" value="/" />
 
+  <!-- Package per le azioni di autenticazione -->
   <package name="api-auth" namespace="/api/auth" extends="json-default">
     <interceptors>
       <interceptor-stack name="apiAuthStack">
         <interceptor-ref name="json"/>
         <interceptor-ref name="defaultStack">
-          <param name="interceptor.excludeMethods">auth</param>
+          <param name="interceptor.excludeMethods">auth, login, register, request-reset, reset-password</param>
         </interceptor-ref>
       </interceptor-stack>
     </interceptors>
@@ -43,6 +44,7 @@
     </action>
   </package>
 
+  <!-- Package per le azioni LLM -->
   <package name="api-llm" namespace="/api/llm" extends="json-default">
     <interceptors>
       <interceptor-stack name="apiLlmStack">
@@ -59,9 +61,11 @@
     </action>
   </package>
 
+  <!-- Package per le azioni delle attività -->
   <package name="api-activities" namespace="/api/activities" extends="json-default">
     <interceptors>
       <interceptor-stack name="apiActivitiesStack">
+        <interceptor-ref name="authInterceptor"/>
         <interceptor-ref name="json"/>
         <interceptor-ref name="defaultStack">
           <param name="interceptor.excludeMethods">auth</param>
@@ -100,4 +104,5 @@
       </result>
     </action>
   </package>
+
 </struts>
