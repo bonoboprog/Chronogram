@@ -4,39 +4,47 @@
         "http://struts.apache.org/dtds/struts-2.5.dtd">
 
 <struts>
-  <constant name="struts.devMode" value="true" />
-  <constant name="struts.convention.result.path" value="/" />
+  <!-- Configurazioni globali -->
+  <constant name="struts.devMode" value="true" />  <!-- Abilita la modalità sviluppo (log dettagliati, ricarica risorse) -->
+  <constant name="struts.convention.result.path" value="/" />  <!-- Percorso base per i risultati -->
 
-  <!-- Package per le azioni di autenticazione -->
+  <!--
+    Package per le azioni di autenticazione (endpoint pubblici che non richiedono JWT)
+    Namespace: /api/auth
+    Estende json-default per supportare input/output JSON
+  -->
   <package name="api-auth" namespace="/api/auth" extends="json-default">
     <interceptors>
+      <!-- Stack di interceptor personalizzato per le API di autenticazione -->
       <interceptor-stack name="apiAuthStack">
-        <interceptor-ref name="json"/>
-        <interceptor-ref name="defaultStack">
-          <param name="interceptor.excludeMethods">auth, login, register, request-reset, reset-password</param>
-        </interceptor-ref>
+        <interceptor-ref name="json"/>  <!-- Abilita il parsing automatico del JSON in input -->
+        <interceptor-ref name="defaultStack"/>  <!-- Include gli interceptor standard di Struts2 -->
       </interceptor-stack>
     </interceptors>
-    <default-interceptor-ref name="apiAuthStack"/>
+    <default-interceptor-ref name="apiAuthStack"/>  <!-- Applica lo stack a tutte le azioni -->
 
+    <!-- Azione per la registrazione utente -->
     <action name="register" class="it.unicas.action.RegistrationAction">
-      <result type="json">
-        <param name="root">registrationResponse</param>
+      <result type="json">  <!-- Risposta in formato JSON -->
+        <param name="root">registrationResponse</param>  <!-- Radice dell'oggetto da serializzare -->
       </result>
     </action>
 
+    <!-- Azione per il login (genera il JWT) -->
     <action name="login" class="it.unicas.action.LoginAction">
       <result type="json">
         <param name="root">loginResponse</param>
       </result>
     </action>
 
+    <!-- Azione per richiedere il reset password (invia email) -->
     <action name="request-reset" class="it.unicas.action.RequestPasswordResetAction" method="execute">
       <result type="json">
         <param name="root">passwordResetResponse</param>
       </result>
     </action>
 
+    <!-- Azione per confermare il reset password -->
     <action name="reset-password" class="it.unicas.action.ResetPasswordAction" method="execute">
       <result type="json">
         <param name="root">resetPasswordResponse</param>
@@ -44,60 +52,76 @@
     </action>
   </package>
 
-  <!-- Package per le azioni LLM -->
+  <!--
+    Package per le azioni LLM (Large Language Model)
+    Namespace: /api/llm
+    Endpoint pubblico che non richiede autenticazione
+  -->
   <package name="api-llm" namespace="/api/llm" extends="json-default">
     <interceptors>
       <interceptor-stack name="apiLlmStack">
         <interceptor-ref name="json"/>
-        <interceptor-ref name="defaultStack">
-          <param name="interceptor.excludeMethods">auth</param>
-        </interceptor-ref>
+        <interceptor-ref name="defaultStack"/>
       </interceptor-stack>
     </interceptors>
     <default-interceptor-ref name="apiLlmStack"/>
 
+    <!-- Azione per l'interazione con il modello linguistico -->
     <action name="prompt" class="it.unicas.action.LLMAction">
-      <result type="json"><param name="root">data</param></result>
+      <result type="json">
+        <param name="root">data</param>
+      </result>
     </action>
   </package>
 
-  <!-- Package per le azioni delle attività -->
+  <!--
+    Package per le azioni delle attività (endpoint protetti che richiedono JWT)
+    Namespace: /api/activities
+    Qui viene applicato l'interceptor di autenticazione
+  -->
   <package name="api-activities" namespace="/api/activities" extends="json-default">
     <interceptors>
+      <!-- Registrazione dell'interceptor custom per l'autenticazione JWT -->
+      <interceptor name="authInterceptor" class="it.unicas.filter.AuthInterceptor" />
+
+      <!-- Stack personalizzato che include l'autenticazione -->
       <interceptor-stack name="apiActivitiesStack">
-        <interceptor-ref name="authInterceptor"/>
-        <interceptor-ref name="json"/>
-        <interceptor-ref name="defaultStack">
-          <param name="interceptor.excludeMethods">auth</param>
-        </interceptor-ref>
+        <interceptor-ref name="authInterceptor"/>  <!-- Verifica il JWT -->
+        <interceptor-ref name="json"/>  <!-- Gestione JSON -->
+        <interceptor-ref name="defaultStack"/>  <!-- Interceptor standard -->
       </interceptor-stack>
     </interceptors>
-    <default-interceptor-ref name="apiActivitiesStack"/>
+    <default-interceptor-ref name="apiActivitiesStack"/>  <!-- Applica lo stack a tutte le azioni -->
 
+    <!-- Azione per creare una nuova attività (protetta da JWT) -->
     <action name="create" class="it.unicas.action.activity.CreateActivityAction" method="execute">
       <result type="json">
-        <param name="root">responseDTO</param>
+        <param name="root">responseDTO</param>  <!-- Oggetto standard di risposta -->
       </result>
     </action>
 
+    <!-- Azione per aggiornare un'attività esistente -->
     <action name="update" class="it.unicas.action.activity.UpdateActivityAction" method="execute">
       <result type="json">
         <param name="root">responseDTO</param>
       </result>
     </action>
 
+    <!-- Azione per eliminare un'attività -->
     <action name="delete" class="it.unicas.action.activity.DeleteActivityAction" method="execute">
       <result type="json">
         <param name="root">responseDTO</param>
       </result>
     </action>
 
+    <!-- Azione per listare le attività (con eventuali filtri) -->
     <action name="list" class="it.unicas.action.activity.ListActivitiesAction" method="execute">
       <result type="json">
         <param name="root">responseDTO</param>
       </result>
     </action>
 
+    <!-- Azione per ottenere i tipi di attività disponibili -->
     <action name="types" class="it.unicas.action.activity.ListActivityTypesAction" method="execute">
       <result type="json">
         <param name="root">responseDTO</param>

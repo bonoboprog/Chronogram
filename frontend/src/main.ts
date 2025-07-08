@@ -19,6 +19,7 @@ import '@ionic/vue/css/text-alignment.css';
 import '@ionic/vue/css/text-transformation.css';
 import '@ionic/vue/css/flex-utils.css';
 import '@ionic/vue/css/display.css';
+import { useAuthStore } from '@/store/auth';
 
 /**
  * Ionic Dark Mode
@@ -58,8 +59,13 @@ const app = createApp(App)
 /* Set the active theme on root element  */
 document.documentElement.setAttribute('data-theme', 'mocha');
 
-router.isReady().then(() => {
+router.isReady().then(async () => {
+  // ✅ Inizializza stato auth PRIMA del mount
+  const authStore = useAuthStore();
+  await authStore.checkAuthStatus();
+
   app.mount('#app');
-  // Initialize API interceptors after app is mounted and Pinia/Router are ready
+
+  // ✅ Intercettori API dopo il mount
   initApiInterceptors();
 });

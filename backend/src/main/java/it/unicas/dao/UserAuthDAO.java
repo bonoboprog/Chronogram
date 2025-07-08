@@ -181,4 +181,26 @@ public class UserAuthDAO {
         }
     }
 
+    public int getUserIdByEmail(String email) throws SQLException {
+        final String SQL = "SELECT user_id FROM user_auth WHERE email = ?";
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(SQL)) {
+
+            pstmt.setString(1, email);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("user_id");
+                } else {
+                    logger.warn("Nessun utente trovato con email: {}", email);
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Errore durante il recupero dell'ID utente per email: {}", email, e);
+            throw e;
+        }
+
+        return -1; // o lancia eccezione personalizzata
+    }
+
 }

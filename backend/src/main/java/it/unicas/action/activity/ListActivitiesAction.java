@@ -5,63 +5,69 @@ import it.unicas.dto.ActivityDTO;
 import it.unicas.service.activity.ListActivitiesService;
 import it.unicas.service.exception.ServiceException;
 import it.unicas.service.exception.ValidationException;
+import org.apache.struts2.ServletActionContext;
 
-import java.util.List;
+import javax.servlet.http.HttpServletRequest;
 import java.sql.Date;
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException; // Import for parsing exception
+import java.time.format.DateTimeParseException;
+import java.util.List;
 
 /**
  * Struts2 Action for listing activities.
- * Handles input parameters and delegates to ListActivitiesService.
+ * Retrieves authenticated user ID from the request and lists activities.
  */
 public class ListActivitiesAction extends BaseAction {
 
-    // --- INPUT PARAMETERS ---
-    private Integer userId;
-    private String activityDate; // Assuming it comes as a string from frontend
-
-    // Service dependency
+    private String activityDate; // Comes from frontend (optional)
     private final ListActivitiesService listActivitiesService = new ListActivitiesService();
 
     @Override
     public String execute() {
-        logger.info("Attempting to retrieve activities for user: {} on date: {}", userId, activityDate);
         try {
+            // Recupera l'userId autenticato messo nell’interceptor
+            HttpServletRequest request = ServletActionContext.getRequest();
+            Integer userId = (Integer) request.getAttribute("authenticatedUserId");
+
+            logger.info("Attempting to retrieve activities for user: {} on date: {}", userId, activityDate);
+
             if (userId == null) {
-                throw new ValidationException("User ID is required to list activities.");
+                throw new ValidationException("Utente non autenticato.");
             }
 
-            // Parse the activityDate string to java.sql.Date
+            // Gestisce la data: se manca, usa oggi
             Date dateToFetch;
-            if (activityDate!= null &&!activityDate.trim().isEmpty()) {
+            if (activityDate != null && !activityDate.trim().isEmpty()) {
                 try {
                     dateToFetch = Date.valueOf(LocalDate.parse(activityDate));
-                } catch (DateTimeParseException e) { // Use specific DateTimeParseException
-                    throw new ValidationException("Invalid activity date format. Expected YYYY-MM-DD.");
+                } catch (DateTimeParseException e) {
+                    throw new ValidationException("Formato data non valido. Formato atteso: YYYY-MM-DD.");
                 }
             } else {
-                dateToFetch = Date.valueOf(LocalDate.now()); // Default to today if not provided
+                dateToFetch = Date.valueOf(LocalDate.now());
             }
 
-            // CORRECTED LINE: Call the new method with both date and userId
+            // Chiama il servizio con userId recuperato e data
             List<ActivityDTO> activities = listActivitiesService.getActivitiesByDateAndUser(dateToFetch, userId);
-            setSuccess("Activities retrieved successfully", activities);
-            logger.info("Retrieved {} activities for user: {} on date: {}", activities.size(), userId, dateToFetch);
+            setSuccess("Attività recuperate con successo", activities);
+            logger.info("Recuperate {} attività per utente {} in data {}", activities.size(), userId, dateToFetch);
+
         } catch (ValidationException e) {
-            logger.warn("Validation error during activity listing: {}", e.getMessage());
+            logger.warn("Errore di validazione: {}", e.getMessage());
             setFailure(e.getMessage());
         } catch (ServiceException e) {
-            logger.error("Service error during activity listing", e);
-            setFailure("Failed to retrieve activities due to a system error.");
+            logger.error("Errore di servizio", e);
+            setFailure("Errore durante il recupero delle attività.");
         } catch (Exception e) {
-            logger.error("Unexpected error during activity listing", e);
-            setFailure("An unexpected error occurred.");
+            logger.error("Errore imprevisto", e);
+            setFailure("Si è verificato un errore inatteso.");
         }
+
         return SUCCESS;
     }
 
-    // --- Getters and setters for Struts2 input binding ---
-    public void setUserId(Integer userId) { this.userId = userId; }
-    public void setActivityDate(String activityDate) { this.activityDate = activityDate; }
+    // Setter solo per activityDate
+    public void setActivityDate(String activityDate) {
+        this.activityDate = activityDate;
+    }
 }
