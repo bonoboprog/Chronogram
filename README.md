@@ -23,7 +23,7 @@
 [📊 View Chronogram Presentation](https://docs.google.com/presentation/d/14NgOd5NSt-bIzUknydG7A0ilcgBkQL68LGOZmH8EEhI/edit?slide=id.g35803e53045_1_16)
 
 
-The goal of this project is to develop an Android application that allows users to log their daily activities. The app will feature a main page for real-time activity tracking and a calendar section where users can review previously recorded activities. The design supports both real-time and retrospective logging, enabling users to choose the frequency of prompts based on their daily routines. This flexibility makes the app suitable for personal use as well as for researchers and organizations involved in time-use studies.
+The goal of this project is to develop an Android application that allows users to record their daily activities. The app will feature a main page for real-time activity tracking, logging the various activities performed throughout the day. On the same page, the user will also be able to view activity logs from the previous two days. The design supports both real-time and retrospective logging, enabling users to choose the frequency of notifications based on their daily routines. This flexibility makes the app suitable for both personal use and for researchers or organizations conducting time-use studies.
 
 ---
 
