@@ -35,6 +35,7 @@ services:
       MAIL_USER: ${MAIL_USER}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      FIREBASE_CREDENTIAL_PATH: /run/secrets/firebase-service-account.json
     volumes:
       - ./logs:/usr/local/tomcat/logs
       - ./secrets/firebase-service-account.json:/run/secrets/firebase-service-account.json:ro
