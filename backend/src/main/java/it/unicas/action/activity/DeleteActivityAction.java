@@ -1,6 +1,6 @@
 package it.unicas.action.activity;
 
-import it.unicas.action.BaseAction;
+//import it.unicas.action.BaseAction;
 import it.unicas.service.activity.DeleteActivityService;
 import it.unicas.service.exception.ServiceException;
 import it.unicas.service.exception.ValidationException;
