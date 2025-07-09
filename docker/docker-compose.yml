@@ -36,7 +36,8 @@ services:
       MAIL_PASSWORD: ${MAIL_PASSWORD}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
     volumes:
-      - ./logs:/usr/local/tomcat/logs  
+      - ./logs:/usr/local/tomcat/logs
+      - ./secrets/firebase-service-account.json:/run/secrets/firebase-service-account.json:ro
 
   nginx:
     image: nginx:latest
