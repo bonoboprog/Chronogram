@@ -9,7 +9,7 @@ import org.apache.logging.log4j.Logger;
  * Base class for all Struts2 actions in the application.
  * Provides common logging and standardized response handling.
  */
-public abstract class BaseAction extends ActionSupport {
+public abstract class ActivitiesBaseAction extends ActionSupport {
     protected final Logger logger = LogManager.getLogger(getClass());
     protected CommonResponseDTO responseDTO;
 
