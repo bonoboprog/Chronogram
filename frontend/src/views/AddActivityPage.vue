@@ -126,12 +126,18 @@
             <!-- Location -->
             <ion-item class="glass-input">
               <ion-icon slot="start" :icon="locationOutline" class="input-icon" />
-              <ion-input
+              <ion-select
                   v-model="activity.location"
                   label="Location"
                   label-placement="floating"
-                  :aria-label="'Location'"
-              />
+                  interface="popover"
+                  :interface-options="{ cssClass: 'ion-dark catppuccin-select-overlay' }"
+              >
+                <ion-select-option value="home">At home</ion-select-option>
+                <ion-select-option value="work">At work</ion-select-option>
+                <ion-select-option value="outside">Outside</ion-select-option>
+                <ion-select-option value="other">Other</ion-select-option>
+              </ion-select>
             </ion-item>
           </ion-list>
 
@@ -222,6 +228,11 @@ import {
 
 import { api } from '@/composables/useApi';
 
+import { useRoute } from 'vue-router';
+
+import { useActivityStore } from '@/store/activityStore';
+
+
 const router = useRouter();
 const isLoading = ref(false);
 const isModalOpen = ref(false);
@@ -238,7 +249,7 @@ const activity = reactive({
   activityTypeId: null as number | null, // Changed to number type
   recurrence: '' as 'R' | 'E' | '',
   costEuro: '',
-  location: ''
+  location: '' as 'home' | 'work' | 'outside' | 'other' | '',
 });
 
 const toast = reactive({ open: false, message: '', color: 'danger' as const });
@@ -278,6 +289,8 @@ const showToast = (msg: string, col: 'success' | 'danger') => {
   toast.open = true;
 };
 
+const route = useRoute();
+
 function normalizeActivity(data: any) {
   return {
     name: data.name || '',
@@ -310,6 +323,8 @@ async function handleMagicInput() {
   }
 }
 
+const isEdit = computed(() => !!route.query.id);
+
 async function saveActivity() {
   if (hasErrors.value) {
     showToast('Please fill required fields correctly', 'danger');
@@ -320,21 +335,25 @@ async function saveActivity() {
 
   try {
     const payload = {
-      name: activity.name.trim(),
-      durationMins: activity.durationMins,  // Matches backend field
-      details: activity.details.trim(),
-      pleasantness: activity.pleasantness,
-      activityTypeId: activity.activityTypeId,  // Now number
-      recurrence: activity.recurrence,
-      costEuro: activity.costEuro.trim(),  // Send as string
-      location: activity.location.trim()
+      activityId: isEdit.value ? Number(route.query.id) : undefined,
+      ...activity
     };
 
-    const { data } = await api.post('/api/activities/create', payload);
+    const endpoint = isEdit.value
+        ? '/api/activities/update'
+        : '/api/activities/create';
+
+    const { data } = await api.post(endpoint, payload);
+
     if (!data.success) throw new Error(data.message || 'Failed to save');
 
     showToast('Activity saved successfully!', 'success');
+
+    const activityStore = useActivityStore();
+    activityStore.needsRefresh = true;
+
     setTimeout(() => router.push('/home'), 1500);
+
   } catch (err: any) {
     const message = err.response?.data?.message || err.message || 'Save failed';
     showToast(message, 'danger');
@@ -342,6 +361,7 @@ async function saveActivity() {
     isLoading.value = false;
   }
 }
+
 
 onMounted(async () => {
   try {
@@ -352,6 +372,20 @@ onMounted(async () => {
   } catch (err) {
     console.error('Failed to fetch activity types:', err);
     showToast('Failed to load activity types', 'danger');
+  }
+});
+
+onMounted(() => {
+  const q = route.query;
+  if (q.id) {
+    activity.name = (q.name as string) || '';
+    activity.durationMins = q.durationMins ? Number(q.durationMins) : null;
+    activity.details = (q.details as string) || '';
+    activity.pleasantness = q.pleasantness ? Number(q.pleasantness) : 0;
+    activity.activityTypeId = q.activityTypeId ? Number(q.activityTypeId) : null;
+    activity.recurrence = (q.recurrence as 'R' | 'E') || '';
+    activity.costEuro = (q.costEuro as string) || '';
+    activity.location = (q.location as string) || '';
   }
 });
 

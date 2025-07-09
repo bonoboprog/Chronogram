@@ -1,31 +1,38 @@
 package it.unicas.action.activity;
 
-//import it.unicas.action.BaseAction;
 import it.unicas.service.activity.DeleteActivityService;
 import it.unicas.service.exception.ServiceException;
 import it.unicas.service.exception.ValidationException;
+import org.apache.struts2.ServletActionContext;
+import javax.servlet.http.HttpServletRequest;
 
-/**
- * Struts2 Action for deleting an activity.
- * Handles input parameters and delegates to DeleteActivityService.
- */
 public class DeleteActivityAction extends BaseAction {
 
-    // --- INPUT PARAMETERS ---
+    // --- INPUT PARAMETERS (REMOVED userId) ---
     private Integer activityId;
-    private Integer userId; // Required for ownership check
 
     // Service dependency
     private final DeleteActivityService deleteActivityService = new DeleteActivityService();
 
     @Override
     public String execute() {
-        logger.info("Attempting to delete activity ID: {} for user_id: {}", activityId, userId);
+        HttpServletRequest request = ServletActionContext.getRequest();
+        Integer authenticatedUserId = (Integer) request.getAttribute("authenticatedUserId");
+
+        // Validate authentication
+        if (authenticatedUserId == null) {
+            logger.warn("Unauthenticated user attempt to delete activity");
+            setFailure("Utente non autenticato.");
+            return SUCCESS;
+        }
+
+        logger.info("Attempting to delete activity ID: {} for user_id: {}", activityId, authenticatedUserId);
         try {
-            if (activityId == null || userId == null) {
-                throw new ValidationException("Activity ID and User ID are required for deletion.");
+            if (activityId == null) {
+                throw new ValidationException("Activity ID is required for deletion.");
             }
-            deleteActivityService.deleteActivity(activityId, userId);
+
+            deleteActivityService.deleteActivity(activityId, authenticatedUserId);
             setSuccess("Activity deleted successfully");
             logger.info("Activity ID: {} deleted successfully.", activityId);
         } catch (ValidationException e) {
@@ -41,7 +48,8 @@ public class DeleteActivityAction extends BaseAction {
         return SUCCESS;
     }
 
-    // --- Getters and setters for Struts2 input binding ---
-    public void setActivityId(Integer activityId) { this.activityId = activityId; }
-    public void setUserId(Integer userId) { this.userId = userId; }
+    // --- Only keep activityId setter ---
+    public void setActivityId(Integer activityId) {
+        this.activityId = activityId;
+    }
 }

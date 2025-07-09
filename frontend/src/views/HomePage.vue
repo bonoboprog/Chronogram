@@ -30,12 +30,10 @@
               <ion-card
                   class="activity-bubble"
                   :style="{ borderLeftColor: categoryColors[a.activityTypeName] || 'var(--surface2)' }"
+                  @click="editActivity(a)"
               >
                 <ion-card-content>
                   <div class="action-buttons">
-                    <ion-button fill="clear" size="small" @click.stop="editActivity(a)">
-                      <ion-icon :icon="pencilOutline" />
-                    </ion-button>
                     <ion-button fill="clear" size="small" @click.stop="confirmDelete(a.activityId)">
                       <ion-icon :icon="trashBinOutline" color="danger" />
                     </ion-button>
@@ -91,22 +89,23 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { useRouter } from 'vue-router';
 import {
   IonPage, IonHeader, IonContent, IonIcon, IonButton,
   IonCard, IonCardContent, IonFab, IonFabButton,
   IonLoading, IonToast, IonText, IonAlert
 } from '@ionic/vue';
 import {
-  homeOutline, settingsOutline, personCircleOutline, addOutline, pencilOutline, trashBinOutline
+  homeOutline, settingsOutline, personCircleOutline, addOutline, trashBinOutline
 } from 'ionicons/icons';
 import dayjs from 'dayjs';
 import { api } from '@/composables/useApi';
 
+import { watch } from 'vue';
+import { useActivityStore } from '@/store/activityStore';
+
 /* ---------- State ---------- */
 const router = useRouter();
-const route = useRoute();
-const selectedTab = ref(route.name?.toString().toLowerCase() || 'home');
 const showDeleteConfirm = ref(false);
 const pendingDeleteId = ref<number | null>(null);
 const deleteTime = ref('');
@@ -153,6 +152,8 @@ const activities = ref<Activity[]>([]);
 const isLoading = ref(false);
 const toast = ref({ open: false, message: '', color: 'danger' });
 
+const activityStore = useActivityStore();
+
 /* ---------- Computed ---------- */
 const formattedCurrentDate = computed(() => {
   return currentDate.value.format('MMMM D, YYYY');
@@ -180,10 +181,27 @@ const categoryColors: Record<string, string> = {
   'Default': 'var(--surface2)'
 };
 
+watch(() => activityStore.needsRefresh, (shouldRefresh) => {
+  if (shouldRefresh) {
+    fetchActivities();                 // 🔁 richiama la lista aggiornata
+    activityStore.needsRefresh = false;
+  }
+});
+
 function editActivity(activity: Activity) {
   router.push({
     name: 'AddActivity',
-    query: { id: activity.activityId.toString() }
+    query: {
+      id: activity.activityId.toString(),
+      name: activity.activityTypeName,
+      durationMins: activity.durationMins?.toString() || '',
+      details: activity.details || '',
+      pleasantness: activity.pleasantness.toString(),
+      activityTypeId: activity.activityTypeId.toString(),
+      recurrence: activity.isRoutinary ? 'R' : 'E',
+      costEuro: activity.costEuro || '',
+      location: activity.location || ''
+    }
   });
 }
 

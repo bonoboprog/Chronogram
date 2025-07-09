@@ -42,8 +42,9 @@
           <ion-grid class="ion-margin-top">
             <ion-row class="ion-justify-content-around">
               <ion-col size="5">
-                <ion-button @click="handleLogin" expand="block" class="pill-button gradient-outline">
-                  Login
+                <ion-button @click="handleLogin" expand="block" class="pill-button gradient-outline" :disabled="isLoading">
+                  <ion-spinner v-if="isLoading" name="crescent"></ion-spinner>
+                  <span v-else>Login</span>
                 </ion-button>
               </ion-col>
               <ion-col size="5">
@@ -56,7 +57,6 @@
         </div>
       </div>
 
-      <!-- Toast Notification -->
       <ion-toast
           :is-open="showToast"
           :message="toastMessage"
@@ -64,6 +64,7 @@
           :duration="3000"
           @didDismiss="showToast = false"
       ></ion-toast>
+
     </ion-content>
   </ion-page>
 </template>
@@ -74,12 +75,14 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/auth';
 import {
   IonPage, IonContent, IonList, IonItem, IonInput, IonIcon,
-  IonButton, IonGrid, IonRow, IonCol, IonToast
+  IonButton, IonGrid, IonRow, IonCol, IonToast, IonSpinner // MODIFIED: Imported IonSpinner
 } from '@ionic/vue';
 import { personOutline, keyOutline } from 'ionicons/icons';
 
 const router = useRouter();
 const auth = useAuthStore();
+
+const isLoading = ref(false);
 
 // Form data
 const email = ref('');
@@ -106,15 +109,19 @@ const handleLogin = async () => {
     return;
   }
 
+  isLoading.value = true;
+
   try {
     await auth.login({ email: email.value, password: password.value });
     presentToast('Login successful!', 'success');
     router.push({ name: 'Home' });
   } catch (error) {
-    presentToast(error instanceof Error ? error.message : 'Login failed');
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    presentToast(errorMessage, 'danger');
+  } finally {
+    isLoading.value = false;
   }
 };
-
 const goToRegistration = () => {
   router.push({ name: 'Register' });
 };
@@ -125,6 +132,11 @@ const handleForgotPassword = () => {
 </script>
 
 <style scoped>
+
+.pill-button ion-spinner {
+  width: 1.5em;
+  height: 1.5em;
+}
 
 .login-container {
   display: flex;
