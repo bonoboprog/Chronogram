@@ -1,6 +1,6 @@
 package it.unicas.action.activity;
 
-import it.unicas.action.BaseAction;
+//import it.unicas.action.BaseAction;
 import it.unicas.dto.ActivityDTO;
 import it.unicas.service.activity.UpdateActivityService;
 import it.unicas.service.exception.ServiceException;
