@@ -28,16 +28,18 @@
               />
             </ion-item>
 
-            <!-- Duration -->
-            <ion-item :class="errorClass('duration')" class="glass-input">
+            <!-- Duration (updated field name) -->
+            <ion-item :class="errorClass('durationMins')" class="glass-input">
               <ion-icon slot="start" :icon="timeOutline" class="input-icon" />
               <ion-input
-                  v-model.number="activity.duration"
-                  type="number"
-                  label="Duration (minutes)"
-                  label-placement="floating"
-                  :aria-label="'Duration'"
+                  v-model.number="activity.durationMins"
+              type="number"
+              label="Duration (minutes)"
+              label-placement="floating"
+              min="1"
+              max="1440"
               />
+              <ion-note slot="error">Enter 1-1440 minutes</ion-note>
             </ion-item>
 
             <!-- Details -->
@@ -207,7 +209,7 @@
 import { reactive, ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import {
-  IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonBackButton,
+  IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons,
   IonButton, IonIcon, IonItem, IonLabel, IonInput, IonTextarea, IonSelect,
   IonSelectOption, IonNote, IonFab, IonFabButton, IonModal, IonSpinner,
   IonLoading, IonToast, IonGrid, IonRow, IonCol, IonList
@@ -230,10 +232,10 @@ const currentDate = new Intl.DateTimeFormat('en-GB').format(new Date());
 
 const activity = reactive({
   name: '',
-  duration: null as number | null,
+  durationMins: null as number | null,  // Changed to match backend field name
   details: '',
   pleasantness: 0,
-  activityTypeId: '',
+  activityTypeId: null as number | null, // Changed to number type
   recurrence: '' as 'R' | 'E' | '',
   costEuro: '',
   location: ''
@@ -243,15 +245,21 @@ const toast = reactive({ open: false, message: '', color: 'danger' as const });
 
 const hasErrors = computed(() =>
     !activity.name.trim() ||
-    !activity.duration ||
-    !activity.activityTypeId ||
+    !activity.durationMins ||  // Updated field name
+    activity.durationMins <= 0 || // Added validation
+    activity.durationMins > 1440 || // Max 24hrs
+    !activity.activityTypeId ||  // Now checks for null
     !activity.recurrence
 );
 
 const errorClass = (field: keyof typeof activity) => ({
   'ion-invalid':
       (field === 'name' && !activity.name.trim()) ||
-      (field === 'duration' && !activity.duration) ||
+      (field === 'durationMins' && (
+          !activity.durationMins ||
+          activity.durationMins <= 0 ||
+          activity.durationMins > 1440
+      )) ||
       (field === 'activityTypeId' && !activity.activityTypeId) ||
       (field === 'recurrence' && !activity.recurrence)
 });
@@ -273,12 +281,12 @@ const showToast = (msg: string, col: 'success' | 'danger') => {
 function normalizeActivity(data: any) {
   return {
     name: data.name || '',
-    duration: data.duration || null,
+    durationMins: data.duration || data.durationMins || null,  // Handle both
     details: data.details || '',
     pleasantness: data.pleasantness ?? 0,
-    activityTypeId: data.activityTypeId || '',
+    activityTypeId: data.activityTypeId ? Number(data.activityTypeId) : null, // Ensure number
     recurrence: data.recurrence || '',
-    costEuro: data.costEuro || '',
+    costEuro: data.costEuro ? String(data.costEuro) : '',
     location: data.location || ''
   };
 }
@@ -304,7 +312,7 @@ async function handleMagicInput() {
 
 async function saveActivity() {
   if (hasErrors.value) {
-    showToast('Please fill required fields', 'danger');
+    showToast('Please fill required fields correctly', 'danger');
     return;
   }
 
@@ -312,9 +320,13 @@ async function saveActivity() {
 
   try {
     const payload = {
-      ...activity,
-      costEuro: activity.costEuro ? parseFloat(activity.costEuro) : 0,
+      name: activity.name.trim(),
+      durationMins: activity.durationMins,  // Matches backend field
       details: activity.details.trim(),
+      pleasantness: activity.pleasantness,
+      activityTypeId: activity.activityTypeId,  // Now number
+      recurrence: activity.recurrence,
+      costEuro: activity.costEuro.trim(),  // Send as string
       location: activity.location.trim()
     };
 
@@ -324,7 +336,6 @@ async function saveActivity() {
     showToast('Activity saved successfully!', 'success');
     setTimeout(() => router.push('/home'), 1500);
   } catch (err: any) {
-    console.error('Save error:', err);
     const message = err.response?.data?.message || err.message || 'Save failed';
     showToast(message, 'danger');
   } finally {

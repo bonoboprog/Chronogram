@@ -5,66 +5,66 @@ import it.unicas.dto.ActivityDTO;
 import it.unicas.service.activity.CreateActivityService;
 import it.unicas.service.exception.ServiceException;
 import it.unicas.service.exception.ValidationException;
+import org.apache.struts2.ServletActionContext;
+import javax.servlet.http.HttpServletRequest;
 
-/**
- * Struts2 Action for creating a new activity.
- * Handles input parameters and delegates to CreateActivityService.
- */
 public class CreateActivityAction extends BaseAction {
-
-    // --- INPUT PARAMETERS ---
+    // --- INPUT PARAMETERS (REMOVE userId) ---
     private Integer durationMins;
     private Integer pleasantness;
     private String location;
     private String costEuro;
-    private Integer userId;
-    private Integer activityTypeId;
+    private Integer activityTypeId; // Only frontend-settable inputs remain
 
-    // Service dependency (manual instantiation for now)
     private final CreateActivityService createActivityService = new CreateActivityService();
 
     @Override
     public String execute() {
+        // Retrieve authenticated user ID from request (added)
+        HttpServletRequest request = ServletActionContext.getRequest();
+        Integer userId = (Integer) request.getAttribute("authenticatedUserId");
+
+        if (userId == null) {
+            logger.warn("Unauthenticated user attempt to create activity");
+            setFailure("Utente non autenticato.");
+            return SUCCESS; // Or appropriate error code
+        }
+
         logger.info("Attempting to create new activity for user_id: {}", userId);
         try {
-            ActivityDTO activityData = buildActivityDTOFromInput();
+            ActivityDTO activityData = buildActivityDTOFromInput(userId); // Pass userId
             ActivityDTO createdActivity = createActivityService.createActivity(activityData);
             setSuccess("Activity created successfully", createdActivity);
             logger.info("Activity created successfully with ID: {}", createdActivity.getActivityId());
         } catch (ValidationException e) {
-            logger.warn("Validation error during activity creation: {}", e.getMessage());
+            logger.warn("Validation error: {}", e.getMessage());
             setFailure(e.getMessage());
         } catch (ServiceException e) {
-            logger.error("Service error during activity creation", e);
+            logger.error("Service error", e);
             setFailure("Failed to create activity due to a system error.");
         } catch (Exception e) {
-            logger.error("Unexpected error during activity creation", e);
+            logger.error("Unexpected error", e);
             setFailure("An unexpected error occurred.");
         }
         return SUCCESS;
     }
 
-    /**
-     * Builds an ActivityDTO from the action's input parameters.
-     * @return A new ActivityDTO instance.
-     */
-    private ActivityDTO buildActivityDTOFromInput() {
+    // Accept userId as parameter (updated)
+    private ActivityDTO buildActivityDTOFromInput(Integer userId) {
         ActivityDTO activity = new ActivityDTO();
-        activity.setUserId(userId);
+        activity.setUserId(userId); // Use authenticated userId
         activity.setActivityTypeId(activityTypeId);
         activity.setDurationMins(durationMins);
         activity.setPleasantness(pleasantness);
         activity.setLocation(location);
         activity.setCostEuro(costEuro);
-        // activityDate will be set by the service (e.g., to current date)
         return activity;
     }
 
-    // --- Getters and setters for Struts2 input binding ---
+    // --- Setters (REMOVE setUserId) ---
     public void setDurationMins(Integer durationMins) { this.durationMins = durationMins; }
     public void setPleasantness(Integer pleasantness) { this.pleasantness = pleasantness; }
     public void setLocation(String location) { this.location = location; }
     public void setCostEuro(String costEuro) { this.costEuro = costEuro; }
-    public void setUserId(Integer userId) { this.userId = userId; }
     public void setActivityTypeId(Integer activityTypeId) { this.activityTypeId = activityTypeId; }
 }
