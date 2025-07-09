@@ -1,4 +1,4 @@
-package it.unicas.action;
+package it.unicas.action.activity;
 
 import com.opensymphony.xwork2.ActionSupport;
 import it.unicas.dto.CommonResponseDTO;
