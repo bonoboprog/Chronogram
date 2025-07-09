@@ -82,7 +82,7 @@
         header="Confirm Delete"
         :message="`Delete activity from ${deleteTime}?`"
         :buttons="alertButtons"
-        @didDismiss="showDeleteConfirm = false"
+        @didDismiss="handleAlertDismiss"
     />
   </ion-page>
 </template>
@@ -111,16 +111,8 @@ const pendingDeleteId = ref<number | null>(null);
 const deleteTime = ref('');
 
 const alertButtons = ref([
-  {
-    text: 'Cancel',
-    role: 'cancel',
-    handler: () => {
-      showDeleteConfirm.value = false;
-    }
-  },
-  {
-    text: 'Delete',
-    handler: () => {
+  { text: 'Cancel', role: 'cancel' },
+  { text: 'Delete', handler: () => {
       if (pendingDeleteId.value !== null) {
         deleteActivity(pendingDeleteId.value);
       }
@@ -205,6 +197,11 @@ function editActivity(activity: Activity) {
   });
 }
 
+function handleAlertDismiss() {
+  showDeleteConfirm.value = false;
+  pendingDeleteId.value = null;
+}
+
 async function deleteActivity(activityId: number) {
   isLoading.value = true;
   try {
@@ -214,8 +211,13 @@ async function deleteActivity(activityId: number) {
 
     if (data?.success) {
       showToast('Activity deleted', 'success');
-      // Update local state instead of refetching
       activities.value = activities.value.filter(a => a.activityId !== activityId);
+
+      // Focus management after successful deletion
+      setTimeout(() => {
+        const safeElement = document.querySelector('.add-fab-btn') as HTMLElement;
+        if (safeElement) safeElement.focus();
+      }, 100);
     } else {
       throw new Error(data?.message || 'Failed to delete activity');
     }
@@ -231,11 +233,17 @@ async function deleteActivity(activityId: number) {
 
 function confirmDelete(activityId: number) {
   const activity = activities.value.find(a => a.activityId === activityId);
-  if (activity) {
-    pendingDeleteId.value = activityId;
-    deleteTime.value = formatTime(activity.createdAt);
-    showDeleteConfirm.value = true;
-  }
+  if (!activity) return;
+
+  pendingDeleteId.value = activityId;
+  deleteTime.value = formatTime(activity.createdAt);
+  showDeleteConfirm.value = true;
+
+  // Immediately move focus to the alert's first button
+  setTimeout(() => {
+    const firstAlertButton = document.querySelector('.alert-button:first-child') as HTMLElement;
+    firstAlertButton?.focus();
+  }, 50);
 }
 
 async function fetchActivities() {

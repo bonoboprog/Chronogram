@@ -6,7 +6,9 @@ import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DAO per la gestione delle attività nel database.
@@ -213,4 +215,35 @@ public class ActivityDAO {
 
         return activity;
     }
+
+    /**
+     * Restituisce una mappa nome → ID dei tipi di attività.
+     * Chiave: nome in lowercase
+     * Valore: activity_type_id
+     */
+    public Map<String, Integer> getActivityTypeNameToIdMap(Connection conn) throws SQLException {
+        final String SQL = "SELECT activity_type_id, name FROM activity_type";
+        Map<String, Integer> map = new HashMap<>();
+
+        logger.debug("Fetching activity type name-to-id map");
+
+        try (PreparedStatement pstmt = conn.prepareStatement(SQL);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                String name = rs.getString("name").trim().toLowerCase();
+                int id = rs.getInt("activity_type_id");
+                map.put(name, id);
+            }
+
+            logger.info("Fetched {} activity type entries", map.size());
+        } catch (SQLException e) {
+            logger.error("Error fetching activity type name-to-id map", e);
+            throw e;
+        }
+
+        return map;
+    }
+
+
 }

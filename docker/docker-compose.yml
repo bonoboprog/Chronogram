@@ -38,7 +38,7 @@ services:
       FIREBASE_CREDENTIAL_PATH: /run/secrets/firebase-service-account.json
     volumes:
       - ./logs:/usr/local/tomcat/logs
-      - ./secrets/firebase-service-account.json:/run/secrets/firebase-service-account.json:ro
+      - ../secrets/firebase-service-account.json:/run/secrets/firebase-service-account.json:ro
 
   nginx:
     image: nginx:latest
