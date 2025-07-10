@@ -30,6 +30,13 @@
       <version>8.0.33</version>
     </dependency>
 
+    <!-- Firebase Admin SDK -->
+    <dependency>
+      <groupId>com.google.firebase</groupId>
+      <artifactId>firebase-admin</artifactId>
+      <version>9.2.0</version>
+    </dependency>
+
      <!-- File upload support -->
     <dependency>
       <groupId>commons-fileupload</groupId>
@@ -125,6 +132,32 @@
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
       <version>1.2</version>
+    </dependency>
+
+ <dependency>
+    <groupId>com.sun.mail</groupId>
+    <artifactId>jakarta.mail</artifactId>
+    <version>2.0.1</version>
+</dependency>
+
+<dependency>
+    <groupId>com.auth0</groupId>
+    <artifactId>java-jwt</artifactId>
+    <version>4.4.0</version>
+</dependency>
+
+    <!-- Google OAuth2 (necessario per GoogleCredentials) -->
+    <dependency>
+      <groupId>com.google.auth</groupId>
+      <artifactId>google-auth-library-oauth2-http</artifactId>
+      <version>1.19.0</version>
+    </dependency>
+
+    <!-- Jackson JSON (necessario per parsing delle credenziali JSON) -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.13.3</version>
     </dependency>
 
   </dependencies>

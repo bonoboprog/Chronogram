@@ -28,4 +28,8 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
+    <listener>
+        <listener-class>it.unicas.config.AppStartupListener</listener-class>
+    </listener>
+
 </web-app>

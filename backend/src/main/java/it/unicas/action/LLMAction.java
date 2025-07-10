@@ -1,7 +1,10 @@
 package it.unicas.action;
 
 import com.opensymphony.xwork2.ActionSupport;
-import it.unicas.dto.ActivityDTO;
+import it.unicas.dao.ActivityDAO;
+import it.unicas.dbutil.DBUtil;
+import it.unicas.dto.llmDTO;
+import it.unicas.dao.ActivityTypeDAO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -11,6 +14,8 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.util.Map;
 
 public class LLMAction extends ActionSupport {
     private static final Logger logger = LogManager.getLogger(LLMAction.class);
@@ -21,7 +26,7 @@ public class LLMAction extends ActionSupport {
 
     private String prompt;
     private String model = DEFAULT_MODEL;
-    private ActivityDTO data;
+    private llmDTO data;
 
     public void setPrompt(String prompt) {
         System.out.println("✅ Prompt ricevuto dal frontend: " + prompt);
@@ -36,7 +41,7 @@ public class LLMAction extends ActionSupport {
         }
     }
 
-    public ActivityDTO getData() {
+    public llmDTO getData() {
         return data;
     }
 
@@ -54,7 +59,6 @@ public class LLMAction extends ActionSupport {
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setRequestProperty("Authorization", "Bearer " + API_KEY);
-            System.out.println(this.prompt);
             conn.setDoOutput(true);
 
             try (OutputStream os = conn.getOutputStream()) {
@@ -62,13 +66,11 @@ public class LLMAction extends ActionSupport {
             }
 
             int responseCode = conn.getResponseCode();
-            logger.debug("LLM API response code: {}", responseCode);
-
             JSONArray choices = getChoicesFromResponse(responseCode, conn);
             JSONObject message = choices.getJSONObject(0).getJSONObject("message");
             String rawContent = message.getString("content");
-            logger.info("🔥 Raw LLM response:\n{}", rawContent);
 
+            logger.info("🔥 Raw LLM response:\n{}", rawContent);
             String cleanJson = extractJson(rawContent);
             logger.debug("🧹 Extracted clean JSON:\n{}", cleanJson);
 
@@ -99,9 +101,8 @@ public class LLMAction extends ActionSupport {
     private String buildStructuredRequestBody(String userPrompt) {
         String systemPrompt = "You are an expert data extractor for a time-tracking app called Chronogram. "
                 + "Analyze the user's input and extract the following fields as a flat JSON object: "
-                + "name (string), duration (integer in minutes), details (string), enjoyment (integer from -3 to +3), "
-                + "category (string), type ('instrumental' or 'final'), recurrence ('R' or 'E'), "
-                + "cost (number), and location (string). "
+                + "name (string), durationMins (integer in minutes), details (string), pleasantness (integer from -3 to +3), "
+                + "activityTypeName (string), recurrence ('R' or 'E'), costEuro (string), and location (string). "
                 + "If a value is not present, omit the key. "
                 + "Respond with a single valid JSON object only. Do NOT include any explanations, comments, or markdown.";
 
@@ -124,23 +125,43 @@ public class LLMAction extends ActionSupport {
         return "{}";
     }
 
+    private llmDTO parseJsonToDTO(JSONObject json) {
+        llmDTO dto = new llmDTO();
+        dto.setName(json.optString("name", null));
+        dto.setDurationMins(json.has("durationMins") ? json.optInt("durationMins") : 0);
+        dto.setDetails(json.optString("details", null));
+        dto.setPleasantness(json.has("pleasantness") ? json.optInt("pleasantness") : 0);
+        dto.setRecurrence(json.optString("recurrence", null));
+        dto.setCostEuro(json.optString("costEuro", ""));
+        dto.setLocation(json.optString("location", null));
+
+        String categoryName = json.optString("activityTypeName", null);
+        Integer id = resolveActivityTypeId(categoryName);
+        dto.setActivityTypeId(id);
+
+        return dto;
+    }
+
+    /**
+     * 🔄 Lookup dinamico nel DB per convertire il nome della categoria nel suo ID.
+     */
+    private Integer resolveActivityTypeId(String name) {
+        if (name == null || name.isEmpty()) return null;
+
+        try (Connection conn = DBUtil.getConnection()) {
+            ActivityDAO dao = new ActivityDAO();
+            Map<String, Integer> map = dao.getActivityTypeNameToIdMap(conn);
+            return map.getOrDefault(name.trim().toLowerCase(), null);
+        } catch (Exception e) {
+            logger.warn("❌ Failed to resolve activityTypeId for name '{}'", name, e);
+            return null;
+        }
+    }
+
+
     private String escapeJson(String text) {
         return text == null ? "" : text.replace("\"", "\\\"")
                 .replace("\n", "\\n")
                 .replace("\r", "");
-    }
-
-    private ActivityDTO parseJsonToDTO(JSONObject json) {
-        ActivityDTO dto = new ActivityDTO();
-        dto.setName(json.optString("name", null));
-        dto.setDuration(json.has("duration") ? json.optInt("duration") : null);
-        dto.setDetails(json.optString("details", null));
-        dto.setEnjoyment(json.has("enjoyment") ? json.optInt("enjoyment") : null);
-        dto.setCategory(json.optString("category", null));
-        dto.setType(json.optString("type", null));
-        dto.setRecurrence(json.optString("recurrence", null));
-        dto.setCost(json.has("cost") ? json.optDouble("cost") : null);
-        dto.setLocation(json.optString("location", null));
-        return dto;
     }
 }

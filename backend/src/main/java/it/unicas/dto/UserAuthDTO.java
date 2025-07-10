@@ -9,7 +9,6 @@ public class UserAuthDTO {
     private Timestamp createdAt; // Changed from String to Timestamp
     private Timestamp updatedAt; // New field
     private Timestamp lastLogin;
-    private String username;
     private int isActive; // New field (TINYINT(1))
     private int failedLoginAttempts; // New field
     private Timestamp lockedUntil; // New field
@@ -19,7 +18,7 @@ public class UserAuthDTO {
     }
 
     public UserAuthDTO(int userId, String email, String passwordHash, Timestamp createdAt,
-                       Timestamp updatedAt, Timestamp lastLogin, String username,
+                       Timestamp updatedAt, Timestamp lastLogin,
                        int isActive, int failedLoginAttempts, Timestamp lockedUntil) {
         this.userId = userId;
         this.email = email;
@@ -27,7 +26,6 @@ public class UserAuthDTO {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.lastLogin = lastLogin;
-        this.username = username;
         this.isActive = isActive;
         this.failedLoginAttempts = failedLoginAttempts;
         this.lockedUntil = lockedUntil;
@@ -82,14 +80,6 @@ public class UserAuthDTO {
         this.lastLogin = lastLogin;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public int getIsActive() { // New getter
         return isActive;
     }
@@ -123,7 +113,6 @@ public class UserAuthDTO {
                 ", createdAt=" + createdAt + // Updated field name
                 ", updatedAt=" + updatedAt + // New field
                 ", lastLogin=" + lastLogin +
-                ", username='" + username + '\'' +
                 ", isActive=" + isActive + // New field
                 ", failedLoginAttempts=" + failedLoginAttempts + // New field
                 ", lockedUntil=" + lockedUntil + // New field
