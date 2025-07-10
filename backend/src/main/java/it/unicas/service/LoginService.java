@@ -30,7 +30,7 @@ public class LoginService {
     public LoginService() {
         this.userAuthDAO = new UserAuthDAO();
     }
-    
+
     /**
      * Esegue l'autenticazione di un utente, gestendo l'intera operazione
      * all'interno di un'unica transazione di database.
@@ -70,9 +70,9 @@ public class LoginService {
                 logger.info("Login successful for {}", email);
                 userAuthDAO.resetLoginAttempts(user.getUserId(), conn);
                 conn.commit(); // Conferma la transazione
-                
+
                 String jwtToken = JwtUtil.generateToken(email);
-                return new LoginResultDTO(user.getUsername(), jwtToken);
+                return new LoginResultDTO(user.getEmail(), jwtToken);
 
             } else {
                 // Fallimento: incrementa i tentativi e gestisce il blocco dell'account
@@ -80,16 +80,16 @@ public class LoginService {
                 int newAttempts = user.getFailedLoginAttempts() + 1;
                 Timestamp newLockout = null;
                 String message = "Invalid credentials.";
-                
+
                 if (newAttempts >= MAX_FAILED_ATTEMPTS) {
                     newLockout = Timestamp.valueOf(LocalDateTime.now().plusMinutes(LOCKOUT_DURATION_MINUTES));
                     message = "Account locked due to too many failed attempts.";
                     logger.warn("Account for {} has been locked.", email);
                 }
-                
+
                 userAuthDAO.updateFailedLoginAttempt(user.getUserId(), newAttempts, newLockout, conn);
                 conn.commit(); // Conferma la transazione
-                
+
                 throw new AuthenticationException(message);
             }
         } catch (SQLException e) {

@@ -397,7 +397,7 @@ onMounted(() => {
 
 /* Settings icon - clickable, highlight */
 .settings-icon ion-icon {
-  color: #c7b8f5;
+  color: var(--overlay1); /* Original color */
 }
 
 /* Settings button */
@@ -406,10 +406,10 @@ onMounted(() => {
   --padding-end: 0;
   min-width: 44px;
   min-height: 44px;
+  color: var(--overlay1); /* Original color */
 }
 .bottom-icon.right ion-icon {
   font-size: 28px; /* Increased size */
-  color: #c7b8f5; /* Original color */
 }
 
 /* Central plus button */
