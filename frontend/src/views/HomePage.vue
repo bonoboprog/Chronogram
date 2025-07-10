@@ -52,27 +52,24 @@
           </div>
         </div>
 
-        <ion-fab vertical="bottom" horizontal="center" slot="fixed" class="add-fab">
-          <ion-fab-button class="add-fab-btn" @click="addActivity">
-            <ion-icon :icon="addOutline" />
-          </ion-fab-button>
-        </ion-fab>
+        <div class="bottom-icons-container">
+          <!-- Home icon (non-clickable) -->
+          <div class="bottom-icon left home-icon">
+            <ion-icon :icon="homeOutline" />
+          </div>
 
-        <ion-button
-            fill="clear"
-            class="bottom-icon left"
-            @click="navigateTab({ detail: { value: 'home' } })"
-        >
-          <ion-icon :icon="homeOutline" />
-        </ion-button>
+          <!-- Plus button (fixed position) -->
+          <div class="bottom-icon center">
+            <ion-fab-button class="add-fab-btn" @click="addActivity">
+              <ion-icon :icon="addOutline" />
+            </ion-fab-button>
+          </div>
 
-        <ion-button
-            fill="clear"
-            class="bottom-icon right"
-            @click="navigateTab({ detail: { value: 'settings' } })"
-        >
-          <ion-icon :icon="settingsOutline" />
-        </ion-button>
+          <!-- Settings icon (clickable) -->
+          <div class="bottom-icon settings-icon" @click="navigateTab({ detail: { value: 'settings' } })">
+            <ion-icon :icon="settingsOutline" />
+          </div>
+        </div>
       </div>
       <ion-loading :is-open="isLoading" message="Loading activities..." />
       <ion-toast :is-open="toast.open" :message="toast.message" :color="toast.color" :duration="2500" @didDismiss="toast.open=false" />
@@ -92,7 +89,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import {
   IonPage, IonHeader, IonContent, IonIcon, IonButton,
-  IonCard, IonCardContent, IonFab, IonFabButton,
+  IonCard, IonCardContent, IonFabButton,
   IonLoading, IonToast, IonText, IonAlert
 } from '@ionic/vue';
 import {
@@ -152,7 +149,7 @@ const formattedCurrentDate = computed(() => {
 });
 
 /* ---------- Methods ---------- */
-const navigateTab = (event: CustomEvent) => {
+const navigateTab = (event: { detail: { value: string } }) => {
   const tab = event.detail.value;
   if (tab === 'home') router.push({ name: 'Home' });
   else if (tab === 'settings') router.push({ name: 'Settings' });
@@ -364,45 +361,86 @@ onMounted(() => {
   box-shadow: 0 0 12px -2px var(--mauve);
 }
 
-/* FAB central */
-.add-fab {
-  --background: transparent!important;
-  width: 68px; height: 68px;
-  border-radius: 50%;
-  overflow: visible;
-  --bottom: calc(28px + env(safe-area-inset-bottom));
+/* Botones Home y Settings */
+.bottom-icons-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 30px 25px; /* Increased side padding and bottom padding */
+  z-index: 100;
 }
+
+.bottom-icon {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.bottom-icon ion-icon {
+  font-size: 28px;
+}
+
+/* Home icon - special color, no click */
+.home-icon {
+  pointer-events: none;
+  color: var(--peach);
+}
+
+/* Settings icon - clickable, highlight */
+.settings-icon ion-icon {
+  color: #c7b8f5;
+}
+
+/* Settings button */
+.bottom-icon.right ion-button {
+  --padding-start: 0;
+  --padding-end: 0;
+  min-width: 44px;
+  min-height: 44px;
+}
+.bottom-icon.right ion-icon {
+  font-size: 28px; /* Increased size */
+  color: #c7b8f5; /* Original color */
+}
+
+/* Central plus button */
 .add-fab-btn {
   --background: var(--gradient-pink-mauve);
   --color: var(--crust);
-  width: 68px; height: 68px;
+  width: 60px;
+  height: 60px;
+  min-width: 60px;
+  min-height: 60px;
+  padding: 0;
   border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   box-shadow: 0 4px 14px -4px var(--mauve);
 }
 
-/* Botones Home y Settings */
-.bottom-icon {
-  position: fixed;
-  bottom: calc(24px + env(safe-area-inset-bottom));
-  z-index: 50;
-  background: transparent;
-  --color: #c7b8f5;
-  font-size: 1.8rem;
-  padding: 0;
-  min-width: auto;
-  height: auto;
+.add-fab-btn ion-icon {
+  font-size: 28px;
 }
-.bottom-icon.left {
-  left: 20px;
-}
-.bottom-icon.right {
-  right: 20px;
+
+/* Adjust timeline padding to avoid overlap */
+.timeline-container {
+  padding-bottom: 100px;
 }
 
 .action-buttons {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 30px;
+  right: 30px;
   display: flex;
   gap: 4px;
   z-index: 10;

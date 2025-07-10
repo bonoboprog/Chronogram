@@ -34,16 +34,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref } from 'vue';
+import {
+  IonPage,
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonBackButton,
+  IonTitle,
+  IonContent,
+  IonList,
+  IonItem,
+  IonIcon,
+  IonLabel,
+  IonToggle
+} from '@ionic/vue';
 import {
   mailOutline,
   notificationsOutline,
   chatbubbleOutline
-} from 'ionicons/icons'
+} from 'ionicons/icons';
 
-const emailNotifs = ref(true)
-const pushNotifs = ref(false)
-const smsNotifs = ref(false)
+const emailNotifs = ref(true);
+const pushNotifs = ref(false);
+const smsNotifs = ref(false);
 </script>
 
 <style scoped>
