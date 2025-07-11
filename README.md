@@ -34,7 +34,7 @@ The goal of this project is to develop an Android application that allows users 
 - MySQL database integration
 - Client-server communication
 - Basic frontend form validation
-- Protection against common vulnerabilities (e.g., SQL injection, password theft) (hopefully XD)
+- Protection against common vulnerabilities (e.g., SQL injection, password theft) 
 
 ---
 
