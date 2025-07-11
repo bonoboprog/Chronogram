@@ -19,6 +19,14 @@
 
 
 
+## 📛 License
+
+All rights reserved.  
+This code is proprietary and intended for academic or personal reference only.  
+Unauthorized use, modification, or redistribution is prohibited.
+
+
+
 
 [📊 View Chronogram Presentation](https://docs.google.com/presentation/d/14NgOd5NSt-bIzUknydG7A0ilcgBkQL68LGOZmH8EEhI/edit?slide=id.g35803e53045_1_16)
 
