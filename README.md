@@ -47,16 +47,13 @@ The goal of this project is to develop an Android application that allows users 
 
 ## 📚 Libraries and Dependencies
 
-| Library | Purpose | Version | Download |
-| ------- | ------- | ------- | -------- |
-|         |         |         |          |
-
-| **Struts 2**        | MVC web framework for Java    | struts-2.5.22-all | [Struts Download](https://archive.apache.org/dist/struts/2.5.22/) |
-| ------------------- | ----------------------------- | ----------------- | ----------------------------------------------------------------- |
-| **MySQL Connector** | JDBC driver for MySQL         | 8.0.33            | [MySQL Connector](https://dev.mysql.com/downloads/connector/j/)   |
-| **Maven**           | Java build tool               | 3.8+              | [Maven](https://maven.apache.org/)                                |
-| **Docker**          | Containerization              | Engine 24.x+      | [Docker](https://www.docker.com/)                                 |
-| **Docker Compose**  | Multi-container orchestration | v2.0+             | Included in Docker Desktop                                        |
+| **Library**         | **Purpose**                   | **Version**  | **Download**                                                      |
+| ------------------- | ----------------------------- | ------------ | ----------------------------------------------------------------- |
+| **Struts 2**        | MVC web framework for Java    | 2.5.22 (all) | [Struts Download](https://archive.apache.org/dist/struts/2.5.22/) |
+| **MySQL Connector** | JDBC driver for MySQL         | 8.0.33       | [MySQL Connector](https://dev.mysql.com/downloads/connector/j/)   |
+| **Maven**           | Java build tool               | 3.8+         | [Maven](https://maven.apache.org/)                                |
+| **Docker**          | Containerization engine       | 24.x+        | [Docker](https://www.docker.com/)                                 |
+| **Docker Compose**  | Multi-container orchestration | 2.0+         | Included in Docker Desktop                                        |
 
 ---
 
