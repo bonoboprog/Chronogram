@@ -155,7 +155,6 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
    Add your authtoken (If you don’t have an authtoken then [Sign up](https://dashboard.ngrok.com/signup) for a free account).
 
    ```bash
-   sudo apt install ngrok
    ngrok config add-authtoken <YOUR_NGROK_AUTHTOKEN>
    ```
    
