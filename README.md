@@ -133,8 +133,8 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/bonoboprog/DPN_APP.git
-   cd DPN_APP
+   git clone https://github.com/bonoboprog/Chronogram.git
+   cd Chronogram
    ```
    
 
