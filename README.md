@@ -136,16 +136,36 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
    git clone https://github.com/bonoboprog/DPN_APP.git
    cd DPN_APP
    ```
+   
 
 2. **Install ngrok and start a tunnel**
+
+   Install ngrok via Apt with the following command:
+
+
+   ```bash
+	curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
+  	  | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null \
+  	  && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" \
+  	  | sudo tee /etc/apt/sources.list.d/ngrok.list \
+          && sudo apt update \
+          && sudo apt install ngrok
+   ```
+
+   Add your authtoken (If you don’t have an authtoken then [Sign up](https://dashboard.ngrok.com/signup) for a free account.
 
    ```bash
    sudo apt install ngrok
    ngrok config add-authtoken <YOUR_NGROK_AUTHTOKEN>
+   ```
+   
+   Start an endpoint:
+
+   ```bash
    ngrok http 80
    ```
 
-3. **Start backend environment**
+4. **Start backend environment**
 
    ```bash
    ./setup_fresh_backend.sh
@@ -158,13 +178,13 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
     - Start MySQL and Tomcat
     - Initialize the database with `schema.sql`
 
-4. **Refresh backend after making code changes**
+5. **Refresh backend after making code changes**
 
    ```bash
    ./refresh_tomcat_server.sh
    ```
 
-5. **Set up the LLM with your API key**
+6. **Set up the LLM with your API key**
 
    * Go to [https://openrouter.ai](https://openrouter.ai)
    * Generate your personal API key
@@ -174,7 +194,7 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
      LLM_API_KEY=your_openrouter_key_here
      ```
 
-6. **Launch the app frontend**
+7. **Launch the app frontend**
 
    ```bash
    cd mobile
