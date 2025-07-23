@@ -196,7 +196,6 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
 7. **Launch the app frontend**
 
    ```bash
-   cd mobile
    ionic build
    ionic serve
    ```
