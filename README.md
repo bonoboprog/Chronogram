@@ -131,7 +131,7 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
 
 0. **Install Core Dependencies**
 
-These are required globally on your system before launching the app.
+   These are required globally on your system before launching the app.
 
    ````bash
 	# --- Java 11+ ---
