@@ -21,7 +21,6 @@
 
 
 
-
 ## 💼 License
 
 All rights reserved.
@@ -30,7 +29,7 @@ Unauthorized use, modification, or redistribution is prohibited.
 
 [📊 View Chronogram Presentation](https://docs.google.com/presentation/d/14NgOd5NSt-bIzUknydG7A0ilcgBkQL68LGOZmH8EEhI/edit?slide=id.g35803e53045_1_16)
 
-The goal of this project is to develop an Android application that allows users to record their daily activities. The app will feature a main page for real-time activity tracking, logging the various activities performed throughout the day. On the same page, the user will also be able to view activity logs from the previous two days. The design supports both real-time and retrospective logging, enabling users to choose the frequency of notifications based on their daily routines. This flexibility makes the app suitable for both personal use and for researchers or organizations conducting time-use studies.
+The goal of this project is to develop an Android application that allows users to record their daily activities. The app will feature a main page for real-time activity tracking, logging the various activities performed throughout the day. On the same page, the user will also be able to view activity logs from the previous two days. The design supports both real-time and retrospective logging, enabling users to choose the frequency of notifications based on their daily routines. This flexibility makes the app suitable for both personal use and for researchers or organizations conducting time-use studies.
 
 ---
 
@@ -130,6 +129,45 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
 <details>
 <summary>⚙️ <strong>Setting Up a Development Environment</strong></summary>
 
+0. **Install Core Dependencies**
+
+These are required globally on your system before launching the app.
+
+   ````bash
+	# --- Java 11+ ---
+	sudo apt update
+	sudo apt install openjdk-11-jdk
+
+	# Verify Java version
+	java -version
+
+	# --- Maven ---
+	sudo apt install maven
+
+	# Verify Maven version
+	mvn -v
+
+	# --- Node.js (v18.x recommended) ---
+	# Use Node Version Manager (nvm) to install/manage Node versions
+	curl -o- [https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh](https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh) | bash
+	source ~/.bashrc
+	nvm install 18
+	nvm use 18
+
+	# Verify Node.js and npm
+	node -v
+	npm -v
+
+	# --- Ionic CLI ---
+	npm install -g @ionic/cli
+
+	# --- Docker + Docker Compose ---
+	docker -v
+	docker compose version
+
+   ````
+
+
 1. **Clone the repository**
 
    ```bash
@@ -164,7 +202,7 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
    ngrok http 80
    ```
 
-4. **Start backend environment**
+3. **Start backend environment**
 
    ```bash
    ./setup_fresh_backend.sh
@@ -177,13 +215,13 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
     - Start MySQL and Tomcat
     - Initialize the database with `schema.sql`
 
-5. **Refresh backend after making code changes**
+4. **Refresh backend after making code changes**
 
    ```bash
    ./refresh_tomcat_server.sh
    ```
 
-6. **Set up the LLM with your API key**
+5. **Set up the LLM with your API key**
 
    * Go to [https://openrouter.ai](https://openrouter.ai)
    * Generate your personal API key
@@ -193,7 +231,7 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
      LLM_API_KEY=your_openrouter_key_here
      ```
 
-7. **Launch the app frontend**
+6. **Launch the app frontend**
 
    ```bash
    ionic build
@@ -279,3 +317,4 @@ Poi contribuire modificando:
 | Violeta Perez    | [@violetapd](https://github.com/violetapd)     |
 | Paolo Simeone    | [@bonoboprog](https://github.com/bonoboprog)   |
 | Giuseppe Alfieri | [@giusalfieri](https://github.com/giusalfieri) |
+
