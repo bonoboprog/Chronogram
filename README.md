@@ -77,12 +77,20 @@ Docker Compose	Multi-container orchestration	v2.0+	Included in Docker Desktop
 
 ## 🔐 Environment Variables (.env)
 
+> [!IMPORTANT]
+> ⚠️ **Make sure all `.env` files are saved with LF (Unix-style) line endings — especially after each edit.**  
+> On Windows, you can switch from `CRLF` to `LF` in the bottom-right corner of editors like VS Code.  
+> This prevents parsing issues in Docker, Node, and other tools.
+
+
 The project uses two environment configuration files that look like these:
+
+
 
 ### 1. Root `.env` (Backend Configuration)
 Located in the project root folder:
 
-```ini
+```env
 # Database
 MYSQL_ROOT_PASSWORD=your_root_password
 MYSQL_DATABASE=chronogram
@@ -107,7 +115,7 @@ APP_CANONICAL_URL=http://localhost:8100
 
 Located in /frontend folder
 
-```ini
+```env
 VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
 ```
 
