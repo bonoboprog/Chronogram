@@ -231,6 +231,21 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
      LLM_API_KEY=your_openrouter_key_here
      ```
 
+
+### 🔑 How to obtain an API Key from OpenRouter
+
+1. Go to [https://openrouter.ai](https://openrouter.ai)
+2. Click **Sign In** in the top-right corner and log in (you can use GitHub, Google, etc.)
+3. Go to the [API Keys Dashboard](https://openrouter.ai/keys)
+4. Click **"Create new key"**
+5. Copy your newly generated key
+6. Paste it into your `.env` file as follows:
+
+```env
+LLM_API_KEY=your_openrouter_key_here
+```
+
+
 6. **Launch the app frontend**
 
    ```bash
