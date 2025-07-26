@@ -96,16 +96,13 @@ MYSQL_ROOT_PASSWORD=your_root_password
 MYSQL_DATABASE=chronogram
 MYSQL_USER=chronouser
 MYSQL_PASSWORD=your_db_password
-
 # API Keys
 LLM_API_KEY=your_openrouter_api_key
-
 # Email
 MAIL_HOST=smtp.gmail.com
 MAIL_PORT=587
 MAIL_USER=your_email@gmail.com
 MAIL_PASSWORD=your_app_password
-
 # Security
 JWT_SECRET_KEY=your_jwt_secret_key
 APP_CANONICAL_URL=http://localhost:8100
