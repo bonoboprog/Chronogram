@@ -124,14 +124,14 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
 To ensure smooth setup and compatibility, the project is intended to be run as follows:
 
 - **Frontend (Ionic)**: Developed and tested on **Windows**  
-  You should run the Ionic CLI (`ionic serve`) and perform frontend development in a Windows environment.
+  You should run the Ionic CLI (`ionic serve`) and perform all frontend development in a **Windows environment**.
 
-- **Backend (Docker, MySQL, Tomcat, setup scripts)**: Run on **Linux**  
-  All Docker-related backend services (MySQL, Tomcat) and setup scripts like `setup_fresh_backend.sh` and `refresh_tomcat_server.sh` must be executed in a Linux environment for compatibility and reliability.
+- **Backend (Docker, MySQL, Tomcat, ngrok, setup scripts)**: Run on **Linux** or a **Linux virtual machine**  
+  All backend services — including Docker containers (MySQL, Tomcat), ngrok, and setup scripts like `setup_fresh_backend.sh` and `refresh_tomcat_server.sh` — must be executed in a **native Linux environment** or **Linux virtual machine** for proper compatibility and reliability.
 
 > [!Important]
-> You may not use **WSL2** (Windows Subsystem for Linux) to run the backend it has been tested and at the moment it doesn't work for development.
-</details>
+> The backend **has not been tested on WSL2** (Windows Subsystem for Linux). Its compatibility is currently unknown, so it is **not recommended** to use WSL2 for backend development.
+
 
 ---
 <details>
@@ -150,9 +150,9 @@ To ensure smooth setup and compatibility, the project is intended to be run as f
 <details>
 <summary>⚙️ <strong>Setting Up a Development Environment</strong></summary>
 
-0. **Install Core Dependencies**
+0. **Install Backend Environment (on Windows)**
 
-   These are required globally on your system before launching the app.
+   These are required globally on your Linux system before launching the app in the forntend in Windows.
 
    ````bash
 	# --- Java 11+ ---
@@ -179,17 +179,43 @@ To ensure smooth setup and compatibility, the project is intended to be run as f
 	node -v
 	npm -v
 
-	# --- Ionic CLI ---
-	npm install -g @ionic/cli
-
 	# --- Docker + Docker Compose ---
 	docker -v
 	docker compose version
 
    ````
 
+1. **Install Frontend Environment (on Windows)**
 
-1. **Clone the repository**
+   This section sets up the frontend development environment on **Windows**, including Node.js via `fnm` (Fast Node Manager) and the Ionic CLI.
+
+   > ⚠️ The frontend must be developed on **Windows**, and Node.js should be installed using `fnm`, as recommended by the official Node.js documentation for Windows.
+
+   ````powershell
+   # --- Install fnm (Fast Node Manager) ---
+   # Open PowerShell or Windows Terminal and run:
+   iwr -useb https://fnm.vercel.app/install | iex
+
+   # After installation, restart the terminal or run:
+   refreshenv
+
+   # --- Install Node.js (v18.x recommended) ---
+   fnm install 18
+   fnm use 18
+   fnm default 18
+
+   # Verify Node.js and npm
+   node -v
+   npm -v
+
+   # --- Install Ionic CLI globally ---
+   npm install -g @ionic/cli
+
+   # Verify Ionic version
+   ionic -v
+
+
+2. **Clone the repository**
 
    ```bash
    git clone https://github.com/bonoboprog/Chronogram.git
@@ -197,7 +223,7 @@ To ensure smooth setup and compatibility, the project is intended to be run as f
    ```
    
 
-2. **Install ngrok and start a tunnel**
+2. **Install ngrok on Linux and start a tunnel**
 
    Install ngrok via Apt with the following command:
 
@@ -223,7 +249,7 @@ To ensure smooth setup and compatibility, the project is intended to be run as f
    ngrok http 80
    ```
 
-3. **Start backend environment**
+4. **Start backend environment on Linux**
 
    ```bash
    ./setup_fresh_backend.sh
@@ -236,13 +262,13 @@ To ensure smooth setup and compatibility, the project is intended to be run as f
     - Start MySQL and Tomcat
     - Initialize the database with `schema.sql`
 
-4. **Refresh backend after making code changes**
+5. **Refresh backend after making code changes**
 
    ```bash
    ./refresh_tomcat_server.sh
    ```
 
-5. **Set up the LLM with your API key 🔑**
+6. **Set up the LLM with your API key 🔑**
 
    1. Go to [https://openrouter.ai](https://openrouter.ai)
    2. Click **Sign In** in the top-right corner and log in (you can use GitHub, Google, etc.)
@@ -255,13 +281,44 @@ To ensure smooth setup and compatibility, the project is intended to be run as f
       LLM_API_KEY=your_openrouter_key_here
       ```
 
-6. **Launch the app frontend**
+7. **Launch the app frontend in Windows**
+
+   Open a terminal window — preferably the **integrated terminal** of your favorite IDE — and navigate to the `frontend/` folder located in the project root. Then run:
 
    ```bash
    ionic build
    ionic serve
    ```
+   
 </details>
+
+
+8. **Connect to MySQL container from Windows (e.g., using MySQL Workbench)**
+
+   If you want to inspect or manage the backend MySQL database from **Windows**, you can connect to the running MySQL container using tools like **MySQL Workbench**.
+
+   The MySQL container exposes the **default MySQL port 3306** to the host, making it accessible from Windows as long as the Docker host is reachable (e.g., if running on a local Linux VM with bridged or host networking).
+
+   #### ✅ Steps:
+
+   1. Open **MySQL Workbench** on Windows.
+   2. Create a **new connection** with the following settings:
+      - **Hostname**: IP address or hostname of the Linux VM (e.g., `192.168.x.x`)
+      - **Port**: `3306`
+      - **Username**: use the `MYSQL_USER` defined in the backend `.env` file
+      - **Password**: use the corresponding `MYSQL_PASSWORD` (check "Store in Vault…" if desired)
+   3. Test the connection and save.
+
+   > 💡 You can find the database name in the `.env` file under `MYSQL_DATABASE`.
+
+   > ⚠️ Make sure the container is up and that the port `3306` is properly published in `docker-compose.yml`, e.g.:
+   > ```yaml
+   > ports:
+   >   - "3306:3306"
+   > ```
+
+   > 🔐 Ensure no firewall or network rule is blocking the connection between Windows and the Linux host.
+
 
 ---
 
