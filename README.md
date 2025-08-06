@@ -137,45 +137,81 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
 <details>
 <summary>⚙️ <strong>Setting Up a Development Environment</strong></summary>
 
-0. **Backend Environment Setup (on Linux)**
+0. **Backend Environment Setup (on Ubuntu)**
 
-   These are required globally on your Linux system before launching the app in the forntend in Windows.
+These are required globally on your Ubuntu system before launching the app in the frontend on Windows.
 
-   ````bash
-	# --- Java 11+ ---
-	sudo apt update
-	sudo apt install openjdk-11-jdk
+---
 
-	# Verify Java version
-	java -version
+### ☕ Java 11+
 
-	# --- Maven ---
-	sudo apt install maven
+```bash
+sudo apt update
+sudo apt install openjdk-11-jdk
 
-	# Verify Maven version
-	mvn -v
+# Verify Java version
+java -version
+```
+---
 
-	# --- Node.js (v18.x recommended) ---
-	# Use Node Version Manager (nvm) to install/manage Node versions
-	curl -o- [https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh](https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh) | bash
-	source ~/.bashrc
-	nvm install 18
-	nvm use 18
+### 📦 Maven
 
-	# Verify Node.js and npm
-	node -v
-	npm -v
+```bash
+sudo apt install maven
 
-	# --- Docker + Docker Compose ---
-	docker -v
-	docker compose version
+# Verify Maven version
+mvn -v
+```
+---
 
-   ````
+###🐳 Docker (using Docker's official apt repository)
+
+#### 🔁 Preliminaries – Remove conflicting packages
+Run the following command to uninstall all conflicting packages with Docker Engine:
+
+   ```bash
+       for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
+   ```
+ 
+> `apt-get` might report that you have none of these packages installed.
+        
+
+#### 🧷 Add Docker's official GPG key and repository
+
+ ```bash
+        sudo apt-get update
+        sudo apt-get install ca-certificates curl
+        sudo install -m 0755 -d /etc/apt/keyrings
+	sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+	sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+	# Add the repository to Apt sources:
+	echo \
+  	  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  	  $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+  	  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+	sudo apt-get update
+  ```
+
+ #### 📥 Install the latest version, run:
 
 
+ ```bash
+        sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+ ````
 
+ #### ✅ Verify that the installation is successful by running the hello-world image:
 
-1. **Install ngrok on Linux and start a tunnel**
+ ```bash
+    sudo docker run hello-world
+ ```
+
+This command downloads a test image and runs it in a container.
+When the container runs, it prints a confirmation message and exits.
+
+🎉 You have now successfully installed and started Docker Engine.
+
+0. **Install ngrok on Linux and start a tunnel**
 
    Install ngrok via Apt with the following command:
 
@@ -201,7 +237,7 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
    ngrok http 80
    ```
 
-2. **Start backend environment on Linux**
+1. **Start backend environment on Linux**
 
    First, move into the cloned `Chronogram` repository folder, then navigate to the backend scripts directory and run the setup script:
 
@@ -215,13 +251,13 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
     - Build the backend (`build.sh`)
     - Start MySQL and Tomcat and Nginx
 
-3. **Refresh backend after making code changes**
+2. **Refresh backend after making code changes**
 
    ```bash
    ./refresh_tomcat_server.sh
    ```
 
-4. **Set up the LLM with your API key 🔑**
+3. **Set up the LLM with your API key 🔑**
 
    1. Go to [https://openrouter.ai](https://openrouter.ai)
    2. Click **Sign In** in the top-right corner and log in (you can use GitHub, Google, etc.)
@@ -235,7 +271,7 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
       ```
 
 
-5. **Frontend Environment Setup (on Windows)**
+4. **Frontend Environment Setup (on Windows)**
 
    This section sets up the frontend development environment on **Windows**, including Node.js via `fnm` (Fast Node Manager) and the Ionic CLI.
 
@@ -266,7 +302,7 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
 
 
 
-6. **Launch the app frontend in Windows**
+5. **Launch the app frontend in Windows**
 
    Open a terminal window — preferably the **integrated terminal** of your favorite IDE — and navigate to the `frontend/` folder located in the project root. Then run:
 
@@ -278,7 +314,7 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
 
 
 
-7. **Connect to MySQL container from Windows (e.g., using MySQL Workbench)**
+6. **Connect to MySQL container from Windows (e.g., using MySQL Workbench)**
 
    If you want to inspect or manage the backend MySQL database from **Windows**, you can connect to the running MySQL container using tools like **MySQL Workbench**.
 
