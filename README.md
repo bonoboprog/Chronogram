@@ -56,7 +56,7 @@ The goal of this project is to develop an Android application that allows users 
 ---
 
 <details>
-<summary>🖥️ <strong>Development Setup</strong></summary>
+<summary>🖥️ <strong>Recommended Development Environment</strong></summary>
 
 To ensure smooth setup and compatibility, the project is intended to be run as follows:
 
@@ -72,7 +72,7 @@ The recommended development setup is:
 ---
 
 <details>
-<summary>Clone the repository into a shared folder (Linux VM <-> Windows)</summary>
+<summary><strong>Clone the repository into a shared folder (Linux VM <-> Windows)</strong></summary>
 
    To ensure seamless collaboration between the **frontend (Windows)** and **backend (Linux VM)**, it's recommended to clone the repository into a **shared folder** that both systems can access (e.g., VMWare shared folder or a mounted network drive).
 
