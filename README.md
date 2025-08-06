@@ -99,18 +99,16 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
 
 ---
 <details>
-<summary>🖥️ <strong>Platform Requirements</strong></summary>
+<summary>🖥️ <strong>Development Setup</strong></summary>
 
 To ensure smooth setup and compatibility, the project is intended to be run as follows:
 
-- **Frontend (Ionic)**: Developed and tested on **Windows**  
-  You should run the Ionic CLI (`ionic serve`) and perform all frontend development in a **Windows environment**.
+  > 💡 The recommended development setup is:
+  > - **Windows** as the **host OS** (running the frontend)
+  > - A **Ubuntu Linux virtual machine** (e.g., via **VMware Workstation Player**) as the **backend environment**
 
-- **Backend (Docker, MySQL, Tomcat, ngrok, setup scripts)**: Run on **Linux** or a **Linux virtual machine**  
-  All backend services — including Docker containers (MySQL, Tomcat), ngrok, and setup scripts like `setup_fresh_backend.sh` and `refresh_tomcat_server.sh` — must be executed in a **native Linux environment** or **Linux virtual machine** for proper compatibility and reliability.
-
-> [!Important]
-> The backend **has not been tested on WSL2** (Windows Subsystem for Linux). Its compatibility is currently unknown, so it is **not recommended** to use WSL2 for backend development.
+> [!Important]  
+> ⚠️ The backend has **not been tested on WSL2** (Windows Subsystem for Linux). Its compatibility is currently unknown, so it is **not recommended** to use WSL2 for backend development.
 
 </details>
 
