@@ -54,6 +54,41 @@ The goal of this project is to develop an Android application that allows users 
 
 
 ---
+
+<details>
+<summary>🖥️ <strong>Development Setup</strong></summary>
+
+To ensure smooth setup and compatibility, the project is intended to be run as follows:
+
+The recommended development setup is:
+- **Windows** as the **host OS** (running the frontend)
+- A **Ubuntu Linux virtual machine** (e.g., via **VMware**) as the **backend environment**
+
+> [!Important]  
+> ⚠️ The backend has **not been tested on WSL2** (Windows Subsystem for Linux). Its compatibility is currently unknown, so it is **not recommended** to use WSL2 for backend development.
+
+</details>
+
+---
+
+<details>
+<summary>Clone the repository into a shared folder (Linux VM <-> Windows)</summary>
+
+   To ensure seamless collaboration between the **frontend (Windows)** and **backend (Linux VM)**, it's recommended to clone the repository into a **shared folder** that both systems can access (e.g., VMWare shared folder or a mounted network drive).
+
+   This allows the Windows-hosted frontend and the Linux-hosted backend to work with the same source code base.
+
+   ```bash
+   # From inside your Linux virtual machine:
+   cd /path/to/shared/folder
+   git clone https://github.com/bonoboprog/Chronogram.git
+   cd Chronogram
+   ```
+</details>
+
+
+
+---
 <details>
 <summary>🔐 <strong>Environment Variables (.env)</strong></summary>
 
@@ -98,26 +133,11 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
 </details>
 
 ---
-<details>
-<summary>🖥️ <strong>Development Setup</strong></summary>
-
-To ensure smooth setup and compatibility, the project is intended to be run as follows:
-
-The recommended development setup is:
-- **Windows** as the **host OS** (running the frontend)
-- A **Ubuntu Linux virtual machine** (e.g., via **VMware Workstation Player**) as the **backend environment**
-
-> [!Important]  
-> ⚠️ The backend has **not been tested on WSL2** (Windows Subsystem for Linux). Its compatibility is currently unknown, so it is **not recommended** to use WSL2 for backend development.
-
-</details>
-
----
 
 <details>
 <summary>⚙️ <strong>Setting Up a Development Environment</strong></summary>
 
-0. **Install Backend Environment (on Windows)**
+0. **Backend Environment Setup (on Linux)**
 
    These are required globally on your Linux system before launching the app in the forntend in Windows.
 
@@ -152,7 +172,7 @@ The recommended development setup is:
 
    ````
 
-1. **Install Frontend Environment (on Windows)**
+1. **Frontend Environment Setup (on Windows)**
 
    This section sets up the frontend development environment on **Windows**, including Node.js via `fnm` (Fast Node Manager) and the Ionic CLI.
 
@@ -182,18 +202,7 @@ The recommended development setup is:
    ionic -v
 
 
-2. **Clone the repository into a shared folder (Linux VM <-> Windows)**
 
-   To ensure seamless collaboration between the **frontend (Windows)** and **backend (Linux VM)**, it's recommended to clone the repository into a **shared folder** that both systems can access (e.g., VMWare shared folder or a mounted network drive).
-
-   This allows the Windows-hosted frontend and the Linux-hosted backend to work with the same source code base.
-
-   ```bash
-   # From inside your Linux virtual machine:
-   cd /path/to/shared/folder
-   git clone https://github.com/bonoboprog/Chronogram.git
-   cd Chronogram
-   ```
 
 2. **Install ngrok on Linux and start a tunnel**
 
@@ -221,7 +230,7 @@ The recommended development setup is:
    ngrok http 80
    ```
 
-4. **Start backend environment on Linux**
+3. **Start backend environment on Linux**
 
    ```bash
    ./setup_fresh_backend.sh
@@ -234,13 +243,13 @@ The recommended development setup is:
     - Start MySQL and Tomcat
     - Initialize the database with `schema.sql`
 
-5. **Refresh backend after making code changes**
+4. **Refresh backend after making code changes**
 
    ```bash
    ./refresh_tomcat_server.sh
    ```
 
-6. **Set up the LLM with your API key 🔑**
+5. **Set up the LLM with your API key 🔑**
 
    1. Go to [https://openrouter.ai](https://openrouter.ai)
    2. Click **Sign In** in the top-right corner and log in (you can use GitHub, Google, etc.)
@@ -253,7 +262,7 @@ The recommended development setup is:
       LLM_API_KEY=your_openrouter_key_here
       ```
 
-7. **Launch the app frontend in Windows**
+6. **Launch the app frontend in Windows**
 
    Open a terminal window — preferably the **integrated terminal** of your favorite IDE — and navigate to the `frontend/` folder located in the project root. Then run:
 
@@ -265,7 +274,7 @@ The recommended development setup is:
 
 
 
-8. **Connect to MySQL container from Windows (e.g., using MySQL Workbench)**
+7. **Connect to MySQL container from Windows (e.g., using MySQL Workbench)**
 
    If you want to inspect or manage the backend MySQL database from **Windows**, you can connect to the running MySQL container using tools like **MySQL Workbench**.
 
