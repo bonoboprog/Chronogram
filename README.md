@@ -42,17 +42,6 @@ The goal of this project is to develop an Android application that allows users 
 * Basic frontend form validation
 * Protection against common vulnerabilities (e.g., SQL injection, password theft)
 
----
-
-## 📚 Libraries and Dependencies
-
-| **Library**         | **Purpose**                   | **Version**  | **Download**                                                      |
-| ------------------- | ----------------------------- | ------------ | ----------------------------------------------------------------- |
-| **Struts 2**        | MVC web framework for Java    | 2.5.22 (all) | [Struts Download](https://archive.apache.org/dist/struts/2.5.22/) |
-| **MySQL Connector** | JDBC driver for MySQL         | 8.0.33       | [MySQL Connector](https://dev.mysql.com/downloads/connector/j/)   |
-| **Maven**           | Java build tool               | 3.8+         | [Maven](https://maven.apache.org/)                                |
-| **Docker**          | Containerization engine       | 24.x+        | [Docker](https://www.docker.com/)                                 |
-| **Docker Compose**  | Multi-container orchestration | 2.0+         | Included in Docker Desktop                                        |
 
 ---
 
@@ -60,18 +49,9 @@ The goal of this project is to develop an Android application that allows users 
 
 | Layer    | Technology              |
 | -------- | ----------------------- |
-| Backend  | Java + Struts 2         |
-| Server   | Apache Tomcat (v9.0.71) |
-| Database | MySQL                   |
-| Frontend | HTML, CSS, JavaScript   |
-| Security | HTTPS                   |
+| Backend  | MySQL + Struts 2 + Apache Tomcat (v9.0.71) + Nginx + Ngrok(to expose https endpoint)       |
+| Frontend | HTML, SCSS, TypeScript, Vue, Ionic, Capacitor(Andorid)   |
 
-Library / Tool	Purpose	Version	Download / Info
-Struts 2	MVC web framework for Java	struts-2.5.22-all	Struts Download
-/J		Included via Maven
-Maven			Maven
-			Docker
-Docker Compose	Multi-container orchestration	v2.0+	Included in Docker Desktop
 
 ---
 <details>
@@ -206,16 +186,16 @@ To ensure smooth setup and compatibility, the project is intended to be run as f
 
 2. **Clone the repository into a shared folder (Linux VM <-> Windows)**
 
-To ensure seamless collaboration between the **frontend (Windows)** and **backend (Linux VM)**, it's recommended to clone the repository into a **shared folder** that both systems can access (e.g., a VirtualBox shared folder or a mounted network drive).
+   To ensure seamless collaboration between the **frontend (Windows)** and **backend (Linux VM)**, it's recommended to clone the repository into a **shared folder** that both systems can access (e.g., VMWare shared folder or a mounted network drive).
 
-This allows the Windows-hosted frontend and the Linux-hosted backend to work with the same source code base.
+   This allows the Windows-hosted frontend and the Linux-hosted backend to work with the same source code base.
 
-```bash
-# From inside your Linux virtual machine:
-cd /path/to/shared/folder
-git clone https://github.com/bonoboprog/Chronogram.git
-cd Chronogram
-```
+   ```bash
+   # From inside your Linux virtual machine:
+   cd /path/to/shared/folder
+   git clone https://github.com/bonoboprog/Chronogram.git
+   cd Chronogram
+   ```
 
 2. **Install ngrok on Linux and start a tunnel**
 
