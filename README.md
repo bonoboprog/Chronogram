@@ -74,8 +74,8 @@ Maven			Maven
 Docker Compose	Multi-container orchestration	v2.0+	Included in Docker Desktop
 
 ---
-
-## 🔐 Environment Variables (.env)
+<details>
+<summary>🔐 <strong>Environment Variables (.env)</strong></summary>
 
 > [!IMPORTANT]
 > ⚠️ **Make sure all `.env` files are saved with LF (Unix-style) line endings — especially after each edit.**  
@@ -115,17 +115,33 @@ Located in /frontend folder
 ```env
 VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
 ```
-
+</details>
 
 ---
 <details>
-<summary>🧑‍💻 <strong>Prerequisiti</strong></summary>
+<summary>🖥️ <strong>Platform Requirements</strong></summary>
+
+To ensure smooth setup and compatibility, the project is intended to be run as follows:
+
+- **Frontend (Ionic)**: Developed and tested on **Windows**  
+  You should run the Ionic CLI (`ionic serve`) and perform frontend development in a Windows environment.
+
+- **Backend (Docker, MySQL, Tomcat, setup scripts)**: Run on **Linux**  
+  All Docker-related backend services (MySQL, Tomcat) and setup scripts like `setup_fresh_backend.sh` and `refresh_tomcat_server.sh` must be executed in a Linux environment for compatibility and reliability.
+
+> [!Important]
+> You may not use **WSL2** (Windows Subsystem for Linux) to run the backend it has been tested and at the moment it doesn't work for development.
+</details>
+
+---
+<details>
+<summary>🧑‍💻 <strong>Prerequisites</strong></summary>
 
 - [x] Docker
 - [x] Java 8+
 - [x] Maven
 - [x] Node.js + Ionic CLI (`npm install -g @ionic/cli`)
-- [ ] (Opzionale) MySQL Workbench per visualizzare lo schema
+- [ ] (Optional) MySQL Workbench to visualize the schema
 
 </details>
 
@@ -270,6 +286,9 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
 
 ---
 
+<details>
+<summary>📦 <strong>Database Schema Management</strong></summary>
+
 1. **After making EER/Workbench changes → forward engineer into MySQL container**
 
 2. **Export the schema**
@@ -282,7 +301,7 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
 
    ```bash
    git add docker/init/schema.sql
-   git commit -m "🔄 aggiornata struttura DB"
+   git commit -m "🔄 DB structure updated"
    git push
    ```
 
@@ -295,26 +314,29 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
 > docker compose down -v
 > ./setup_fresh_backend.sh
 > ```
+</details>
 
 ---
 
-### 🤝 Collaborazione
+<details>
+<summary>🤝 <strong>Contributing</strong></summary>
 
-Ogni collaboratore può:
+Each contributor can:
 
 ```bash
 git clone ...
 ./dev_setup.sh
 ```
 
-Poi contribuire modificando:
+Then contribute to:
 
 * Backend (Java)
 * Frontend (/mobile)
 * Schema DB (`export_schema.sh`)
 
 > \[!NOTE]
-> 🧠 Importante: il file `schema.sql` è il punto di sincronizzazione per il DB!
+> 🧠 Note: The `schema.sql` file is the single source of truth for the database!
+</details>
 
 ---
 
