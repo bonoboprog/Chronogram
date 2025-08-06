@@ -135,18 +135,6 @@ To ensure smooth setup and compatibility, the project is intended to be run as f
 </details>
 
 ---
-<details>
-<summary>🧑‍💻 <strong>Prerequisites</strong></summary>
-
-- [x] Docker
-- [x] Java 8+
-- [x] Maven
-- [x] Node.js + Ionic CLI (`npm install -g @ionic/cli`)
-- [ ] (Optional) MySQL Workbench to visualize the schema
-
-</details>
-
----
 
 <details>
 <summary>⚙️ <strong>Setting Up a Development Environment</strong></summary>
