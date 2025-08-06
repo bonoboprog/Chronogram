@@ -141,7 +141,6 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
 
 These are required globally on your Ubuntu system before launching the app in the frontend on Windows.
 
----
 
 ☕ Java 11+
 
@@ -170,41 +169,41 @@ mvn -v
  🔁 Preliminaries – Remove conflicting packages
 Run the following command to uninstall all conflicting packages with Docker Engine:
 
-   ```bash
-       for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
-   ```
+```bash
+for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
+```
  
 > `apt-get` might report that you have none of these packages installed.
         
 
- 🧷 Add Docker's official GPG key and repository
+🧷 Add Docker's official GPG key and repository
+
+```bash
+sudo apt-get update
+sudo apt-get install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the repository to Apt sources:
+echo \
+"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+$(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+```
+
+📥 Install the latest version, run:
+
+
+```bash
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+
+✅ Verify that the installation is successful by running the hello-world image:
 
  ```bash
-        sudo apt-get update
-        sudo apt-get install ca-certificates curl
-        sudo install -m 0755 -d /etc/apt/keyrings
-	sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-	sudo chmod a+r /etc/apt/keyrings/docker.asc
-
-	# Add the repository to Apt sources:
-	echo \
-  	  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-  	  $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
-  	  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-	sudo apt-get update
-  ```
-
-  📥 Install the latest version, run:
-
-
- ```bash
-        sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
- ````
-
-  ✅ Verify that the installation is successful by running the hello-world image:
-
- ```bash
-    sudo docker run hello-world
+ sudo docker run hello-world
  ```
 
 This command downloads a test image and runs it in a container.
