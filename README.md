@@ -204,13 +204,18 @@ To ensure smooth setup and compatibility, the project is intended to be run as f
    ionic -v
 
 
-2. **Clone the repository**
+2. **Clone the repository into a shared folder (Linux VM <-> Windows)**
 
-   ```bash
-   git clone https://github.com/bonoboprog/Chronogram.git
-   cd Chronogram
-   ```
-   
+To ensure seamless collaboration between the **frontend (Windows)** and **backend (Linux VM)**, it's recommended to clone the repository into a **shared folder** that both systems can access (e.g., a VirtualBox shared folder or a mounted network drive).
+
+This allows the Windows-hosted frontend and the Linux-hosted backend to work with the same source code base.
+
+```bash
+# From inside your Linux virtual machine:
+cd /path/to/shared/folder
+git clone https://github.com/bonoboprog/Chronogram.git
+cd Chronogram
+```
 
 2. **Install ngrok on Linux and start a tunnel**
 
