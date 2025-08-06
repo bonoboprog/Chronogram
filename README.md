@@ -104,8 +104,8 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
 To ensure smooth setup and compatibility, the project is intended to be run as follows:
 
 The recommended development setup is:
-> - **Windows** as the **host OS** (running the frontend)
-> - A **Ubuntu Linux virtual machine** (e.g., via **VMware Workstation Player**) as the **backend environment**
+- **Windows** as the **host OS** (running the frontend)
+- A **Ubuntu Linux virtual machine** (e.g., via **VMware Workstation Player**) as the **backend environment**
 
 > [!Important]  
 > ⚠️ The backend has **not been tested on WSL2** (Windows Subsystem for Linux). Its compatibility is currently unknown, so it is **not recommended** to use WSL2 for backend development.
