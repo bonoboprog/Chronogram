@@ -141,6 +141,7 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
 
 These are required globally on your Ubuntu system before launching the app in the frontend on Windows.
 
+---
 
 ☕ Java 11+
 
@@ -151,7 +152,7 @@ sudo apt install openjdk-11-jdk
 # Verify Java version
 java -version
 ```
-
+---
 
 📦 Maven
 
@@ -162,6 +163,7 @@ sudo apt install maven
 mvn -v
 ```
 
+---
 
 🐳 Docker (using Docker's official apt repository)
 
