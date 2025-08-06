@@ -137,7 +137,7 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
 <details>
 <summary>⚙️ <strong>Setting Up a Development Environment</strong></summary>
 
-### 0. **Backend Environment Setup (on Ubuntu)**
+## 0. **Backend Environment Setup (on Ubuntu)**
 
 These are required globally on your Ubuntu system before launching the app in the frontend on Windows.
 
@@ -211,7 +211,7 @@ When the container runs, it prints a confirmation message and exits.
 
 🎉 You have now successfully installed and started Docker Engine.
 
-### 1. **Install ngrok on Linux and start a tunnel**
+## 1. **Install ngrok on Linux and start a tunnel**
 
    Install ngrok via Apt with the following command:
 
@@ -237,7 +237,7 @@ When the container runs, it prints a confirmation message and exits.
    ngrok http 80
    ```
 
-### 2. **Start backend environment on Linux**
+## 2. **Start backend environment on Linux**
 
    First, move into the cloned `Chronogram` repository folder, then navigate to the backend scripts directory and run the setup script:
 
@@ -251,13 +251,13 @@ When the container runs, it prints a confirmation message and exits.
     - Build the backend (`build.sh`)
     - Start MySQL and Tomcat and Nginx
 
-### 3. **Refresh backend after making code changes**
+## 3. **Refresh backend after making code changes**
 
    ```bash
    ./refresh_tomcat_server.sh
    ```
 
-### 4. **Set up the LLM with your API key 🔑**
+## 4. **Set up the LLM with your API key 🔑**
 
    1. Go to [https://openrouter.ai](https://openrouter.ai)
    2. Click **Sign In** in the top-right corner and log in (you can use GitHub, Google, etc.)
@@ -271,7 +271,7 @@ When the container runs, it prints a confirmation message and exits.
       ```
 
 
-### 5. **Frontend Environment Setup (on Windows)**
+## 5. **Frontend Environment Setup (on Windows)**
 
    This section sets up the frontend development environment on **Windows**, including Node.js via `fnm` (Fast Node Manager) and the Ionic CLI.
 
@@ -302,7 +302,7 @@ When the container runs, it prints a confirmation message and exits.
 
 
 
-### 6. **Launch the app frontend in Windows**
+## 6. **Launch the app frontend in Windows**
 
    Open a terminal window — preferably the **integrated terminal** of your favorite IDE — and navigate to the `frontend/` folder located in the project root. Then run:
 
@@ -314,7 +314,7 @@ When the container runs, it prints a confirmation message and exits.
 
 
 
-### 7. **Connect to MySQL container from Windows (e.g., using MySQL Workbench)**
+## 7. **Connect to MySQL container from Windows (e.g., using MySQL Workbench)**
 
    If you want to inspect or manage the backend MySQL database from **Windows**, you can connect to the running MySQL container using tools like **MySQL Workbench**.
 
