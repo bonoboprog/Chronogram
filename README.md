@@ -64,7 +64,6 @@ The recommended development setup is:
 - **Windows** as the **host OS** (running the frontend)
 - A **Ubuntu Linux virtual machine** (e.g., via **VMware**) as the **backend environment**
 
-> [!Important]  
 > ⚠️ The backend has **not been tested on WSL2** (Windows Subsystem for Linux). Its compatibility is currently unknown, so it is **not recommended** to use WSL2 for backend development.
 
 </details>
@@ -91,7 +90,6 @@ The recommended development setup is:
 <details>
 <summary>🔐 <strong>Environment Variables (.env)</strong></summary>
 
-> [!IMPORTANT]
 > ⚠️ **Make sure all `.env` files are saved with LF (Unix-style) line endings — especially after each edit.**  
 > On Windows, you can switch from `CRLF` to `LF` in the bottom-right corner of editors like VS Code.  
 > This prevents parsing issues in Docker, Node, and other tools.
@@ -137,7 +135,38 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
 
 </details>
 
+---
 
+
+<details> 
+<summary>📁 <strong>Secrets Directory and Firebase Service Account</strong></summary>
+
+This project uses Firebase Admin SDK for authentication.
+A service account key file is required and should be placed in the following location:
+
+/secrets/firebase-service-account.json
+
+🔒 Example (redacted for security):
+
+```
+  "type": "service_account",
+  "project_id": "chronogram-xxxxxx",
+  "private_key_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "private_key": "-----BEGIN PRIVATE KEY-----\\n...REDACTED...\\n-----END PRIVATE KEY-----\\n",
+  "client_email": "firebase-adminsdk-xxxxx@chronogram-xxxxxx.iam.gserviceaccount.com",
+  "client_id": "xxxxxxxxxxxxxxxxxxxxx",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-xxxxx%40chronogram-xxxxxx.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+```
+
+> ⚠️ This file is required for Firebase Admin SDK functionality on the backend.
+> You can generate your own service account key from your Firebase Console under:
+> Project Settings → Service accounts → Generate new private key.
+
+</details>
 
 
 ---
@@ -396,7 +425,6 @@ This script will:
    git push
    ```
 
-> \[!IMPORTANT]
 > ⚠️ The `setup_fresh_backend.sh` script automatically loads `schema.sql` only on the first startup (empty volume).
 >
 > To force a reset:
@@ -425,8 +453,7 @@ Then contribute to:
 * Frontend (/mobile)
 * Schema DB (`export_schema.sh`)
 
-> \[!NOTE]
-> 🧠 Note: The `schema.sql` file is the single source of truth for the database!
+> ⚠️ Note: The `schema.sql` file is the single source of truth for the database!
 </details>
 
 ---
