@@ -132,6 +132,7 @@ To ensure smooth setup and compatibility, the project is intended to be run as f
 > [!Important]
 > The backend **has not been tested on WSL2** (Windows Subsystem for Linux). Its compatibility is currently unknown, so it is **not recommended** to use WSL2 for backend development.
 
+</details>
 
 ---
 <details>
@@ -290,7 +291,7 @@ To ensure smooth setup and compatibility, the project is intended to be run as f
    ionic serve
    ```
    
-</details>
+
 
 
 8. **Connect to MySQL container from Windows (e.g., using MySQL Workbench)**
@@ -318,7 +319,7 @@ To ensure smooth setup and compatibility, the project is intended to be run as f
    > ```
 
    > 🔐 Ensure no firewall or network rule is blocking the connection between Windows and the Linux host.
-
+</details>
 
 ---
 
