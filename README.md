@@ -172,39 +172,10 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
 
    ````
 
-1. **Frontend Environment Setup (on Windows)**
-
-   This section sets up the frontend development environment on **Windows**, including Node.js via `fnm` (Fast Node Manager) and the Ionic CLI.
-
-   > ⚠️ The frontend must be developed on **Windows**, and Node.js should be installed using `fnm`, as recommended by the official Node.js documentation for Windows.
-
-   ````powershell
-   # --- Install fnm (Fast Node Manager) ---
-   # Open PowerShell or Windows Terminal and run:
-   iwr -useb https://fnm.vercel.app/install | iex
-
-   # After installation, restart the terminal or run:
-   refreshenv
-
-   # --- Install Node.js (v18.x recommended) ---
-   fnm install 18
-   fnm use 18
-   fnm default 18
-
-   # Verify Node.js and npm
-   node -v
-   npm -v
-
-   # --- Install Ionic CLI globally ---
-   npm install -g @ionic/cli
-
-   # Verify Ionic version
-   ionic -v
 
 
 
-
-2. **Install ngrok on Linux and start a tunnel**
+1. **Install ngrok on Linux and start a tunnel**
 
    Install ngrok via Apt with the following command:
 
@@ -230,7 +201,7 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
    ngrok http 80
    ```
 
-3. **Start backend environment on Linux**
+2. **Start backend environment on Linux**
 
    ```bash
    ./setup_fresh_backend.sh
@@ -243,13 +214,13 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
     - Start MySQL and Tomcat
     - Initialize the database with `schema.sql`
 
-4. **Refresh backend after making code changes**
+3. **Refresh backend after making code changes**
 
    ```bash
    ./refresh_tomcat_server.sh
    ```
 
-5. **Set up the LLM with your API key 🔑**
+4. **Set up the LLM with your API key 🔑**
 
    1. Go to [https://openrouter.ai](https://openrouter.ai)
    2. Click **Sign In** in the top-right corner and log in (you can use GitHub, Google, etc.)
@@ -261,6 +232,38 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
       ```env
       LLM_API_KEY=your_openrouter_key_here
       ```
+
+
+5. **Frontend Environment Setup (on Windows)**
+
+   This section sets up the frontend development environment on **Windows**, including Node.js via `fnm` (Fast Node Manager) and the Ionic CLI.
+
+   > ⚠️ The frontend must be developed on **Windows**, and Node.js should be installed using `fnm`, as recommended by the official Node.js documentation for Windows.
+
+   ````powershell
+   # --- Install fnm (Fast Node Manager) ---
+   # Open PowerShell and run the following
+   
+   # Download and install fnm:
+   winget install Schniz.fnm
+   
+   # Download and install Node.js:
+   fnm install 22
+
+   # Verify the Node.js version:
+   node -v # Should print "v22.14.0".
+
+   # Verify npm version:
+   npm -v # Should print "10.9.2".
+
+   # --- Install Ionic CLI globally ---
+   npm install -g @ionic/cli
+
+   # Verify Ionic version
+   ionic -v
+   ````
+
+
 
 6. **Launch the app frontend in Windows**
 
