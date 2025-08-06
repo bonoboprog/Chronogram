@@ -203,16 +203,17 @@ VITE_API_BASE_URL=https://your-ngrok-subdomain.ngrok-free.app/chronogram
 
 2. **Start backend environment on Linux**
 
+   First, move into the cloned `Chronogram` repository folder, then navigate to the backend scripts directory and run the setup script:
+
    ```bash
+   cd ~/path/to/Chronogram/scripts/backend_scripts
    ./setup_fresh_backend.sh
    ```
-
     This script will:
 
     - Stop and remove old containers
     - Build the backend (`build.sh`)
-    - Start MySQL and Tomcat
-    - Initialize the database with `schema.sql`
+    - Start MySQL and Tomcat and Nginx
 
 3. **Refresh backend after making code changes**
 
